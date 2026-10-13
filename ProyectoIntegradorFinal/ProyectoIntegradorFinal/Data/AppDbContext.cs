@@ -15,6 +15,6 @@ namespace ProyectoIntegradorFinal.Data
         public DbSet<Direccion> Direccion { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Carrito> Carritos { get; set; }
-
+        public DbSet<ItemCarrito> ItemsCarrito { get; set; }
     }
 }
