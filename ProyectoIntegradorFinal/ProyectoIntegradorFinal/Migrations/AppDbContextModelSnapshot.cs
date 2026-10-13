@@ -60,6 +60,35 @@ namespace ProyectoIntegradorFinal.Migrations
                     b.ToTable("Categorias");
                 });
 
+            modelBuilder.Entity("ProyectoIntegradorFinal.Models.DetalleOrden", b =>
+                {
+                    b.Property<int>("IdDetalle")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("IdDetalle"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdOrden")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdProducto")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("IdDetalle");
+
+                    b.HasIndex("IdOrden");
+
+                    b.HasIndex("IdProducto");
+
+                    b.ToTable("DetallesOrden");
+                });
+
             modelBuilder.Entity("ProyectoIntegradorFinal.Models.Direccion", b =>
                 {
                     b.Property<int>("IdDireccion")
@@ -121,7 +150,7 @@ namespace ProyectoIntegradorFinal.Migrations
 
                     b.HasIndex("IdProducto");
 
-                    b.ToTable("ItemCarrito");
+                    b.ToTable("ItemsCarrito");
                 });
 
             modelBuilder.Entity("ProyectoIntegradorFinal.Models.Marca", b =>
@@ -139,6 +168,71 @@ namespace ProyectoIntegradorFinal.Migrations
                     b.HasKey("IdMarca");
 
                     b.ToTable("Marcas");
+                });
+
+            modelBuilder.Entity("ProyectoIntegradorFinal.Models.Orden", b =>
+                {
+                    b.Property<int>("IdOrden")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("IdOrden"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("FechaOrden")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("IdDireccion")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("IdOrden");
+
+                    b.HasIndex("IdDireccion");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("Ordenes");
+                });
+
+            modelBuilder.Entity("ProyectoIntegradorFinal.Models.Pago", b =>
+                {
+                    b.Property<int>("IdPago")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("IdPago"));
+
+                    b.Property<string>("EstadoPago")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("FechaPago")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("IdOrden")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MetodoPago")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("IdPago");
+
+                    b.HasIndex("IdOrden");
+
+                    b.ToTable("Pagos");
                 });
 
             modelBuilder.Entity("ProyectoIntegradorFinal.Models.Producto", b =>
@@ -244,6 +338,25 @@ namespace ProyectoIntegradorFinal.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("ProyectoIntegradorFinal.Models.DetalleOrden", b =>
+                {
+                    b.HasOne("ProyectoIntegradorFinal.Models.Orden", "Orden")
+                        .WithMany()
+                        .HasForeignKey("IdOrden")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProyectoIntegradorFinal.Models.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("IdProducto")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Orden");
+
+                    b.Navigation("Producto");
+                });
+
             modelBuilder.Entity("ProyectoIntegradorFinal.Models.Direccion", b =>
                 {
                     b.HasOne("ProyectoIntegradorFinal.Models.Usuario", "Usuario")
@@ -272,6 +385,36 @@ namespace ProyectoIntegradorFinal.Migrations
                     b.Navigation("Carrito");
 
                     b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("ProyectoIntegradorFinal.Models.Orden", b =>
+                {
+                    b.HasOne("ProyectoIntegradorFinal.Models.Direccion", "Direccion")
+                        .WithMany()
+                        .HasForeignKey("IdDireccion")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProyectoIntegradorFinal.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Direccion");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("ProyectoIntegradorFinal.Models.Pago", b =>
+                {
+                    b.HasOne("ProyectoIntegradorFinal.Models.Orden", "Orden")
+                        .WithMany()
+                        .HasForeignKey("IdOrden")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Orden");
                 });
 
             modelBuilder.Entity("ProyectoIntegradorFinal.Models.Producto", b =>
