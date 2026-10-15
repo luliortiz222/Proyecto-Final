@@ -1,8 +1,64 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<ProyectoIntegradorFinal.Models.Producto>
+
+@{
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<p>
+        <a asp-action="Create" asp-controller="Productos" class="btn btn-primary">Agregar Nuevo Perfume</a>
+</p>
+<div class="text-center mb-5 mt-4">
+    <h1 class="display-4 fw-bold">Nuestros Perfumes</h1>
+</div>
+
+<div class="container">
+    <!-- row y g-4 se encargan de armar la grilla y darle espaciado a las tarjetas -->
+    <div class="row g-4">
+        
+        @foreach (var item in Model)
+        {
+            <!-- col-md-4 hace que entren 3 tarjetas por fila en pantallas grandes -->
+            <div class="col-md-4 d-flex justify-content-center">
+                
+                <!-- TU TARJETA ADAPTADA -->
+                <div class="card shadow-sm" style="width: 18rem;">
+                    
+                    <!-- Lógica para la imagen: si no cargaste URL, muestra una por defecto -->
+                    <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "https://via.placeholder.com/300x300?text=Sin+Imagen" : item.ImagenUrl)" 
+                         class="card-img-top" 
+                         alt="@item.Nombre" 
+                         style="height: 250px; object-fit: cover;" />
+                    
+                    <div class="card-body">
+                        <!-- Título (Nombre del perfume) -->
+                        <h5 class="card-title fw-bold">@item.Nombre</h5>
+                        <!-- Subtítulo (La marca) -->
+                        <p class="card-text text-muted mb-0">@item.Marca.Nombre</p>
+                    </div>
+                    
+                    <!-- Tu lista adaptada a las características del perfume -->
+                    <ul class="list-group list-group-light list-group-small list-group-flush">
+                        <li class="list-group-item px-4">Familia: <strong>@item.Categoria.Nombre</strong></li>
+                        <li class="list-group-item px-4">Volumen: <strong>@item.VolumenMl ml - @item.Concentracion</strong></li>
+                        <li class="list-group-item px-4 fs-5 text-success fw-bold">
+                            $@item.Precio
+                        </li>
+                    </ul>
+                    
+                    <!-- Botón de compra -->
+                    <div class="card-body text-center bg-light">
+                        <form asp-controller="Carrito" asp-action="Agregar" method="post">
+                            <input type="hidden" name="productoId" value="@item.IdProducto" />
+                            <input type="hidden" name="cantidad" value="1" />
+                            <button type="submit" class="btn btn-primary w-100 fw-bold">Agregar al Carrito</button>
+                        </form>
+                    </div>
+
+                </div>
+                <!-- FIN DE TU TARJETA -->
+
+            </div>
+        }
+        
+    </div>
 </div>

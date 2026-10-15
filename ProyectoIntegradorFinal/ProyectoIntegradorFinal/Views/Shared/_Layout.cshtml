@@ -37,7 +37,24 @@
                                asp-controller="Usuario"
                                asp-action="Login">Iniciar sesión</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Productos"
+                               asp-action="Index">Productos</a>
+                        </li>
                     </ul>
+
+                    <form class="d-flex input-group w-auto">
+                      <input
+                        type="search"
+                        class="form-control rounded"
+                        placeholder="Search"
+                        aria-label="Search"
+                        aria-describedby="search-addon"/>
+                      <span class="input-group-text border-0" id="search-addon">
+                        <i class="fas fa-search"></i>
+                      </span>
+                    </form>
                 </div>
             </div>
         </nav>
@@ -48,11 +65,35 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - ProyectoIntegradorFinal - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <section class="">
+      <!-- Footer -->
+      <footer class="text-center text-white" style="background-color: #0a4275;">
+        <!-- Grid container -->
+        <div class="container p-4 pb-0">
+          <!-- Section: CTA -->
+          <section class="">
+            <p class="d-flex justify-content-center align-items-center">
+              <a class="text-white" asp-controller="Usuario" asp-action="Registro">Registrate, es gratis! </a>
+              <a asp-controller="Usuario" asp-action="Registro" 
+                   data-mdb-ripple-init 
+                   class="btn btn-outline-light btn-rounded">
+                  Iniciar Sesión
+                </a>
+            </p>
+          </section>
+          <!-- Section: CTA -->
         </div>
-    </footer>
+        <!-- Grid container -->
+
+        <!-- Copyright -->
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+          © 2020 Copyright:
+          <a class="text-white" href="https://mdbootstrap.com/">MDBootstrap.com</a>
+        </div>
+        <!-- Copyright -->
+      </footer>
+      <!-- Footer -->
+    </section>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
