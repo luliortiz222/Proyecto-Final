@@ -29,3 +29,147 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+body {
+    background-color: #F7F1E8;
+    color: #171717;
+}
+
+/* Barra de navegación */
+.navbar {
+    background-color: #171717;
+}
+
+    .navbar-brand,
+    .navbar .nav-link {
+        color: #FFFFFF;
+    }
+
+        .navbar .nav-link:hover,
+        .navbar-brand:hover {
+            color: #B08D57;
+        }
+
+/* Botones oscuros */
+.btn-dark {
+    background-color: #171717;
+    border-color: #171717;
+}
+
+    .btn-dark:hover {
+        background-color: #B08D57;
+        border-color: #B08D57;
+        color: #FFFFFF;
+    }
+
+/* Tarjetas */
+.card {
+    border: 1px solid #E5D8C5;
+    border-radius: 12px;
+}
+
+/* Enlaces generales */
+a {
+    color: #96713D;
+}
+
+    a:hover {
+        color: #6F5128;
+    }
+
+/*Formularios de registro y login*/
+
+.registro-section {
+    background-color: #F7F1E8;
+}
+
+.registro-card {
+    max-width: 1100px;
+    overflow: hidden;
+    border: none;
+    border-radius: 22px;
+}
+
+.registro-formulario {
+    background-color: #FFFFFF;
+}
+
+.registro-titulo {
+    color: #171717;
+    font-size: 2rem;
+}
+
+.registro-formulario .form-control {
+    min-height: 45px;
+    border-color: #DED5C8;
+    border-radius: 8px;
+}
+
+    .registro-formulario .form-control:focus {
+        border-color: #B08D57;
+        box-shadow: 0 0 0 0.2rem rgba(176, 141, 87, 0.18);
+    }
+
+.btn-registro {
+    min-height: 48px;
+    background-color: #171717;
+    border: 1px solid #171717;
+    border-radius: 8px;
+    color: #FFFFFF;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+    .btn-registro:hover {
+        background-color: #B08D57;
+        border-color: #B08D57;
+        color: #FFFFFF;
+    }
+
+.registro-link {
+    color: #96713D;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .registro-link:hover {
+        color: #6F5128;
+        text-decoration: underline;
+    }
+
+.registro-imagen {
+    position: relative;
+    min-height: 100%;
+    background-color: #171717;
+}
+
+    .registro-imagen img {
+        position: absolute;
+        inset: 0;
+        object-fit: cover;
+    }
+
+    .registro-imagen::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient( to top, rgba(0, 0, 0, 0.8), transparent 70% );
+    }
+
+.registro-frase {
+    position: absolute;
+    z-index: 1;
+    bottom: 35px;
+    left: 30px;
+    right: 30px;
+    color: #FFFFFF;
+}
+
+    .registro-frase h2 {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .registro-frase p {
+        color: #F7F1E8;
+    }

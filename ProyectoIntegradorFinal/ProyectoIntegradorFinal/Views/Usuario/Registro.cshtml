@@ -1,0 +1,136 @@
+﻿@model ProyectoIntegradorFinal.Models.Usuario
+
+@{
+    ViewData["Title"] = "Crear cuenta";
+}
+
+<section class="registro-section py-5">
+    <div class="container">
+        <div class="card registro-card shadow-lg mx-auto">
+            <div class="row g-0">
+
+                <div class="col-lg-6">
+                    <div class="registro-formulario p-4 p-md-5">
+
+                        <div class="text-center mb-4">
+                            <h1 class="registro-titulo fw-bold">
+                                Crear una cuenta
+                            </h1>
+                            <p class="text-muted">
+                                Descubrí tu próxima fragancia favorita.
+                            </p>
+                        </div>
+
+                        <form asp-controller="Usuario"
+                              asp-action="Registro"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <div asp-validation-summary="ModelOnly"
+                                 class="text-danger mb-3"></div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Nombre"
+                                           class="form-label">
+                                        Nombre
+                                    </label>
+                                    <input asp-for="Nombre"
+                                           class="form-control"
+                                           placeholder="Tu nombre" />
+                                    <span asp-validation-for="Nombre"
+                                          class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Apellido"
+                                           class="form-label">
+                                        Apellido
+                                    </label>
+                                    <input asp-for="Apellido"
+                                           class="form-control"
+                                           placeholder="Tu apellido" />
+                                    <span asp-validation-for="Apellido"
+                                          class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Dni"
+                                       class="form-label">
+                                    DNI
+                                </label>
+                                <input asp-for="Dni"
+                                       class="form-control"
+                                       placeholder="Tu número de DNI" />
+                                <span asp-validation-for="Dni"
+                                      class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email"
+                                       class="form-label">
+                                    Correo electrónico
+                                </label>
+                                <input asp-for="Email"
+                                       type="email"
+                                       class="form-control"
+                                       placeholder="tu@email.com" />
+                                <span asp-validation-for="Email"
+                                      class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Password"
+                                       class="form-label">
+                                    Contraseña
+                                </label>
+                                <input asp-for="Password"
+                                       type="password"
+                                       class="form-control"
+                                       placeholder="Creá una contraseña" />
+                                <span asp-validation-for="Password"
+                                      class="text-danger"></span>
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-registro w-100">
+                                Crear cuenta
+                            </button>
+
+                        </form>
+
+                        <p class="text-center mt-4 mb-0">
+                            ¿Ya tenés una cuenta?
+                            <a asp-controller="Usuario"
+                               asp-action="Login"
+                               class="registro-link">
+                                Iniciá sesión
+                            </a>
+                        </p>
+
+                    </div>
+                </div>
+
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="registro-imagen h-100">
+                        <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1000&q=85"
+                             alt="Frascos de perfumes"
+                             class="img-fluid h-100 w-100" />
+
+                        <div class="registro-frase">
+                            <h2>Una esencia única.</h2>
+                            <p>Encontrá la fragancia que habla de vos.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

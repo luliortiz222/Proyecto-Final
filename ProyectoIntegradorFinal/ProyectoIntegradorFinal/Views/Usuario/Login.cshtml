@@ -1,0 +1,115 @@
+﻿@{
+    ViewData["Title"] = "Iniciar sesión";
+}
+
+<section class="registro-section py-5">
+    <div class="container">
+        <div class="card registro-card shadow-lg mx-auto">
+            <div class="row g-0">
+
+                <!-- Formulario de login -->
+                <div class="col-lg-6">
+                    <div class="registro-formulario p-4 p-md-5">
+
+                        <div class="text-center mb-4">
+                            <h1 class="registro-titulo fw-bold">
+                                ¡Qué bueno verte!
+                            </h1>
+
+                            <p class="text-muted">
+                                Ingresá a tu cuenta y descubrí tu próxima fragancia.
+                            </p>
+                        </div>
+
+                        <!-- Mensaje de registro exitoso -->
+                        @if (TempData["Mensaje"] != null)
+                        {
+                            <div class="alert alert-success">
+                                @TempData["Mensaje"]
+                            </div>
+                        }
+
+                        <!-- Mensaje de error -->
+                        @if (ViewBag.Error != null)
+                        {
+                            <div class="alert alert-danger">
+                                @ViewBag.Error
+                            </div>
+                        }
+
+                        <form asp-controller="Usuario"
+                              asp-action="Login"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <div class="mb-4">
+                                <label for="email" class="form-label">
+                                    Correo electrónico
+                                </label>
+
+                                <input type="email"
+                                       id="email"
+                                       name="email"
+                                       class="form-control"
+                                       placeholder="tu@email.com"
+                                       autocomplete="email"
+                                       required />
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="password" class="form-label">
+                                    Contraseña
+                                </label>
+
+                                <input type="password"
+                                       id="password"
+                                       name="password"
+                                       class="form-control"
+                                       placeholder="Ingresá tu contraseña"
+                                       autocomplete="current-password"
+                                       required />
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-registro w-100">
+                                Iniciar sesión
+                            </button>
+
+                        </form>
+
+                        <p class="text-center mt-4 mb-0">
+                            ¿Todavía no tenés una cuenta?
+                            <a asp-controller="Usuario"
+                               asp-action="Registro"
+                               class="registro-link">
+                                Registrate
+                            </a>
+                        </p>
+
+                    </div>
+                </div>
+
+                <!-- Imagen decorativa -->
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="registro-imagen h-100">
+
+                        <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1000&q=85"
+                             alt="Colección de perfumes"
+                             class="img-fluid h-100 w-100" />
+
+                        <div class="registro-frase">
+                            <h2>Tu aroma, tu identidad.</h2>
+                            <p>
+                                Cada fragancia cuenta una historia.
+                                Encontrá la tuya.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
