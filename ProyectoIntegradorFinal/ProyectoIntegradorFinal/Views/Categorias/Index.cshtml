@@ -1,0 +1,38 @@
+﻿@model IEnumerable<ProyectoIntegradorFinal.Models.Categoria>
+
+@{
+    ViewData["Title"] = "Familias Olfativas";
+}
+
+<div class="container mt-4">
+    <h2>Familias Olfativas (Categorías)</h2>
+    <hr />
+
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Agregar Nueva Categoría</a>
+    </p>
+
+    <div class="col-md-6">
+        <table class="table table-striped table-hover mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Familia Olfativa</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.IdCategoria</td>
+                        <td class="fw-bold">@item.Nombre</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.IdCategoria" class="btn btn-sm btn-outline-secondary">Editar</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,83 @@
+﻿@model ProyectoIntegradorFinal.Models.Producto
+
+@{
+    ViewData["Title"] = "Agregar Perfume";
+}
+
+<div class="container mt-4">
+    <h2>Agregar Nuevo Perfume</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <form asp-action="Create">
+                <div class="row">
+                    <!-- Columna Izquierda -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Nombre" class="control-label fw-bold"></label>
+                            <input asp-for="Nombre" class="form-control" placeholder="Ej: Odyssey Mandarin Sky" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="IdMarca" class="control-label fw-bold">Marca</label>
+                            <select asp-for="IdMarca" class="form-control" asp-items="ViewBag.IdMarca" required>
+                                <option value="">-- Seleccione una Marca --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="IdCategoria" class="control-label fw-bold">Familia Olfativa</label>
+                            <select asp-for="IdCategoria" class="form-control" asp-items="ViewBag.IdCategoria" required>
+                                <option value="">-- Seleccione una Categoría --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Concentracion" class="control-label fw-bold">Concentración</label>
+                            <select asp-for="Concentracion" class="form-control">
+                                <option value="Eau de Parfum">Eau de Parfum</option>
+                                <option value="Eau de Toilette">Eau de Toilette</option>
+                                <option value="Parfum">Parfum</option>
+                                <option value="Extrait de Parfum">Extrait de Parfum</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Precio" class="control-label fw-bold"></label>
+                            <input asp-for="Precio" type="number" step="0.01" class="form-control" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Stock" class="control-label fw-bold"></label>
+                            <input asp-for="Stock" type="number" class="form-control" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="VolumenMl" class="control-label fw-bold">Volumen (ml)</label>
+                            <input asp-for="VolumenMl" type="number" class="form-control" value="100" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="ImagenUrl" class="control-label fw-bold">URL de la Imagen</label>
+                            <input asp-for="ImagenUrl" class="form-control" placeholder="https://..." />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Descripcion" class="control-label fw-bold">Descripción</label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="form-group mt-4 text-center">
+                    <input type="submit" value="Guardar Perfume" class="btn btn-success btn-lg px-5" />
+                    <a asp-action="Index" class="btn btn-secondary btn-lg px-4 ms-2">Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

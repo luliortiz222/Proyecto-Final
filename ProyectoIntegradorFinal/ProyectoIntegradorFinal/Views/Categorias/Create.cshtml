@@ -1,0 +1,27 @@
+﻿@model ProyectoIntegradorFinal.Models.Categoria
+
+@{
+    ViewData["Title"] = "Nueva Categoría";
+}
+
+<div class="container mt-4">
+    <h2>Agregar Familia Olfativa</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Create">
+                <div class="form-group mb-3">
+                    <label asp-for="Nombre" class="control-label fw-bold">Nombre de la Categoría</label>
+                    <input asp-for="Nombre" class="form-control" placeholder="Ej: Amaderado, Dulce, Cítrico..." required />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mt-4">
+                    <input type="submit" value="Guardar Categoría" class="btn btn-success" />
+                    <a asp-action="Index" class="btn btn-secondary ms-2">Volver a la lista</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
