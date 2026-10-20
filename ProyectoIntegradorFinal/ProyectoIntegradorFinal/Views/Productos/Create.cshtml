@@ -24,6 +24,8 @@
                             <select asp-for="IdMarca" class="form-control" asp-items="ViewBag.IdMarca" required>
                                 <option value="">-- Seleccione una Marca --</option>
                             </select>
+                            <a asp-controller="Marcas" asp-action="Create" class="btn btn-outline-secondary" role="button">Agregar Marca</a>
+
                         </div>
 
                         <div class="form-group mb-3">
@@ -31,6 +33,7 @@
                             <select asp-for="IdCategoria" class="form-control" asp-items="ViewBag.IdCategoria" required>
                                 <option value="">-- Seleccione una Categoría --</option>
                             </select>
+                            <a asp-controller="Categorias" asp-action="Create" class="btn btn-outline-secondary" role="button">Agregar Categoría</a>
                         </div>
 
                         <div class="form-group mb-3">

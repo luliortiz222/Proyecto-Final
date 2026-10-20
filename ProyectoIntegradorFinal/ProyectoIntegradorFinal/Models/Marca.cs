@@ -10,6 +10,6 @@ namespace ProyectoIntegradorFinal.Models
         [Required]
         public string Nombre { get; set;}
 
-        public virtual ICollection<Producto> Productos { get; set; }
+        public virtual ICollection<Producto>? Productos { get; set; }
     }
 }
