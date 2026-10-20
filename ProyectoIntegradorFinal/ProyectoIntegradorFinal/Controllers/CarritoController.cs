@@ -36,7 +36,8 @@ namespace ProyectoIntegradorFinal.Controllers
 
         // POST: Carrito/AgregarItem
         [HttpPost]
-        public async Task<IActionResult> Agregar(int Idproducto, int cantidad)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Agregar(int IdProducto, int cantidad)
         {
             int usuarioId = 1; // despues reemplazamos con el ID del usuario actual
             var carrito = await _context.Carritos
@@ -51,7 +52,7 @@ namespace ProyectoIntegradorFinal.Controllers
             }
 
 
-            var itemExistente = carrito.Items?.FirstOrDefault(i => i.IdProducto == Idproducto);
+            var itemExistente = carrito.Items?.FirstOrDefault(i => i.IdProducto == IdProducto);
 
             if (itemExistente != null)
             {
@@ -61,14 +62,23 @@ namespace ProyectoIntegradorFinal.Controllers
             else
             {
                 // Si el item no existe, crea uno nuevo
-                var nuevoItem = new ItemCarrito { IdProducto = Idproducto, cantidad = cantidad, IdCarrito = carrito.IdCarrito };
+                var nuevoItem = new ItemCarrito { IdProducto = IdProducto, cantidad = cantidad, IdCarrito = carrito.IdCarrito };
                 _context.ItemsCarrito.Add(nuevoItem);
             }
 
             carrito.FechaActualizacion = DateTime.Now;
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            string referer = Request.Headers["Referer"].ToString();
+
+            if (!string.IsNullOrEmpty(referer))
+            {
+                // Si existe la URL anterior, lo devolvemos ahí
+                return Redirect(referer);
+            }
+
+            // Por si acaso no hay referer, lo mandamos al Home por defecto
+            return RedirectToAction("Index", "Home");
         }
 
         // POST: Carrito/EliminarItem (Para sacar un perfume de la bolsa)

@@ -46,9 +46,9 @@
                     <!-- Botón de compra -->
                     <div class="card-body text-center bg-light">
                         <form asp-controller="Carrito" asp-action="Agregar" method="post">
-                            <input type="hidden" name="productoId" value="@item.IdProducto" />
+                            <input type="hidden" name="IdProducto" value="@item.IdProducto" />
                             <input type="hidden" name="cantidad" value="1" />
-                            <button type="submit" class="btn btn-primary w-100 fw-bold">Agregar al Carrito</button>
+                            <button type="submit" class="btn btn-dark">Agregar al Carrito</button>
                         </form>
                     </div>
 
