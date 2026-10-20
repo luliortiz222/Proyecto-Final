@@ -11,24 +11,24 @@ namespace ProyectoIntegradorFinal.Models
         [Required]
         public string Nombre { get; set; }
 
-        public string Descripcion { get; set; }
+        public string? Descripcion { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")] // Fundamental para que MySQL guarde precios con decimales
+        [Column(TypeName = "decimal(18,2)")] 
         public decimal Precio { get; set; }
 
         public int Stock { get; set; }
         public int VolumenMl { get; set; }
         public string Concentracion { get; set; }
-        public string ImagenUrl { get; set; }
+        public string? ImagenUrl { get; set; }
 
         // Clave foránea y navegación hacia Marca
         public int IdMarca { get; set; }
         [ForeignKey("IdMarca")]
-        public virtual Marca Marca { get; set; }
+        public virtual Marca? Marca { get; set; }
 
         // Clave foránea y navegación hacia Categoría
         public int IdCategoria { get; set; }
         [ForeignKey("IdCategoria")]
-        public virtual Categoria Categoria { get; set; }
+        public virtual Categoria? Categoria { get; set; }
     }
 }

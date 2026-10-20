@@ -34,13 +34,40 @@ namespace ProyectoIntegradorFinal.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Nombre,Descripcion,Precio,Stock,VolumenMl,Concentracion,ImagenUrl,IdMarca,IdCategoria")] Producto producto) 
+        public async Task<IActionResult> Create([Bind("Nombre,Descripcion,Precio,Stock,VolumenMl,Concentracion,IdMarca,IdCategoria")] Producto producto, IFormFile archivoImagen) 
         {
             if (ModelState.IsValid)
             {
+                if (archivoImagen != null && archivoImagen.Length > 0)
+                {
+                    string nombreArchivo = Guid.NewGuid().ToString() + Path.GetExtension(archivoImagen.FileName);
+
+                    string rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "perfumes");
+                    if (!Directory.Exists(rutaCarpeta))
+                    {
+                        Directory.CreateDirectory(rutaCarpeta);
+                    }
+
+                    string rutaCompleta = Path.Combine(rutaCarpeta, nombreArchivo);
+
+                    using (var stream = new FileStream(rutaCompleta, FileMode.Create))
+                    {
+                        await archivoImagen.CopyToAsync(stream);
+                    }
+
+                    producto.ImagenUrl = "/images/perfumes/" + nombreArchivo;
+                }
+                
                 _context.Add(producto);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ ERROR DE MODELO: {error.ErrorMessage}");
+                }
             }
 
             ViewData["IdMarca"] = new SelectList(_context.Marcas, "IdMarca", "Nombre", producto.IdMarca);
