@@ -218,7 +218,7 @@ a {
     white-space: nowrap;
 }
 
-/* Buscador minimalista */
+/* Buscador */
 .navbar .input-group {
     border-radius: 9px;
     overflow: hidden;
@@ -273,3 +273,42 @@ a {
         color: #96713D;
     }
 
+/* Vista previa de foto de perfil*/
+.registro-formulario .vista-previa-contenedor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 15px auto;
+}
+
+.registro-formulario .vista-previa-avatar,
+.registro-formulario .placeholder-avatar {
+    display: block;
+    width: 100px !important;
+    height: 100px !important;
+    min-width: 100px;
+    min-height: 100px;
+    max-width: 100px;
+    max-height: 100px;
+    flex: 0 0 100px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 3px solid #B08D57;
+}
+
+.registro-formulario .vista-previa-avatar {
+    object-fit: cover;
+}
+
+.registro-formulario .placeholder-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #F7F1E8;
+    color: #96713D;
+    font-size: 14px;
+}
+.registro-formulario .d-none {
+    display: none !important;
+}
