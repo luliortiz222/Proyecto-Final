@@ -4,61 +4,170 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ProyectoIntegradorFinal</title>
+
     <script type="importmap"></script>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ProyectoIntegradorFinal.styles.css" asp-append-version="true" />
 </head>
+
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ProyectoIntegradorFinal</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+                <a class="navbar-brand"
+                   asp-area=""
+                   asp-controller="Home"
+                   asp-action="Index">
+                    ProyectoIntegradorFinal
+                </a>
+
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+
                     <ul class="navbar-nav flex-grow-1">
+
                         <li class="nav-item">
                             <a class="nav-link"
                                asp-controller="Home"
-                               asp-action="Index">Inicio</a>
+                               asp-action="Index">
+                                Inicio
+                            </a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Usuario"
-                               asp-action="Registro">Registrarse</a>
-                        </li>
+                        @if (User.Identity?.IsAuthenticated != true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Usuario"
+                                   asp-action="Registro">
+                                    Registrarse
+                                </a>
+                            </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Usuario"
-                               asp-action="Login">Iniciar sesión</a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Usuario"
+                                   asp-action="Login">
+                                    Iniciar sesión
+                                </a>
+                            </li>
+                        }
+
                         <li class="nav-item">
                             <a class="nav-link"
                                asp-controller="Productos"
-                               asp-action="Index">Productos</a>
+                               asp-action="Index">
+                                Productos
+                            </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Carrito"
+                               asp-action="Index">
+                                🛒 Mi carrito
+                            </a>
+                        </li>
+
                     </ul>
 
-                    <form class="d-flex input-group w-auto">
-                      <input
-                        type="search"
-                        class="form-control rounded"
-                        placeholder="Search"
-                        aria-label="Search"
-                        aria-describedby="search-addon"/>
-                      <span class="input-group-text border-0" id="search-addon">
-                        <i class="fas fa-search"></i>
-                      </span>
-                    </form>
+                    <div class="d-flex align-items-center gap-3">
+
+                        <!-- Buscador original -->
+                        <form class="d-flex input-group w-auto"
+                              asp-controller="Productos"
+                              asp-action="Index"
+                              method="get">
+
+                            <input type="search"
+                                   name="buscar"
+                                   class="form-control rounded"
+                                   placeholder="Search"
+                                   aria-label="Search"
+                                   aria-describedby="search-addon" />
+
+                            <button type="submit"
+                                    class="input-group-text border-0"
+                                    id="search-addon"
+                                    aria-label="Buscar">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+
+                        <!-- Usuario autenticado -->
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            var nombreUsuario = User.Identity.Name ?? "Mi cuenta";
+                            var avatarUsuario = User.FindFirst("Avatar")?.Value;
+
+                            if (string.IsNullOrWhiteSpace(avatarUsuario))
+                            {
+                                avatarUsuario = "/images/avatares/default.png";
+                            }
+
+                            <div class="dropdown">
+
+                                <button class="perfil-navbar dropdown-toggle"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+
+                                    <img src="@avatarUsuario"
+                                         alt="Foto de perfil"
+                                         class="avatar-navbar" />
+
+                                    <span class="nombre-navbar">@nombreUsuario</span>
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    aria-labelledby="menuUsuario">
+
+                                    <li>
+                                        <span class="dropdown-item-text text-muted">
+                                            @User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                                        </span>
+                                    </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+
+                                    <li>
+                                        <form asp-controller="Usuario"
+                                              asp-action="Logout"
+                                              method="post">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="dropdown-item">
+                                                Cerrar sesión
+                                            </button>
+                                        </form>
+                                    </li>
+
+                                </ul>
+                            </div>
+                        }
+
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -66,37 +175,58 @@
     </div>
 
     <section class="">
-      <!-- Footer -->
-      <footer class="text-center text-white" style="background-color: #0a4275;">
-        <!-- Grid container -->
-        <div class="container p-4 pb-0">
-          <!-- Section: CTA -->
-          <section class="">
-            <p class="d-flex justify-content-center align-items-center">
-              <a class="text-white" asp-controller="Usuario" asp-action="Registro">Registrate, es gratis! </a>
-              <a asp-controller="Usuario" asp-action="Registro" 
-                   data-mdb-ripple-init 
-                   class="btn btn-outline-light btn-rounded">
-                  Iniciar Sesión
-                </a>
-            </p>
-          </section>
-          <!-- Section: CTA -->
-        </div>
-        <!-- Grid container -->
+        <!-- Footer -->
+        <footer class="text-center text-white"
+                style="background-color: #0a4275;">
 
-        <!-- Copyright -->
-        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-          © 2020 Copyright:
-          <a class="text-white" href="https://mdbootstrap.com/">MDBootstrap.com</a>
-        </div>
-        <!-- Copyright -->
-      </footer>
-      <!-- Footer -->
+            <!-- Grid container -->
+            <div class="container p-4 pb-0">
+
+                <!-- Section: CTA -->
+                <section class="">
+                    @if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <p class="d-flex justify-content-center align-items-center gap-3">
+
+                            <a class="text-white"
+                               asp-controller="Usuario"
+                               asp-action="Registro">
+                                Registrate, es gratis!
+                            </a>
+
+                            <a asp-controller="Usuario"
+                               asp-action="Login"
+                               data-mdb-ripple-init
+                               class="btn btn-outline-light btn-rounded">
+                                Iniciar Sesión
+                            </a>
+
+                        </p>
+                    }
+                </section>
+                <!-- Section: CTA -->
+
+            </div>
+            <!-- Grid container -->
+            <!-- Copyright -->
+            <div class="text-center p-3"
+                 style="background-color: rgba(0, 0, 0, 0.2);">
+                © 2020 Copyright:
+                <a class="text-white"
+                   href="https://mdbootstrap.com/">
+                    MDBootstrap.com
+                </a>
+            </div>
+            <!-- Copyright -->
+
+        </footer>
+        <!-- Footer -->
     </section>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
