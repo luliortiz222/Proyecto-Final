@@ -312,3 +312,315 @@ a {
 .registro-formulario .d-none {
     display: none !important;
 }
+
+/*Carrito*/
+.carrito-section {
+    background-color: #F7F1E8;
+    min-height: 70vh;
+    color: #171717;
+}
+
+.carrito-subtitulo {
+    color: #96713D;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+}
+
+.carrito-titulo {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+.carrito-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.carrito-producto {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 22px;
+    background-color: #fff;
+    border: 1px solid #E5D8C5;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.carrito-producto-imagen {
+    width: 110px;
+    height: 125px;
+    flex-shrink: 0;
+    background-color: #F7F1E8;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    .carrito-producto-imagen img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+.sin-imagen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #96713D;
+    font-size: 12px;
+}
+
+.carrito-producto-info {
+    flex: 1;
+    min-width: 0;
+}
+
+    .carrito-producto-info h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+.carrito-precio-unitario,
+.carrito-cantidad {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+    .carrito-precio-unitario strong {
+        color: #171717;
+    }
+
+.btn-eliminar-carrito {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #9B4545;
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+    .btn-eliminar-carrito:hover {
+        color: #702A2A;
+    }
+
+.carrito-producto-subtotal {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+    .carrito-producto-subtotal span {
+        color: #777;
+        font-size: 12px;
+    }
+
+    .carrito-producto-subtotal strong {
+        font-size: 17px;
+    }
+
+.carrito-resumen {
+    padding: 26px;
+    background-color: #fff;
+    border: 1px solid #E5D8C5;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    position: sticky;
+    top: 20px;
+}
+
+    .carrito-resumen h2 {
+        font-size: 21px;
+        font-weight: 700;
+        margin-bottom: 25px;
+    }
+
+.resumen-linea,
+.resumen-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.resumen-linea {
+    color: #666;
+    font-size: 14px;
+}
+
+    .resumen-linea span:last-child {
+        color: #171717;
+        text-align: right;
+    }
+
+.resumen-total {
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+    .resumen-total strong {
+        color: #96713D;
+        font-size: 23px;
+    }
+
+.resumen-aclaracion {
+    margin: 20px 0;
+    color: #777;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.btn-carrito {
+    padding: 13px 18px;
+    background-color: #B08D57;
+    border: 1px solid #B08D57;
+    border-radius: 7px;
+    color: #fff;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+    .btn-carrito:hover:not(:disabled) {
+        background-color: #96713D;
+        border-color: #96713D;
+        color: #fff;
+    }
+
+    .btn-carrito:disabled {
+        background-color: #B8AA95;
+        border-color: #B8AA95;
+        color: #fff;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+.carrito-seguir-comprando {
+    color: #96713D;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .carrito-seguir-comprando:hover {
+        color: #6F5128;
+        text-decoration: underline;
+    }
+
+.carrito-vacio {
+    max-width: 650px;
+    margin: 0 auto;
+    background-color: #fff;
+    border: 1px solid #E5D8C5;
+    border-radius: 14px;
+}
+
+.carrito-icono-vacio {
+    width: 75px;
+    height: 75px;
+    margin: 0 auto 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    background-color: #F7F1E8;
+    color: #B08D57;
+    font-size: 42px;
+}
+
+.carrito-vacio h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.carrito-vacio p {
+    line-height: 1.7;
+}
+
+@media (max-width: 767px) {
+    .carrito-producto {
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 15px;
+    }
+
+    .carrito-producto-imagen {
+        width: 85px;
+        height: 100px;
+    }
+
+    .carrito-producto-info {
+        flex: 1;
+    }
+
+        .carrito-producto-info h3 {
+            font-size: 16px;
+        }
+
+    .carrito-producto-subtotal {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 12px;
+        border-top: 1px solid #E5D8C5;
+    }
+
+    .carrito-resumen {
+        padding: 20px;
+    }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
+
+.marca-perfumeria {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    text-decoration: none;
+    color: #F7F1E8 !important;
+    font-family: 'Montserrat', sans-serif;
+    transition: opacity 0.3s ease;
+}
+
+    .marca-perfumeria:hover {
+        opacity: 0.85;
+    }
+
+.marca-home {
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+}
+
+.marca-elixir {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #B08D57;
+}
+
+@media (max-width: 576px) {
+    .marca-home {
+        font-size: 17px;
+        font-weight: 400;
+        letter-spacing: 1.2px;
+    }
+
+    .marca-elixir {
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+    }
+}
+

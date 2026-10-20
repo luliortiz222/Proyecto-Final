@@ -1,0 +1,197 @@
+﻿
+@model ProyectoIntegradorFinal.Models.Carrito
+
+@{
+    ViewData["Title"] = "Mi carrito";
+
+    var items = Model?.Items;
+    decimal total = items == null
+        ? 0
+        : items.Sum(item => item.cantidad * item.Producto.Precio);
+}
+
+<section class="carrito-section py-5">
+    <div class="container">
+
+        <div class="text-center mb-5">
+            <span class="carrito-subtitulo">TU SELECCIÓN</span>
+            <h1 class="carrito-titulo">Mi carrito</h1>
+            <p class="text-muted">
+                Tus fragancias favoritas están esperando por vos.
+            </p>
+        </div>
+
+        @if (TempData["MensajeCarrito"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show"
+                 role="alert">
+                @TempData["MensajeCarrito"]
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Cerrar"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorCarrito"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show"
+                 role="alert">
+                @TempData["ErrorCarrito"]
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Cerrar"></button>
+            </div>
+        }
+
+        @if (items == null || !items.Any())
+        {
+            <div class="carrito-vacio text-center p-5">
+                <div class="carrito-icono-vacio">
+                    <span>♡</span>
+                </div>
+
+                <h2>Tu carrito está vacío</h2>
+
+                <p class="text-muted">
+                    Todavía no agregaste ninguna fragancia.
+                    Explorá nuestros productos y encontrá tu esencia ideal.
+                </p>
+
+                <a asp-controller="Productos"
+                   asp-action="Index"
+                   class="btn btn-carrito mt-3">
+                    Descubrir fragancias
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+
+                <!-- Lista de productos -->
+                <div class="col-lg-8">
+
+                    <div class="carrito-lista">
+
+                        @foreach (var item in items)
+                        {
+                            <div class="carrito-producto">
+
+                                <div class="carrito-producto-imagen">
+                                    @if (!string.IsNullOrWhiteSpace(item.Producto.ImagenUrl))
+                                    {
+                                        <img src="@item.Producto.ImagenUrl"
+                                             alt="@item.Producto.Nombre" />
+                                    }
+                                    else
+                                    {
+                                        <div class="sin-imagen">
+                                            Sin imagen
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="carrito-producto-info">
+                                    <h3>@item.Producto.Nombre</h3>
+
+                                    <p class="carrito-precio-unitario">
+                                        Precio unitario:
+                                        <strong>
+                                            @item.Producto.Precio.ToString("C")
+                                        </strong>
+                                    </p>
+
+                                    <p class="carrito-cantidad">
+                                        Cantidad: @item.cantidad
+                                    </p>
+
+                                    <form asp-controller="Carrito"
+                                          asp-action="EliminarItem"
+                                          method="post"
+                                          onsubmit="return confirm('¿Querés quitar este producto del carrito?');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="itemId"
+                                               value="@item.IdItem" />
+
+                                        <button type="submit"
+                                                class="btn-eliminar-carrito">
+                                            Eliminar producto
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <div class="carrito-producto-subtotal">
+                                    <span>Subtotal</span>
+                                    <strong>
+                                        @((item.cantidad * item.Producto.Precio).ToString("C"))
+                                    </strong>
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="mt-4">
+                        <a asp-controller="Productos"
+                           asp-action="Index"
+                           class="carrito-seguir-comprando">
+                            ← Seguir comprando
+                        </a>
+                    </div>
+
+                </div>
+
+                <!-- Resumen de compra -->
+                <div class="col-lg-4">
+
+                    <div class="carrito-resumen">
+                        <h2>Resumen de compra</h2>
+
+                        <div class="resumen-linea">
+                            <span>Productos</span>
+                            <span>@items.Sum(item => item.cantidad)</span>
+                        </div>
+
+                        <div class="resumen-linea">
+                            <span>Subtotal</span>
+                            <span>@total.ToString("C")</span>
+                        </div>
+
+                        <div class="resumen-linea">
+                            <span>Envío</span>
+                            <span>A calcular</span>
+                        </div>
+
+                        <hr />
+
+                        <div class="resumen-total">
+                            <span>Total</span>
+                            <strong>@total.ToString("C")</strong>
+                        </div>
+
+                        <p class="resumen-aclaracion">
+                            El envío y el importe definitivo se confirmarán
+                            durante el proceso de compra.
+                        </p>
+
+                        <button type="button"
+                                class="btn btn-carrito w-100"
+                                disabled
+                                title="El proceso de compra se habilitará próximamente">
+                            Finalizar compra próximamente
+                        </button>
+
+                    </div>
+
+                </div>
+            </div>
+        }
+
+    </div>
+</section>
