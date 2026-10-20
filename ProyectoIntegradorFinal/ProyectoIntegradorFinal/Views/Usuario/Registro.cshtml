@@ -1,4 +1,5 @@
-﻿@model ProyectoIntegradorFinal.Models.Usuario
+﻿
+@model ProyectoIntegradorFinal.Models.Usuario
 
 @{
     ViewData["Title"] = "Crear cuenta";
@@ -23,7 +24,8 @@
 
                         <form asp-controller="Usuario"
                               asp-action="Registro"
-                              method="post">
+                              method="post"
+                              enctype="multipart/form-data">
 
                             @Html.AntiForgeryToken()
 
@@ -32,8 +34,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label asp-for="Nombre"
-                                           class="form-label">
+                                    <label asp-for="Nombre" class="form-label">
                                         Nombre
                                     </label>
                                     <input asp-for="Nombre"
@@ -44,8 +45,7 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label asp-for="Apellido"
-                                           class="form-label">
+                                    <label asp-for="Apellido" class="form-label">
                                         Apellido
                                     </label>
                                     <input asp-for="Apellido"
@@ -57,8 +57,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label asp-for="Dni"
-                                       class="form-label">
+                                <label asp-for="Dni" class="form-label">
                                     DNI
                                 </label>
                                 <input asp-for="Dni"
@@ -69,8 +68,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label asp-for="Email"
-                                       class="form-label">
+                                <label asp-for="Email" class="form-label">
                                     Correo electrónico
                                 </label>
                                 <input asp-for="Email"
@@ -81,9 +79,8 @@
                                       class="text-danger"></span>
                             </div>
 
-                            <div class="mb-4">
-                                <label asp-for="Password"
-                                       class="form-label">
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label">
                                     Contraseña
                                 </label>
                                 <input asp-for="Password"
@@ -92,6 +89,33 @@
                                        placeholder="Creá una contraseña" />
                                 <span asp-validation-for="Password"
                                       class="text-danger"></span>
+                            </div>
+
+                            <!-- Avatar obligatorio -->
+                            <div class="mb-4">
+                                <label for="avatarArchivo" class="form-label">
+                                    Foto de perfil <span class="text-danger">*</span>
+                                </label>
+
+                                <input type="file"
+                                       id="avatarArchivo"
+                                       name="avatarArchivo"
+                                       class="form-control"
+                                       accept=".jpg,.jpeg,.png,.webp"
+                                       required />
+
+                                <small class="text-muted d-block mt-2">
+                                    Seleccioná una imagen desde tu computadora.
+                                    Formatos permitidos: JPG, JPEG, PNG o WEBP.
+                                    Máximo 2 MB.
+                                </small>
+
+                                @if (ViewData.ModelState["avatarArchivo"]?.Errors.Count > 0)
+                                {
+                                    <div class="text-danger mt-1">
+                                        @ViewData.ModelState["avatarArchivo"]!.Errors[0].ErrorMessage
+                                    </div>
+                                }
                             </div>
 
                             <button type="submit"
