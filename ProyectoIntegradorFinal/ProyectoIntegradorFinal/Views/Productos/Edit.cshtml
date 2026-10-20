@@ -1,0 +1,102 @@
+﻿@model ProyectoIntegradorFinal.Models.Producto
+
+@{
+    ViewData["Title"] = "Editar Perfume";
+}
+
+<div class="container mt-4">
+    <h2>Editar Perfume</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <!-- Campo oculto necesario para conservar el ID del producto -->
+                <input type="hidden" asp-for="IdProducto" />
+                
+                <!-- Campo oculto para mantener la imagen actual si no se sube una nueva -->
+                <input type="hidden" asp-for="ImagenUrl" />
+
+                <div class="row">
+                    <!-- Columna Izquierda -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Nombre" class="control-label fw-bold"></label>
+                            <input asp-for="Nombre" class="form-control" required />
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="IdMarca" class="control-label fw-bold">Marca</label>
+                            <select asp-for="IdMarca" class="form-control" asp-items="ViewBag.IdMarca" required></select>
+                            <span asp-validation-for="IdMarca" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="IdCategoria" class="control-label fw-bold">Familia Olfativa</label>
+                            <select asp-for="IdCategoria" class="form-control" asp-items="ViewBag.IdCategoria" required></select>
+                            <span asp-validation-for="IdCategoria" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Concentracion" class="control-label fw-bold">Concentración</label>
+                            <select asp-for="Concentracion" class="form-control">
+                                <option value="Eau de Parfum">Eau de Parfum</option>
+                                <option value="Eau de Toilette">Eau de Toilette</option>
+                                <option value="Parfum">Parfum</option>
+                                <option value="Extrait de Parfum">Extrait de Parfum</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Precio" class="control-label fw-bold"></label>
+                            <input asp-for="Precio" type="number" step="0.01" class="form-control" required />
+                            <span asp-validation-for="Precio" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Stock" class="control-label fw-bold"></label>
+                            <input asp-for="Stock" type="number" class="form-control" required />
+                            <span asp-validation-for="Stock" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="VolumenMl" class="control-label fw-bold">Volumen (ml)</label>
+                            <input asp-for="VolumenMl" type="number" class="form-control" required />
+                            <span asp-validation-for="VolumenMl" class="text-danger"></span>
+                        </div>
+
+                        <!-- Vista previa de la imagen actual y opción de cambio -->
+                        <div class="form-group mb-3">
+                            <label class="control-label fw-bold">Imagen del Perfume</label>
+                            @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+                            {
+                                <div class="mb-2">
+                                    <img src="@Model.ImagenUrl" alt="Imagen Actual" style="max-height: 100px; class="img-thumbnail" />
+                                    <span class="d-block text-muted small">Imagen actual</span>
+                                </div>
+                            }
+                            <input type="file" name="archivoImagen" class="form-control" accept="image/*" />
+                            <span class="text-muted small">Sube una nueva imagen solo si deseas reemplazar la actual.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Descripcion" class="control-label fw-bold">Descripción</label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="form-group mt-4 text-center">
+                    <input type="submit" value="Guardar Cambios" class="btn btn-warning btn-lg px-5" />
+                    <a asp-action="Index" class="btn btn-secondary btn-lg px-4 ms-2">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
