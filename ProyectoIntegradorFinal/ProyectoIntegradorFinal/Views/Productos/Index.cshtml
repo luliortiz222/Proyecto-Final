@@ -9,7 +9,7 @@
     <hr />
 
     <p>
-        <a asp-action="Create" class="btn btn-primary">Agregar Nuevo Perfume</a>
+        <a asp-action="Create" class="btn btn-dark">Agregar Nuevo Perfume</a>
     </p>
 
     <table class="table table-striped table-hover mt-3">
@@ -48,6 +48,7 @@
                     <td class="align-middle">
                         <!-- Botones de acción futuros -->
                         <a asp-action="Edit" asp-route-id="@item.IdProducto" class="btn btn-sm btn-warning">Editar</a>
+                        <a asp-action="Delete" asp-route-id="@item.IdProducto" class="btn btn-sm btn-danger">Eliminar</a>
                     </td>
                 </tr>
             }

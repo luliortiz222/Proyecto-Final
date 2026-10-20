@@ -145,6 +145,46 @@ namespace ProyectoIntegradorFinal.Controllers
             return View(producto);
         }
 
+        //GET : Productos/Delete/5
+        public async Task<IActionResult> Delete(int id) 
+        {
+            if (id == null) 
+            { 
+                return NotFound();
+            }
+
+            var producto = await _context.Productos
+                .Include(p => p.Marca)
+                .Include(p => p.Categoria)
+                .FirstOrDefaultAsync(p => p.IdProducto == id);
+
+            if (producto == null) 
+            {
+                return NotFound();
+            }
+            return View(producto);
+        }
+
+        //POST : Productos/Delete/5
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id) 
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto != null) 
+            {
+                if (!string.IsNullOrEmpty(producto.ImagenUrl) && producto.ImagenUrl.StartsWith("/images/perfumes/"));
+                {
+                    string rutaFisica = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", producto.ImagenUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(rutaFisica))
+                    {
+                        System.IO.File.Delete(rutaFisica);
+                    }
+                }
+                _context.Productos.Remove(producto);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
     }
 }

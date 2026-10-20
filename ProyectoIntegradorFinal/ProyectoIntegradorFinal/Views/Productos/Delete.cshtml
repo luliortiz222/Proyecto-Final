@@ -1,0 +1,56 @@
+﻿@model ProyectoIntegradorFinal.Models.Producto
+
+@{
+    ViewData["Title"] = "Eliminar Perfume";
+}
+
+<div class="container mt-4">
+    <h2>Eliminar Perfume</h2>
+    <h3 class="text-danger">¿Estás seguro de que deseas eliminar este producto?</h3>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-4 text-center">
+            @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+            {
+                <img src="@Model.ImagenUrl" alt="@Model.Nombre" class="img-fluid rounded shadow-sm" style="max-height: 250px; object-fit: cover;" />
+            }
+            else
+            {
+                <div class="alert alert-secondary">Sin imagen</div>
+            }
+        </div>
+
+        <div class="col-md-8">
+            <dl class="row">
+                <dt class="col-sm-3">Nombre:</dt>
+                <dd class="col-sm-9 fw-bold">@Model.Nombre</dd>
+
+                <dt class="col-sm-3">Marca:</dt>
+                <dd class="col-sm-9">@Model.Marca?.Nombre</dd>
+
+                <dt class="col-sm-3">Familia Olfativa:</dt>
+                <dd class="col-sm-9">@Model.Categoria?.Nombre</dd>
+
+                <dt class="col-sm-3">Concentración:</dt>
+                <dd class="col-sm-9">@Model.VolumenMl ml - @Model.Concentracion</dd>
+
+                <dt class="col-sm-3">Precio:</dt>
+                <dd class="col-sm-9 text-success fw-bold">$@Model.Precio</dd>
+
+                <dt class="col-sm-3">Stock:</dt>
+                <dd class="col-sm-9">@Model.Stock unidades</dd>
+            </dl>
+
+            <form asp-action="Delete">
+                <!-- Enviamos el ID oculto para confirmar el borrado -->
+                <input type="hidden" asp-for="IdProducto" />
+                
+                <div class="mt-4">
+                    <input type="submit" value="Sí, Eliminar" class="btn btn-danger btn-lg px-4" />
+                    <a asp-action="Index" class="btn btn-secondary btn-lg px-4 ms-2">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
