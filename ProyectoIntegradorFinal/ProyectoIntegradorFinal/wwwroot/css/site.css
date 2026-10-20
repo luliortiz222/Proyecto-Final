@@ -624,3 +624,52 @@ a {
     }
 }
 
+/* Tarjeta de perfume */
+.card.shadow-sm {
+    border: 1px solid #E5D8C5;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(23, 23, 23, 0.07) !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    /* Efecto al pasar el cursor */
+    .card.shadow-sm:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 22px rgba(23, 23, 23, 0.12) !important;
+    }
+
+    /* Imagen superior */
+    .card.shadow-sm .card-img-top {
+        height: 250px;
+        object-fit: cover;
+        border-radius: 0;
+    }
+
+    /* Contenido */
+    .card.shadow-sm .card-body {
+        padding: 20px;
+    }
+
+    .card.shadow-sm .list-group-item {
+        border-color: #F0E8DD;
+        background-color: #fff;
+    }
+
+    .card.shadow-sm .card-body.bg-light {
+        background-color: #FBF8F2 !important;
+    }
+
+    /* Botón */
+    .card.shadow-sm .btn-primary {
+        background-color: #171717;
+        border-color: #171717;
+        border-radius: 8px;
+        padding: 11px;
+        transition: background-color 0.2s ease;
+    }
+
+        .card.shadow-sm .btn-primary:hover {
+            background-color: #B08D57;
+            border-color: #B08D57;
+        }
