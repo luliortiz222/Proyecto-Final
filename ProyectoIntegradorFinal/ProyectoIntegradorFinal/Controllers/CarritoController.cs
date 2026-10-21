@@ -93,5 +93,45 @@ namespace ProyectoIntegradorFinal.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
+        // POST: Carrito/ActualizarCantidad
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActualizarCantidad(int itemId, int cantidad)
+        {
+            int usuarioId = 1; // Temporal.
+
+            var item = await _context.ItemsCarrito
+                .Include(i => i.Carrito)
+                .Include(i => i.Producto)
+                .FirstOrDefaultAsync(i =>
+                    i.IdItem == itemId &&
+                    i.Carrito.IdUsuario == usuarioId);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            if (item.Producto.Stock < 1)
+            {
+                TempData["Error"] = "Este perfume no tiene stock disponible.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (cantidad < 1 || cantidad > item.Producto.Stock)
+            {
+                TempData["Error"] = "La cantidad debe estar entre 1 y el stock disponible.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            item.cantidad = cantidad;
+            item.Carrito.FechaActualizacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

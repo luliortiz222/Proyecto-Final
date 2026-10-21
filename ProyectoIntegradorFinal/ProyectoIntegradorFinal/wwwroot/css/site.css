@@ -673,3 +673,55 @@ a {
             background-color: #B08D57;
             border-color: #B08D57;
         }
+
+
+
+.cantidad-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 3px 6px;
+    margin: 6px 0;
+    border: 1px solid #E5D8C5;
+    border-radius: 9px;
+    background-color: #fff;
+}
+
+    .cantidad-control form {
+        margin: 0;
+    }
+
+.btn-cantidad {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px;
+    height: 25px;
+    border: none;
+    border-radius: 6px;
+    background-color: #F7F1E8;
+    color: #171717;
+    font-size: 17px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+    .btn-cantidad:hover:not(:disabled) {
+        background-color: #B08D57;
+        color: #fff;
+    }
+
+    .btn-cantidad:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+.cantidad-numero {
+    min-width: 18px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+}

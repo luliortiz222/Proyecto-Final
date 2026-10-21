@@ -1,5 +1,4 @@
-﻿
-@model ProyectoIntegradorFinal.Models.Carrito
+﻿@model ProyectoIntegradorFinal.Models.Carrito
 
 @{
     ViewData["Title"] = "Mi carrito";
@@ -59,7 +58,8 @@
                     Explorá nuestros productos y encontrá tu esencia ideal.
                 </p>
 
-                <a href="Home/Index""
+                <a asp-controller="Home"
+                   asp-action="Index"
                    class="btn btn-carrito mt-3">
                     Descubrir fragancias
                 </a>
@@ -71,7 +71,6 @@
 
                 <!-- Lista de productos -->
                 <div class="col-lg-8">
-
                     <div class="carrito-lista">
 
                         @foreach (var item in items)
@@ -102,10 +101,75 @@
                                         </strong>
                                     </p>
 
-                                    <p class="carrito-cantidad">
-                                        Cantidad: @item.cantidad
+                                    <!-- Control de cantidad -->
+                                    <div class="cantidad-control">
+
+                                        <!-- Restar una unidad -->
+                                        <form asp-controller="Carrito"
+                                              asp-action="ActualizarCantidad"
+                                              method="post">
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="itemId"
+                                                   value="@item.IdItem" />
+
+                                            <input type="hidden"
+                                                   name="cantidad"
+                                                   value="@(item.cantidad - 1)" />
+
+                                            <button type="submit"
+                                                    class="btn-cantidad"
+                                                    aria-label="Restar una unidad"
+                                                    disabled="@(item.cantidad <= 1)">
+                                                −
+                                            </button>
+                                        </form>
+
+                                        <span class="cantidad-numero">
+                                            @item.cantidad
+                                        </span>
+
+                                        <!-- Sumar una unidad -->
+                                        <form asp-controller="Carrito"
+                                              asp-action="ActualizarCantidad"
+                                              method="post">
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="itemId"
+                                                   value="@item.IdItem" />
+
+                                            <input type="hidden"
+                                                   name="cantidad"
+                                                   value="@(item.cantidad + 1)" />
+
+                                            <button type="submit"
+                                                    class="btn-cantidad"
+                                                    aria-label="Agregar una unidad"
+                                                    disabled="@(item.cantidad >= item.Producto.Stock)">
+                                                +
+                                            </button>
+                                        </form>
+
+                                    </div>
+
+                                    <p class="carrito-stock">
+                                        @if (item.Producto.Stock > 0)
+                                        {
+                                            <span>
+                                                Stock disponible: @item.Producto.Stock
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger">
+                                                Sin stock disponible
+                                            </span>
+                                        }
                                     </p>
 
+                                    <!-- Eliminar producto -->
                                     <form asp-controller="Carrito"
                                           asp-action="EliminarItem"
                                           method="post"
@@ -124,6 +188,7 @@
                                     </form>
                                 </div>
 
+                                <!-- Subtotal por producto -->
                                 <div class="carrito-producto-subtotal">
                                     <span>Subtotal</span>
                                     <strong>
@@ -137,17 +202,16 @@
                     </div>
 
                     <div class="mt-4">
-                        <a href="Home/Index"
+                        <a asp-controller="Home"
+                           asp-action="Index"
                            class="carrito-seguir-comprando">
                             ← Seguir comprando
                         </a>
                     </div>
-
                 </div>
 
                 <!-- Resumen de compra -->
                 <div class="col-lg-4">
-
                     <div class="carrito-resumen">
                         <h2>Resumen de compra</h2>
 
@@ -184,10 +248,9 @@
                                 title="El proceso de compra se habilitará próximamente">
                             Finalizar compra próximamente
                         </button>
-
                     </div>
-
                 </div>
+
             </div>
         }
 
