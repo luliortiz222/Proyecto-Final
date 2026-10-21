@@ -725,3 +725,14 @@ a {
     font-size: 14px;
     font-weight: 600;
 }
+
+.producto-descripcion {
+    color: #6F6254;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

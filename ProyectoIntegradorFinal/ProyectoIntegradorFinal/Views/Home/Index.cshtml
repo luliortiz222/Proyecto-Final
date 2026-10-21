@@ -4,59 +4,85 @@
     ViewData["Title"] = "Inicio";
 }
 
-
 <div class="text-center mb-5 mt-4">
     <h1 class="display-4 fw-bold">Nuestros Perfumes</h1>
 </div>
 
 <div class="container">
-    <!-- row y g-4 se encargan de armar la grilla y darle espaciado a las tarjetas -->
+    <!-- Grilla de tarjetas -->
     <div class="row g-4">
-        
+
         @foreach (var item in Model)
         {
-            <!-- col-md-4 hace que entren 3 tarjetas por fila en pantallas grandes -->
+            <!-- Tarjeta de cada perfume -->
             <div class="col-md-4 d-flex justify-content-center">
-                
-                <!-- TU TARJETA ADAPTADA -->
+
                 <div class="card shadow-sm" style="width: 18rem;">
-                    
-                    <!-- Lógica para la imagen: si no cargaste URL, muestra una por defecto -->
-                    <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "https://via.placeholder.com/300x300?text=Sin+Imagen" : item.ImagenUrl)" 
-                         class="card-img-top" 
-                         alt="@item.Nombre" 
+
+                    <!-- Imagen del perfume -->
+                    <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "https://via.placeholder.com/300x300?text=Sin+Imagen" : item.ImagenUrl)"
+                         class="card-img-top"
+                         alt="@item.Nombre"
                          style="height: 250px; object-fit: cover;" />
-                    
+
+                    <!-- Nombre, marca y descripción -->
                     <div class="card-body">
-                        <!-- Título (Nombre del perfume) -->
                         <h5 class="card-title fw-bold">@item.Nombre</h5>
-                        <!-- Subtítulo (La marca) -->
-                        <p class="card-text text-muted mb-0">@item.Marca.Nombre</p>
+
+                        <p class="card-text text-muted mb-0">
+                            @(item.Marca?.Nombre ?? "Sin marca")
+                        </p>
+
+                        @if (!string.IsNullOrWhiteSpace(item.Descripcion))
+                        {
+                            <p class="producto-descripcion mt-2">
+                                @item.Descripcion
+                            </p>
+                        }
                     </div>
-                    
-                    <!-- Tu lista adaptada a las características del perfume -->
+
+                    <!-- Características del perfume -->
                     <ul class="list-group list-group-light list-group-small list-group-flush">
-                        <li class="list-group-item px-4">Categoria: <strong>@item.Categoria.Nombre</strong></li>
-                        <li class="list-group-item px-4">Volumen: <strong>@item.VolumenMl ml - Concentracion:  @item.Concentracion</strong></li>
+                        <li class="list-group-item px-4">
+                            Categoría:
+                            <strong>@(item.Categoria?.Nombre ?? "Sin categoría")</strong>
+                        </li>
+
+                        <li class="list-group-item px-4">
+                            Volumen:
+                            <strong>@item.VolumenMl ml - Concentración: @item.Concentracion</strong>
+                        </li>
+
                         <li class="list-group-item px-4 fs-5 text-success fw-bold">
-                            $@item.Precio
+                            @item.Precio.ToString("C")
                         </li>
                     </ul>
-                    
+
                     <!-- Botón de compra -->
                     <div class="card-body text-center bg-light">
-                        <form asp-controller="Carrito" asp-action="Agregar" method="post">
-                            <input type="hidden" name="IdProducto" value="@item.IdProducto" />
-                            <input type="hidden" name="cantidad" value="1" />
-                            <button type="submit" class="btn btn-dark">Agregar al Carrito</button>
+                        <form asp-controller="Carrito"
+                              asp-action="Agregar"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="IdProducto"
+                                   value="@item.IdProducto" />
+
+                            <input type="hidden"
+                                   name="cantidad"
+                                   value="1" />
+
+                            <button type="submit" class="btn btn-dark">
+                                Agregar al Carrito
+                            </button>
                         </form>
                     </div>
 
                 </div>
-                <!-- FIN DE TU TARJETA -->
-
             </div>
         }
-        
+
     </div>
 </div>

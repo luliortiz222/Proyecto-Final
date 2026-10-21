@@ -99,49 +99,86 @@ namespace ProyectoIntegradorFinal.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdProducto,Nombre,Descripcion,Precio,Stock,VolumenMl,Concentracion,IdMarca,IdCategoria")] Producto producto, IFormFile archivoImagen)
+        public async Task<IActionResult> Edit(int id, [Bind("IdProducto,Nombre,Descripcion,Precio,Stock,VolumenMl,Concentracion,IdMarca,IdCategoria")] Producto producto, IFormFile? archivoImagen)
         {
             if (id != producto.IdProducto)
             {
                 return NotFound();
             }
+
+            // Recuperamos el producto original, incluida su imagen actual.
+            var productoExistente = await _context.Productos.FindAsync(id);
+
+            if (productoExistente == null)
+            {
+                return NotFound();
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Actualizamos los datos del producto.
+                    productoExistente.Nombre = producto.Nombre;
+                    productoExistente.Descripcion = producto.Descripcion;
+                    productoExistente.Precio = producto.Precio;
+                    productoExistente.Stock = producto.Stock;
+                    productoExistente.VolumenMl = producto.VolumenMl;
+                    productoExistente.Concentracion = producto.Concentracion;
+                    productoExistente.IdMarca = producto.IdMarca;
+                    productoExistente.IdCategoria = producto.IdCategoria;
+
+                    // Solo reemplazamos la imagen si se seleccionó una nueva.
                     if (archivoImagen != null && archivoImagen.Length > 0)
                     {
-                        string nombreArchivo = Guid.NewGuid().ToString() + Path.GetExtension(archivoImagen.FileName);
-                        string rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "perfumes");
+                        string nombreArchivo = Guid.NewGuid().ToString()
+                            + Path.GetExtension(archivoImagen.FileName);
+
+                        string rutaCarpeta = Path.Combine(
+                            Directory.GetCurrentDirectory(),
+                            "wwwroot",
+                            "images",
+                            "perfumes");
+
                         if (!Directory.Exists(rutaCarpeta))
                         {
                             Directory.CreateDirectory(rutaCarpeta);
                         }
+
                         string rutaCompleta = Path.Combine(rutaCarpeta, nombreArchivo);
+
                         using (var stream = new FileStream(rutaCompleta, FileMode.Create))
                         {
                             await archivoImagen.CopyToAsync(stream);
                         }
-                        producto.ImagenUrl = "/images/perfumes/" + nombreArchivo;
+
+                        productoExistente.ImagenUrl = "/images/perfumes/" + nombreArchivo;
                     }
-                    _context.Update(producto);
+
                     await _context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_context.Productos.Any(e => e.IdProducto == producto.IdProducto))
+                    if (!_context.Productos.Any(e => e.IdProducto == id))
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
-            ViewData["IdMarca"] = new SelectList(_context.Marcas, "IdMarca", "Nombre", producto.IdMarca);
-            ViewData["IdCategoria"] = new SelectList(_context.Categorias, "IdCategoria", "Nombre", producto.IdCategoria);
+
+            ViewData["IdMarca"] = new SelectList(
+                _context.Marcas, "IdMarca", "Nombre", producto.IdMarca);
+
+            ViewData["IdCategoria"] = new SelectList(
+                _context.Categorias, "IdCategoria", "Nombre", producto.IdCategoria);
+
+            // Conservamos la imagen actual si hay errores de validación.
+            producto.ImagenUrl = productoExistente.ImagenUrl;
+
             return View(producto);
         }
 
