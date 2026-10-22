@@ -1,5 +1,4 @@
-﻿
-@model ProyectoIntegradorFinal.Models.Usuario
+﻿@model ProyectoIntegradorFinal.Models.Usuario
 
 @{
     ViewData["Title"] = "Crear cuenta";
@@ -83,10 +82,24 @@
                                 <label asp-for="Password" class="form-label">
                                     Contraseña
                                 </label>
-                                <input asp-for="Password"
-                                       type="password"
-                                       class="form-control"
-                                       placeholder="Creá una contraseña" />
+
+                                <div class="input-group">
+                                    <input asp-for="Password"
+                                           type="password"
+                                           id="Password"
+                                           class="form-control"
+                                           placeholder="Creá una contraseña"
+                                           autocomplete="new-password" />
+
+                                    <button type="button"
+                                            class="btn btn-outline-secondary"
+                                            onclick="alternarPassword('Password', this)"
+                                            aria-label="Mostrar contraseña"
+                                            title="Mostrar contraseña">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+
                                 <span asp-validation-for="Password"
                                       class="text-danger"></span>
                             </div>
@@ -102,7 +115,8 @@
                                          alt="Vista previa de tu foto"
                                          class="vista-previa-avatar d-none" />
 
-                                    <div id="placeholderAvatar" class="placeholder-avatar">
+                                    <div id="placeholderAvatar"
+                                         class="placeholder-avatar">
                                         Tu foto
                                     </div>
                                 </div>
@@ -118,7 +132,8 @@
                                     Formatos: JPG, JPEG, PNG o WEBP. Máximo 2 MB.
                                 </small>
 
-                                <div id="errorAvatar" class="text-danger mt-2"></div>
+                                <div id="errorAvatar"
+                                     class="text-danger mt-2"></div>
                             </div>
 
                             <button type="submit"
@@ -160,7 +175,29 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
     <script>
+        // Mostrar u ocultar la contraseña
+        function alternarPassword(id, boton) {
+            const campo = document.getElementById(id);
+            const icono = boton.querySelector('i');
+
+            if (campo.type === 'password') {
+                campo.type = 'text';
+                icono.classList.replace('fa-eye', 'fa-eye-slash');
+
+                boton.setAttribute('aria-label', 'Ocultar contraseña');
+                boton.setAttribute('title', 'Ocultar contraseña');
+            } else {
+                campo.type = 'password';
+                icono.classList.replace('fa-eye-slash', 'fa-eye');
+
+                boton.setAttribute('aria-label', 'Mostrar contraseña');
+                boton.setAttribute('title', 'Mostrar contraseña');
+            }
+        }
+
+        // Vista previa y validación del avatar
         document.addEventListener("DOMContentLoaded", function() {
             const inputFoto = document.getElementById("avatarArchivo");
             const vistaPrevia = document.getElementById("vistaPreviaAvatar");

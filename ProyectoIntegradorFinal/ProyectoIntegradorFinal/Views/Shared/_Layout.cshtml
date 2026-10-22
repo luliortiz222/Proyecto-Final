@@ -8,6 +8,10 @@
     <script type="importmap"></script>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ProyectoIntegradorFinal.styles.css" asp-append-version="true" />
 </head>
@@ -78,11 +82,15 @@
                         
 
                         <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Carrito"
-                               asp-action="Index">
-                                🛒 Mi carrito
-                            </a>
+                            @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
+                            {
+                                <a class="nav-link"
+                                   asp-controller="Carrito"
+                                   asp-action="Index">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Carrito
+                                </a>
+                            }
                         </li>
 
                     </ul>
@@ -142,6 +150,15 @@
                                         <span class="dropdown-item-text text-muted">
                                             @User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
                                         </span>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Usuario"
+                                           asp-action="Perfil">
+                                            <i class="fas fa-user-circle me-2"></i>
+                                            Mi perfil
+                                        </a>
                                     </li>
 
                                     <li>

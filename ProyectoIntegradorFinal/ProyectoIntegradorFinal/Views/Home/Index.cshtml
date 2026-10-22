@@ -4,85 +4,251 @@
     ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center mb-5 mt-4">
-    <h1 class="display-4 fw-bold">Nuestros Perfumes</h1>
-</div>
+<!-- PORTADA PRINCIPAL -->
+<section class="he-hero">
+    <div class="he-hero-image"></div>
+    <div class="he-hero-overlay"></div>
 
-<div class="container">
-    <!-- Grilla de tarjetas -->
-    <div class="row g-4">
+    <div class="container he-hero-container">
+        <div class="he-hero-content">
+            <span class="he-eyebrow">
+                <span class="he-eyebrow-line"></span>
+                HOME ELIXIR · PERFUMERÍA
+            </span>
 
-        @foreach (var item in Model)
-        {
-            <!-- Tarjeta de cada perfume -->
-            <div class="col-md-4 d-flex justify-content-center">
+            <h1>Hay aromas<br />que hablan de <em>vos.</em></h1>
 
-                <div class="card shadow-sm" style="width: 18rem;">
+            <p>
+                Descubrí fragancias que expresan tu personalidad,
+                acompañan tus momentos y permanecen en la memoria.
+            </p>
 
-                    <!-- Imagen del perfume -->
-                    <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "https://via.placeholder.com/300x300?text=Sin+Imagen" : item.ImagenUrl)"
-                         class="card-img-top"
-                         alt="@item.Nombre"
-                         style="height: 250px; object-fit: cover;" />
+            <a href="#coleccion" class="he-button">
+                DESCUBRIR FRAGANCIAS
+                <i class="fas fa-arrow-right"></i>
+            </a>
 
-                    <!-- Nombre, marca y descripción -->
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold">@item.Nombre</h5>
-
-                        <p class="card-text text-muted mb-0">
-                            @(item.Marca?.Nombre ?? "Sin marca")
-                        </p>
-
-                        @if (!string.IsNullOrWhiteSpace(item.Descripcion))
-                        {
-                            <p class="producto-descripcion mt-2">
-                                @item.Descripcion
-                            </p>
-                        }
-                    </div>
-
-                    <!-- Características del perfume -->
-                    <ul class="list-group list-group-light list-group-small list-group-flush">
-                        <li class="list-group-item px-4">
-                            Categoría:
-                            <strong>@(item.Categoria?.Nombre ?? "Sin categoría")</strong>
-                        </li>
-
-                        <li class="list-group-item px-4">
-                            Volumen:
-                            <strong>@item.VolumenMl ml - Concentración: @item.Concentracion</strong>
-                        </li>
-
-                        <li class="list-group-item px-4 fs-5 text-success fw-bold">
-                            @item.Precio.ToString("C")
-                        </li>
-                    </ul>
-
-                    <!-- Botón de compra -->
-                    <div class="card-body text-center bg-light">
-                        <form asp-controller="Carrito"
-                              asp-action="Agregar"
-                              method="post">
-
-                            @Html.AntiForgeryToken()
-
-                            <input type="hidden"
-                                   name="IdProducto"
-                                   value="@item.IdProducto" />
-
-                            <input type="hidden"
-                                   name="cantidad"
-                                   value="1" />
-
-                            <button type="submit" class="btn btn-dark">
-                                Agregar al Carrito
-                            </button>
-                        </form>
-                    </div>
-
-                </div>
+            <div class="he-hero-note">
+                <span>01</span>
+                <span>UNA ESENCIA ÚNICA. TU PROPIA HISTORIA.</span>
             </div>
+        </div>
+    </div>
+
+    <div class="he-hero-side-text">THE ART OF FRAGRANCE</div>
+</section>
+
+<!-- PRESENTACIÓN DE MARCA -->
+<section class="he-intro">
+    <div class="container">
+        <span class="he-section-label">EL ARTE DE PERFUMAR</span>
+
+        <h2>
+            Algunas cosas se olvidan.<br />
+            <em>Un aroma, nunca.</em>
+        </h2>
+
+        <p>
+            Cada fragancia tiene una historia. Encontrá la tuya
+            entre aromas que inspiran, seducen y dejan huella.
+        </p>
+
+        <div class="he-divider">
+            <span></span>
+            <i class="fas fa-sun"></i>
+            <span></span>
+        </div>
+    </div>
+</section>
+
+<!-- CATEGORÍAS DINÁMICAS -->
+<section class="he-categories">
+    <div class="container">
+        <div class="he-heading-row">
+            <div>
+                <span class="he-section-label">ENCONTRÁ TU ESTILO</span>
+                <h2>Una esencia para cada versión de vos.</h2>
+            </div>
+
+            <a asp-controller="Productos"
+               asp-action="Index"
+               class="he-text-link">
+                VER CATÁLOGO
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        @{
+            var categorias = ViewBag.Categorias
+                as IEnumerable<ProyectoIntegradorFinal.Models.Categoria>;
         }
 
+        @if (categorias != null && categorias.Any())
+        {
+            <div class="row g-3 g-lg-4">
+                @foreach (var categoria in categorias)
+                {
+                    <div class="col-6 col-lg-3">
+                        <a asp-controller="Productos"
+                           asp-action="Index"
+                           asp-route-idCategoria="@categoria.IdCategoria"
+                           class="he-category">
+
+                            <div class="he-category-content">
+                                <span>HOME ELIXIR</span>
+
+                                <h3>@categoria.Nombre</h3>
+
+                                <span class="he-category-arrow">
+                                    <i class="fas fa-arrow-right"></i>
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p>Todavía no hay categorías disponibles.</p>
+        }
     </div>
-</div>
+</section>
+
+<!-- COLECCIÓN REAL -->
+<section class="he-collection" id="coleccion">
+    <div class="container">
+        <div class="he-heading-row he-collection-heading">
+            <div>
+                <span class="he-section-label">SELECCIÓN HOME ELIXIR</span>
+                <h2>Tu próxima esencia.</h2>
+                <p>Encontrá esa fragancia que se siente como vos.</p>
+            </div>
+
+            <span class="he-product-count">
+                @Model.Count() FRAGANCIAS
+            </span>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="row g-3 g-md-4">
+                @foreach (var item in Model)
+                {
+                    <div class="col-6 col-lg-4 col-xl-3">
+                        <article class="he-product-card">
+                            <div class="he-product-image">
+                                <img src="@(
+                                     string.IsNullOrWhiteSpace(item.ImagenUrl)
+                                         ? Url.Content("~/images/perfume-placeholder.png")
+                                         : item.ImagenUrl
+                                                            )"
+                                     alt="@item.Nombre"
+                                     loading="lazy"
+                                     onerror="this.onerror=null;this.src='https://placehold.co/500x600/F7F1E8/96713D?text=Home+Elixir';" />
+
+                                <span class="he-product-category">
+                                    @(item.Categoria?.Nombre ?? "Fragancia")
+                                </span>
+                            </div>
+
+                            <div class="he-product-info">
+                                <p class="he-product-brand">
+                                    @(item.Marca?.Nombre ?? "HOME ELIXIR")
+                                </p>
+
+                                <h3>@item.Nombre</h3>
+
+                                @if (!string.IsNullOrWhiteSpace(item.Descripcion))
+                                {
+                                    <p class="he-product-description">
+                                        @item.Descripcion
+                                    </p>
+                                }
+
+                                <div class="he-product-details">
+                                    <span>@item.VolumenMl ml</span>
+                                    <span>@item.Concentracion</span>
+                                </div>
+
+                                <div class="he-product-footer">
+                                    <span class="he-product-price">
+                                        @item.Precio.ToString("C")
+                                    </span>
+
+                                    @if (User.Identity != null &&
+                                         User.Identity.IsAuthenticated &&
+                                         User.IsInRole("Cliente"))
+                                    {
+                                        <form asp-controller="Carrito"
+                                              asp-action="Agregar"
+                                              method="post"
+                                              class="he-product-form">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="IdProducto"
+                                                   value="@item.IdProducto" />
+
+                                            <input type="hidden"
+                                                   name="cantidad"
+                                                   value="1" />
+
+                                            <button type="submit"
+                                                    class="he-add-button"
+                                                    title="Agregar al carrito"
+                                                    aria-label="Agregar @item.Nombre al carrito">
+                                                <i class="fas fa-shopping-bag"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (User.Identity == null ||
+                                             !User.Identity.IsAuthenticated)
+                                    {
+                                        <a asp-controller="Usuario"
+                                           asp-action="Login"
+                                           class="he-add-button"
+                                           title="Iniciá sesión para comprar"
+                                           aria-label="Iniciar sesión para comprar @item.Nombre">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="he-empty">
+                <i class="fas fa-wind"></i>
+                <h3>Una nueva colección está por llegar.</h3>
+                <p>Estamos preparando nuevas experiencias para vos.</p>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- CIERRE DE MARCA -->
+<section class="he-brand-banner">
+    <div class="he-brand-banner-overlay"></div>
+
+    <div class="container he-brand-content">
+        <span class="he-section-label">HOME ELIXIR</span>
+
+        <h2>Tu presencia.<br /><em>Tu esencia.</em></h2>
+
+        <p>
+            No se trata solo de cómo olés.<br />
+            Se trata de lo que dejás en los demás.
+        </p>
+
+        <a href="#coleccion" class="he-button he-button-light">
+            ENCONTRÁ TU FRAGANCIA
+            <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</section>
