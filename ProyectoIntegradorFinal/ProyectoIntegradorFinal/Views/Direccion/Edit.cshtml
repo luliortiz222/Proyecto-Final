@@ -1,0 +1,178 @@
+﻿@model ProyectoIntegradorFinal.Models.Direccion
+
+@{
+    ViewData["Title"] = "Editar dirección";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-7">
+
+            <span class="text-uppercase small"
+                  style="letter-spacing: .15em; color: #96713D;">
+                HOME ELIXIR
+            </span>
+
+            <h2 class="mt-2">Editar dirección</h2>
+
+            <p class="text-muted">
+                Actualizá los datos de tu domicilio.
+            </p>
+
+            <hr />
+
+            <div class="card shadow-sm"
+                 style="border-color: #E5D8C5;">
+
+                <div class="card-body p-4">
+
+                    <form asp-action="Edit"
+                          asp-route-id="@Model.IdDireccion"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               asp-for="IdDireccion" />
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Calle"
+                                   class="form-label">
+                                Calle
+                            </label>
+
+                            <input asp-for="Calle"
+                                   class="form-control"
+                                   placeholder="Ej.: San Martín" />
+
+                            <span asp-validation-for="Calle"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Numero"
+                                   class="form-label">
+                                Número
+                            </label>
+
+                            <input asp-for="Numero"
+                                   class="form-control"
+                                   placeholder="Ej.: 123" />
+
+                            <span asp-validation-for="Numero"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Ciudad"
+                                   class="form-label">
+                                Ciudad o localidad
+                            </label>
+
+                            <input asp-for="Ciudad"
+                                   class="form-control"
+                                   placeholder="Ej.: Villa Mercedes" />
+
+                            <span asp-validation-for="Ciudad"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Provincia"
+                                   class="form-label">
+                                Provincia
+                            </label>
+
+                            <select asp-for="Provincia"
+                                    class="form-select">
+
+                                <option value="">
+                                    Seleccioná una provincia
+                                </option>
+
+                                <option value="Buenos Aires">Buenos Aires</option>
+                                <option value="Catamarca">Catamarca</option>
+                                <option value="Chaco">Chaco</option>
+                                <option value="Chubut">Chubut</option>
+                                <option value="Ciudad Autónoma de Buenos Aires">
+                                    Ciudad Autónoma de Buenos Aires
+                                </option>
+                                <option value="Córdoba">Córdoba</option>
+                                <option value="Corrientes">Corrientes</option>
+                                <option value="Entre Ríos">Entre Ríos</option>
+                                <option value="Formosa">Formosa</option>
+                                <option value="Jujuy">Jujuy</option>
+                                <option value="La Pampa">La Pampa</option>
+                                <option value="La Rioja">La Rioja</option>
+                                <option value="Mendoza">Mendoza</option>
+                                <option value="Misiones">Misiones</option>
+                                <option value="Neuquén">Neuquén</option>
+                                <option value="Río Negro">Río Negro</option>
+                                <option value="Salta">Salta</option>
+                                <option value="San Juan">San Juan</option>
+                                <option value="San Luis">San Luis</option>
+                                <option value="Santa Cruz">Santa Cruz</option>
+                                <option value="Santa Fe">Santa Fe</option>
+                                <option value="Santiago del Estero">
+                                    Santiago del Estero
+                                </option>
+                                <option value="Tierra del Fuego">
+                                    Tierra del Fuego
+                                </option>
+                                <option value="Tucumán">Tucumán</option>
+
+                            </select>
+
+                            <span asp-validation-for="Provincia"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="CodigoPostal"
+                                   class="form-label">
+                                Código postal
+                            </label>
+
+                            <input asp-for="CodigoPostal"
+                                   class="form-control"
+                                   placeholder="Ej.: 5730"
+                                   autocomplete="postal-code" />
+
+                            <span asp-validation-for="CodigoPostal"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="submit"
+                                    class="btn btn-dark">
+                                <i class="fas fa-save me-2"></i>
+                                Guardar cambios
+                            </button>
+
+                            <a asp-action="Index"
+                               class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

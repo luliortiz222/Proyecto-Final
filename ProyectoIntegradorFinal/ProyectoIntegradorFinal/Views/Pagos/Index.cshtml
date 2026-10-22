@@ -1,0 +1,150 @@
+﻿@model IEnumerable<ProyectoIntegradorFinal.Models.Pago>
+
+@{
+    ViewData["Title"] = "Gestión de pagos";
+}
+
+<div class="container mt-4 mb-5">
+
+    <span class="text-uppercase small"
+          style="letter-spacing: .15em; color: #96713D;">
+        HOME ELIXIR
+    </span>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mt-2 mb-4 gap-2">
+        <div>
+            <h2>Gestión de pagos</h2>
+            <p class="text-muted mb-0">
+                Consultá los pagos registrados y su estado.
+            </p>
+        </div>
+
+        <span class="badge rounded-pill text-bg-dark px-3 py-2">
+            @Model.Count() pagos
+        </span>
+    </div>
+
+    <hr />
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Mensaje"]
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+        </div>
+    }
+
+    <div class="card shadow-sm" style="border-color: #E5D8C5;">
+        <div class="card-body">
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-receipt fa-3x mb-3"
+                       style="color: #B08D57;"></i>
+
+                    <h5>No hay pagos registrados</h5>
+
+                    <p class="text-muted mb-0">
+                        Cuando existan pagos, aparecerán en este listado.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover">
+                        <thead>
+                            <tr>
+                                <th>N.º de pago</th>
+                                <th>Cliente</th>
+                                <th>Orden</th>
+                                <th>Fecha</th>
+                                <th>Método</th>
+                                <th>Importe</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var pago in Model)
+                            {
+                                var estado = (pago.EstadoPago ?? "")
+                                    .Trim().ToLowerInvariant();
+
+                                var claseEstado = estado switch
+                                {
+                                    "aprobado" => "bg-success",
+                                    "rechazado" => "bg-danger",
+                                    "en revisión" => "bg-info text-dark",
+                                    "en revision" => "bg-info text-dark",
+                                    _ => "bg-warning text-dark"
+                                };
+
+                                <tr>
+                                    <td>
+                                        <strong>#@pago.IdPago</strong>
+                                    </td>
+
+                                    <td>
+                                        @if (pago.Orden?.Usuario != null)
+                                        {
+                                            @($"{pago.Orden.Usuario.Nombre} {pago.Orden.Usuario.Apellido}")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                Sin datos
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        #@pago.IdOrden
+                                    </td>
+
+                                    <td>
+                                        @pago.FechaPago.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(pago.MetodoPago)
+                                            ? "No especificado"
+                                            : pago.MetodoPago)
+                                    </td>
+
+                                    <td class="text-nowrap">
+                                        @pago.Monto.ToString("C2",
+                                            System.Globalization.CultureInfo.GetCultureInfo("es-AR"))
+                                    </td>
+
+                                    <td>
+                                        <span class="badge @claseEstado">
+                                            @pago.EstadoPago
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <a asp-action="Details"
+                                           asp-route-id="@pago.IdPago"
+                                           class="btn btn-sm btn-outline-dark"
+                                           title="Ver detalle">
+                                            <i class="fas fa-eye me-1"></i>
+                                            Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>

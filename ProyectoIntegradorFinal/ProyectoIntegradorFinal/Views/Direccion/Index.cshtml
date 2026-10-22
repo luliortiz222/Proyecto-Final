@@ -1,0 +1,110 @@
+﻿@model IEnumerable<ProyectoIntegradorFinal.Models.Direccion>
+
+@{
+    ViewData["Title"] = "Mis direcciones";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <span class="text-uppercase small"
+                  style="letter-spacing: .15em; color: #96713D;">
+                HOME ELIXIR
+            </span>
+            <h2 class="mt-2">Mis direcciones</h2>
+            <p class="text-muted mb-0">
+                Administrá los domicilios para tus pedidos.
+            </p>
+        </div>
+
+        <a asp-action="Create" class="btn btn-dark">
+            <i class="fas fa-plus me-2"></i>
+            Agregar dirección
+        </a>
+    </div>
+
+    <hr class="mb-4" />
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Mensaje"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Error"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var direccion in Model)
+            {
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm"
+                         style="border-color: #E5D8C5;">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-location-dot fa-lg"
+                                   style="color: #B08D57;"></i>
+                            </div>
+
+                            <h5 class="card-title">
+                                @direccion.Calle @direccion.Numero
+                            </h5>
+
+                            <p class="text-muted mb-1">
+                                @direccion.Ciudad, @direccion.Provincia
+                            </p>
+                            <p class="small text-muted mb-4">
+                                Código postal: @direccion.CodigoPostal
+                            </p>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                <a asp-action="Edit"
+                                   asp-route-id="@direccion.IdDireccion"
+                                   class="btn btn-sm btn-outline-dark">
+                                    <i class="fas fa-pen me-1"></i>
+                                    Editar
+                                </a>
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@direccion.IdDireccion"
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash me-1"></i>
+                                    Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5"
+             style="background: #F7F1E8; border: 1px solid #E5D8C5;">
+            <i class="fas fa-map-location-dot fa-3x mb-3"
+               style="color: #B08D57;"></i>
+
+            <h4>Todavía no tenés direcciones</h4>
+            <p class="text-muted">
+                Agregá tu primer domicilio para utilizarlo en tus pedidos.
+            </p>
+
+            <a asp-action="Create" class="btn btn-dark">
+                Agregar mi primera dirección
+            </a>
+        </div>
+    }
+</div>
+

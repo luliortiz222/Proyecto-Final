@@ -2,9 +2,12 @@
 using ProyectoIntegradorFinal.Models;
 using Microsoft.EntityFrameworkCore;
 using ProyectoIntegradorFinal.Data;
-
+using Microsoft.AspNetCore.Authorization;
 namespace ProyectoIntegradorFinal.Controllers
 {
+    
+
+    [Authorize(Roles = "Administrador")]
     public class PagosController : Controller
     {
         private readonly AppDbContext _context;

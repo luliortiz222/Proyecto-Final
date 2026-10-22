@@ -1,0 +1,164 @@
+﻿@model ProyectoIntegradorFinal.Models.Pago
+
+@{
+    ViewData["Title"] = "Detalle del pago";
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-AR");
+
+    var estado = (Model.EstadoPago ?? "").Trim().ToLowerInvariant();
+
+    var claseEstado = estado switch
+    {
+        "aprobado" => "bg-success",
+        "rechazado" => "bg-danger",
+        "en revisión" => "bg-info text-dark",
+        "en revision" => "bg-info text-dark",
+        _ => "bg-warning text-dark"
+    };
+}
+
+<div class="container mt-4 mb-5">
+
+    <span class="text-uppercase small"
+          style="letter-spacing: .15em; color: #96713D;">
+        HOME ELIXIR
+    </span>
+
+    <h2 class="mt-2">Detalle del pago #@Model.IdPago</h2>
+
+    <p class="text-muted">
+        Información del pago y de la orden asociada.
+    </p>
+
+    <hr />
+
+    <div class="row g-4">
+
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm h-100"
+                 style="border-color: #E5D8C5;">
+
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card me-2"
+                           style="color: #B08D57;"></i>
+                        Información del pago
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <div class="mb-3">
+                        <span class="text-muted d-block small">
+                            Número de pago
+                        </span>
+                        <strong>#@Model.IdPago</strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="text-muted d-block small">
+                            Fecha del pago
+                        </span>
+                        <strong>
+                            @Model.FechaPago.ToString("dd/MM/yyyy HH:mm")
+                        </strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="text-muted d-block small">
+                            Método de pago
+                        </span>
+                        <strong>@Model.MetodoPago</strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="text-muted d-block small">
+                            Importe
+                        </span>
+                        <h3 style="color: #96713D;">
+                            @Model.Monto.ToString("C2", cultura)
+                        </h3>
+                    </div>
+
+                    <div>
+                        <span class="text-muted d-block small mb-1">
+                            Estado del pago
+                        </span>
+
+                        <span class="badge @claseEstado fs-6">
+                            @Model.EstadoPago
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm h-100"
+                 style="border-color: #E5D8C5;">
+
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-box me-2"
+                           style="color: #B08D57;"></i>
+                        Orden asociada
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <div class="mb-3">
+                        <span class="text-muted d-block small">
+                            Número de orden
+                        </span>
+                        <strong>#@Model.IdOrden</strong>
+                    </div>
+
+                    @if (Model.Orden != null)
+                    {
+                        <div class="mb-3">
+                            <span class="text-muted d-block small">
+                                Fecha de la orden
+                            </span>
+                            <strong>
+                                @Model.Orden.FechaOrden.ToString("dd/MM/yyyy")
+                            </strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="text-muted d-block small">
+                                Total de la orden
+                            </span>
+                            <strong>
+                                @Model.Orden.Total.ToString("C2", cultura)
+                            </strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="text-muted d-block small">
+                                Estado de la orden
+                            </span>
+                            <strong>@Model.Orden.Estado</strong>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            No se encontraron los datos de la orden asociada.
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mt-4">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver a pagos
+        </a>
+    </div>
+
+</div>
