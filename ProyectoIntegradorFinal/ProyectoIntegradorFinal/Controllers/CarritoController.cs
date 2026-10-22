@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using ProyectoIntegradorFinal.Models;
 using ProyectoIntegradorFinal.Data;
 namespace ProyectoIntegradorFinal.Controllers
 {
@@ -60,7 +61,33 @@ namespace ProyectoIntegradorFinal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Agregar(int IdProducto, int cantidad)
         {
-            int usuarioId = 1; // despues reemplazamos con el ID del usuario actual
+            if (!IntentarObtenerUsuarioId(out int usuarioId))
+            {
+                return Challenge();
+            }
+
+            if (cantidad < 1)
+            {
+                TempData["Error"] = "La cantidad debe ser mayor que cero.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Buscar el producto en la base de datos.
+            var producto = await _context.Productos
+                .FirstOrDefaultAsync(p => p.IdProducto == IdProducto);
+
+            if (producto == null)
+            {
+                return NotFound();
+            }
+
+            if (producto.Stock < 1)
+            {
+                TempData["Error"] = "Este perfume no tiene stock disponible.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Buscar el carrito del usuario autenticado.
             var carrito = await _context.Carritos
                 .Include(c => c.Items)
                 .FirstOrDefaultAsync(c => c.IdUsuario == usuarioId);
@@ -112,11 +139,11 @@ namespace ProyectoIntegradorFinal.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["Mensaje"] =
-                "¡Perfume agregado al carrito correctamente!";
+            TempData["Mensaje"] = "¡Perfume agregado al carrito correctamente!";
 
             return RedirectToAction(nameof(Index));
         }
+
 
         // POST: Carrito/EliminarItem
         [HttpPost]
