@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProyectoIntegradorFinal.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using ProyectoIntegradorFinal.Data;
 namespace ProyectoIntegradorFinal.Controllers
+
 {
+    [Authorize(Roles = "Cliente")]
     public class CarritoController : Controller
     {
         private readonly AppDbContext _context;
@@ -15,7 +19,9 @@ namespace ProyectoIntegradorFinal.Controllers
         // GET: Carrito
         public async Task<IActionResult> Index()
         {
-            int usuarioId = 1; // despues reemplazamos con el ID del usuario actual
+            int usuarioId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+            );
 
             var carrito = await _context.Carritos
                 .Include(c => c.Items).ThenInclude(i => i.Producto).FirstOrDefaultAsync(c => c.IdUsuario == usuarioId);

@@ -62,13 +62,23 @@
                                     Contraseña
                                 </label>
 
-                                <input type="password"
-                                       id="password"
-                                       name="password"
-                                       class="form-control"
-                                       placeholder="Ingresá tu contraseña"
-                                       autocomplete="current-password"
-                                       required />
+                                <div class="input-group">
+                                    <input type="password"
+                                           id="password"
+                                           name="password"
+                                           class="form-control"
+                                           placeholder="Ingresá tu contraseña"
+                                           autocomplete="current-password"
+                                           required />
+
+                                    <button type="button"
+                                            class="btn btn-outline-secondary"
+                                            onclick="alternarPassword('password', this)"
+                                            aria-label="Mostrar contraseña"
+                                            title="Mostrar contraseña">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
 
                             <button type="submit"
@@ -80,6 +90,7 @@
 
                         <p class="text-center mt-4 mb-0">
                             ¿Todavía no tenés una cuenta?
+
                             <a asp-controller="Usuario"
                                asp-action="Registro"
                                class="registro-link">
@@ -113,3 +124,26 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        function alternarPassword(id, boton) {
+            const campo = document.getElementById(id);
+            const icono = boton.querySelector('i');
+
+            if (campo.type === 'password') {
+                campo.type = 'text';
+                icono.classList.replace('fa-eye', 'fa-eye-slash');
+
+                boton.setAttribute('aria-label', 'Ocultar contraseña');
+                boton.setAttribute('title', 'Ocultar contraseña');
+            } else {
+                campo.type = 'password';
+                icono.classList.replace('fa-eye-slash', 'fa-eye');
+
+                boton.setAttribute('aria-label', 'Mostrar contraseña');
+                boton.setAttribute('title', 'Mostrar contraseña');
+            }
+        }
+    </script>
+}
