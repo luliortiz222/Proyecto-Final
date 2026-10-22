@@ -74,5 +74,42 @@ namespace ProyectoIntegradorFinal.Controllers
 
             return View(orden);
         }
+
+        // POST: Orden/CambiarEstado
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> CambiarEstado(int id, string estado)
+        {
+            var orden = await _context.Ordenes
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+
+            if (orden == null)
+                return NotFound();
+
+            var estadosPermitidos = new[]
+            {
+            "Pendiente",
+            "Observado",
+            "En camino",
+            "Finalizado",
+            "Cancelado"
+        };
+
+            if (string.IsNullOrWhiteSpace(estado) ||
+                !estadosPermitidos.Contains(estado))
+            {
+                TempData["Error"] = "El estado seleccionado no es válido.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            orden.Estado = estado;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = $"La orden #{orden.IdOrden} se actualizó a '{estado}'.";
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
     }
 }

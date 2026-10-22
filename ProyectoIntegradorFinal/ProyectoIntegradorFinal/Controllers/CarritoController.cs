@@ -36,7 +36,6 @@ namespace ProyectoIntegradorFinal.Controllers
 
             if (usuarioId == 0)
             {
-                // Si no está logueado, lo mandamos al Login
                 return RedirectToAction("Login", "Usuarios");
             }
 
@@ -56,6 +55,12 @@ namespace ProyectoIntegradorFinal.Controllers
                 _context.Carritos.Add(carrito);
                 await _context.SaveChangesAsync();
             }
+
+            ViewBag.Direcciones = await _context.Direccion
+                .Where(d => d.IdUsuario == usuarioId)
+                .OrderBy(d => d.Ciudad)
+                .ThenBy(d => d.Calle)
+                .ToListAsync();
 
             return View(carrito);
         }
@@ -234,35 +239,55 @@ namespace ProyectoIntegradorFinal.Controllers
         }
 
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FinalizarCompra()
+        public async Task<IActionResult> FinalizarCompra(int idDireccion)
         {
             int usuarioActual = ObtenerUsuarioId();
 
+            if (usuarioActual == 0)
+                return Challenge();
+
             var carrito = await _context.Carritos
-            .Include(c => c.Items)
-            .ThenInclude(i => i.Producto)
-            .FirstOrDefaultAsync(c => c.IdUsuario == usuarioActual);
+                .Include(c => c.Items)
+                    .ThenInclude(i => i.Producto)
+                .FirstOrDefaultAsync(c => c.IdUsuario == usuarioActual);
 
             if (carrito == null || carrito.Items == null || !carrito.Items.Any())
             {
+                TempData["Error"] = "Tu carrito está vacío.";
                 return RedirectToAction(nameof(Index));
             }
 
-            var direccion = await _context.Direccion.FirstOrDefaultAsync(d => d.IdUsuario == usuarioActual);
+            // Verificar que la dirección elegida pertenezca al cliente.
+            var direccion = await _context.Direccion
+                .FirstOrDefaultAsync(d =>
+                    d.IdDireccion == idDireccion &&
+                    d.IdUsuario == usuarioActual);
 
             if (direccion == null)
             {
-                TempData["Error"] = "Debe tener una dirección registrada para finalizar la compra.";
-                return RedirectToAction("Index", "Direcciones");
+                TempData["Error"] = "Seleccioná una dirección de entrega válida.";
+                return RedirectToAction(nameof(Index));
             }
 
-            decimal totalOrden = 0;
             foreach (var item in carrito.Items)
             {
-                totalOrden += item.cantidad * item.Producto.Precio;
+                if (item.Producto == null ||
+                    item.cantidad < 1 ||
+                    item.Producto.Stock < item.cantidad)
+                {
+                    TempData["Error"] =
+                        $"No hay stock suficiente para {item.Producto?.Nombre ?? "uno de los productos"}. Revisá tu carrito.";
+
+                    return RedirectToAction(nameof(Index));
+                }
             }
+
+            decimal totalOrden = carrito.Items.Sum(
+                item => item.cantidad * item.Producto!.Precio
+            );
 
             var orden = new Orden
             {
@@ -273,33 +298,43 @@ namespace ProyectoIntegradorFinal.Controllers
                 Estado = "Pendiente"
             };
 
-
             foreach (var item in carrito.Items)
             {
                 var detalleOrden = new DetalleOrden
                 {
                     IdProducto = item.IdProducto,
                     Cantidad = item.cantidad,
-                    PrecioUnitario = item.Producto.Precio,
-                    
+                    PrecioUnitario = item.Producto!.Precio
                 };
-                orden.Detalles.Add(detalleOrden);
-                
-                // Actualizar el stock del producto
-                item.Producto.Stock -= item.cantidad;
-                _context.Productos.Update(item.Producto);
 
+                orden.Detalles.Add(detalleOrden);
+                item.Producto.Stock -= item.cantidad;
             }
 
             _context.Ordenes.Add(orden);
+            await _context.SaveChangesAsync();
 
+            var pago = new Pago
+            {
+                IdOrden = orden.IdOrden,
+                FechaPago = DateTime.Now,
+                Monto = totalOrden,
+                MetodoPago = "Pendiente de selección",
+                EstadoPago = "Pendiente"
+            };
+
+            _context.Pagos.Add(pago);
             _context.ItemsCarrito.RemoveRange(carrito.Items);
+            carrito.FechaActualizacion = DateTime.Now;
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Details", "Orden", new { id = orden.IdOrden });
+            TempData["Mensaje"] =
+                "Tu orden se creó correctamente. El pago está pendiente.";
 
+            return RedirectToAction("Details", "Orden", new { id = orden.IdOrden });
         }
+
 
     }
 }

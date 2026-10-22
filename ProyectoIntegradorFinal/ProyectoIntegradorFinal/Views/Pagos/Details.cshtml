@@ -2,7 +2,10 @@
 
 @{
     ViewData["Title"] = "Detalle del pago";
+
     var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-AR");
+
+    bool esAdministrador = User.IsInRole("Administrador");
 
     var estado = (Model.EstadoPago ?? "").Trim().ToLowerInvariant();
 
@@ -23,7 +26,9 @@
         HOME ELIXIR
     </span>
 
-    <h2 class="mt-2">Detalle del pago #@Model.IdPago</h2>
+    <h2 class="mt-2">
+        Detalle del pago #@Model.IdPago
+    </h2>
 
     <p class="text-muted">
         Información del pago y de la orden asociada.
@@ -31,8 +36,29 @@
 
     <hr />
 
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["Mensaje"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
     <div class="row g-4">
 
+        <!-- INFORMACIÓN DEL PAGO -->
         <div class="col-12 col-lg-6">
             <div class="card shadow-sm h-100"
                  style="border-color: #E5D8C5;">
@@ -79,7 +105,7 @@
                         </h3>
                     </div>
 
-                    <div>
+                    <div class="mb-4">
                         <span class="text-muted d-block small mb-1">
                             Estado del pago
                         </span>
@@ -89,10 +115,96 @@
                         </span>
                     </div>
 
+                    @if (esAdministrador)
+                    {
+                        <hr />
+
+                        <!-- FORMULARIO PARA ADMINISTRAR EL PAGO -->
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-edit me-2"
+                               style="color: #B08D57;"></i>
+                            Actualizar pago
+                        </h5>
+
+                        <p class="text-muted small">
+                            Seleccioná el estado y, si corresponde, el método
+                            de pago informado.
+                        </p>
+
+                        <form asp-controller="Pagos"
+                              asp-action="CambiarEstado"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="id"
+                                   value="@Model.IdPago" />
+
+                            <div class="mb-3">
+                                <label for="estadoPago"
+                                       class="form-label fw-semibold">
+                                    Estado del pago
+                                </label>
+
+                                <select id="estadoPago"
+                                        name="estadoPago"
+                                        class="form-select"
+                                        required>
+
+                                    <option value="Pendiente"
+                                            selected="@(Model.EstadoPago == "Pendiente")">
+                                        Pendiente
+                                    </option>
+
+                                    <option value="En revisión"
+                                            selected="@(Model.EstadoPago == "En revisión" || Model.EstadoPago == "En revision")">
+                                        En revisión
+                                    </option>
+
+                                    <option value="Aprobado"
+                                            selected="@(Model.EstadoPago == "Aprobado")">
+                                        Aprobado
+                                    </option>
+
+                                    <option value="Rechazado"
+                                            selected="@(Model.EstadoPago == "Rechazado")">
+                                        Rechazado
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="metodoPago"
+                                       class="form-label fw-semibold">
+                                    Método de pago
+                                </label>
+
+                                <select id="metodoPago"
+                                        name="metodoPago"
+                                        class="form-select">
+
+                                    <option value="Transferencia bancaria"
+                                            selected="@(Model.MetodoPago == "Transferencia bancaria")">
+                                        Transferencia bancaria
+                                    </option>
+                                </select>
+                            </div>
+
+                            <button type="submit"
+                                    class="btn text-white w-100"
+                                    style="background-color: #96713D;"
+                                    onclick="return confirm('¿Confirmás la actualización del pago #@Model.IdPago?');">
+                                <i class="fas fa-save me-2"></i>
+                                Guardar cambios
+                            </button>
+                        </form>
+                    }
                 </div>
             </div>
         </div>
 
+        <!-- ORDEN ASOCIADA -->
         <div class="col-12 col-lg-6">
             <div class="card shadow-sm h-100"
                  style="border-color: #E5D8C5;">
@@ -140,6 +252,14 @@
                             </span>
                             <strong>@Model.Orden.Estado</strong>
                         </div>
+
+                        <a asp-controller="Orden"
+                           asp-action="Details"
+                           asp-route-id="@Model.IdOrden"
+                           class="btn btn-outline-dark mt-2">
+                            <i class="fas fa-eye me-2"></i>
+                            Ver detalle de la orden
+                        </a>
                     }
                     else
                     {
@@ -147,7 +267,6 @@
                             No se encontraron los datos de la orden asociada.
                         </div>
                     }
-
                 </div>
             </div>
         </div>

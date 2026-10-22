@@ -1,0 +1,108 @@
+﻿@model IEnumerable<ProyectoIntegradorFinal.Models.Pago>
+
+@{
+    ViewData["Title"] = "Mis pagos";
+    int paginaActual = ViewBag.PaginaActual ?? 1;
+    int totalPaginas = ViewBag.TotalPaginas ?? 1;
+    int totalRegistros = ViewBag.TotalRegistros ?? 0;
+}
+
+<div class="container mt-4 mb-5">
+    <h2 class="mb-2">Mis pagos</h2>
+    <p class="text-muted">
+        Consultá los pagos asociados a tus pedidos.
+    </p>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Todavía no tenés pagos registrados.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>N.º de pago</th>
+                        <th>N.º de orden</th>
+                        <th>Fecha</th>
+                        <th>Método de pago</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pago in Model)
+                    {
+                        <tr>
+                            <td>@pago.IdPago</td>
+                            <td>@pago.IdOrden</td>
+                            <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
+                            <td>@pago.MetodoPago</td>
+                            <td>@pago.Monto.ToString("C")</td>
+                            <td>
+                                @if (pago.EstadoPago == "Aprobado")
+                                {
+                                    <span class="badge bg-success">
+                                        @pago.EstadoPago
+                                    </span>
+                                }
+                                else if (pago.EstadoPago == "Rechazado")
+                                {
+                                    <span class="badge bg-danger">
+                                        @pago.EstadoPago
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        @pago.EstadoPago
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-3">
+            <span class="text-muted">
+                Total de pagos: @totalRegistros
+            </span>
+
+            <nav aria-label="Paginación de mis pagos">
+                <ul class="pagination mb-0">
+                    <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="MisPagos"
+                           asp-route-page="@(paginaActual - 1)">
+                            Anterior
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= totalPaginas; i++)
+                    {
+                        <li class="page-item @(i == paginaActual ? "active" : "")">
+                            <a class="page-link"
+                               asp-action="MisPagos"
+                               asp-route-page="@i">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="MisPagos"
+                           asp-route-page="@(paginaActual + 1)">
+                            Siguiente
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

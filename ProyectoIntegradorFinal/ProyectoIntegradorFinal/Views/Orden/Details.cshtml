@@ -2,9 +2,7 @@
 
 @{
     ViewData["Title"] = $"Orden #{Model.IdOrden}";
-
     bool esAdministrador = User.IsInRole("Administrador");
-
     var cultura = new System.Globalization.CultureInfo("es-AR");
 }
 
@@ -19,8 +17,7 @@
             </span>
 
             <h2 class="fw-bold mt-2 mb-1">
-                <i class="fas fa-receipt me-2"
-                   style="color: #B08D57;"></i>
+                <i class="fas fa-receipt me-2" style="color: #B08D57;"></i>
                 Orden #@Model.IdOrden
             </h2>
 
@@ -38,19 +35,14 @@
     </div>
 
     <!-- INFORMACIÓN GENERAL -->
-    <div class="card shadow-sm border-0 mb-4"
-         style="border-radius: 12px;">
-
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
         <div class="card-body p-4">
-
             <div class="row g-4">
 
                 <!-- DATOS DE LA ORDEN -->
                 <div class="col-md-6">
-
                     <h5 class="fw-bold mb-3">
-                        <i class="fas fa-file-invoice me-2"
-                           style="color: #B08D57;"></i>
+                        <i class="fas fa-file-invoice me-2" style="color: #B08D57;"></i>
                         Información de la orden
                     </h5>
 
@@ -71,10 +63,13 @@
                             string claseEstado = Model.Estado switch
                             {
                                 "Pendiente" => "bg-warning text-dark",
+                                "Observado" => "bg-danger",
+                                "En camino" => "bg-primary",
+                                "Finalizado" => "bg-success",
                                 "Procesando" => "bg-info text-dark",
                                 "Enviado" => "bg-primary",
                                 "Entregado" => "bg-success",
-                                "Cancelado" => "bg-danger",
+                                "Cancelado" => "bg-secondary",
                                 _ => "bg-secondary"
                             };
                         }
@@ -86,21 +81,16 @@
 
                     <p class="fs-5 mb-0">
                         <strong>Total:</strong>
-
-                        <span class="fw-bold"
-                              style="color: #96713D;">
+                        <span class="fw-bold" style="color: #96713D;">
                             @Model.Total.ToString("C", cultura)
                         </span>
                     </p>
-
                 </div>
 
                 <!-- DIRECCIÓN -->
                 <div class="col-md-6">
-
                     <h5 class="fw-bold mb-3">
-                        <i class="fas fa-map-marker-alt me-2"
-                           style="color: #B08D57;"></i>
+                        <i class="fas fa-map-marker-alt me-2" style="color: #B08D57;"></i>
                         Dirección de entrega
                     </h5>
 
@@ -127,7 +117,6 @@
                             No hay una dirección disponible.
                         </p>
                     }
-
                 </div>
 
                 <!-- DATOS DEL CLIENTE: SOLO ADMINISTRADOR -->
@@ -137,8 +126,7 @@
                         <hr />
 
                         <h5 class="fw-bold mb-3">
-                            <i class="fas fa-user me-2"
-                               style="color: #B08D57;"></i>
+                            <i class="fas fa-user me-2" style="color: #B08D57;"></i>
                             Datos del cliente
                         </h5>
 
@@ -154,6 +142,7 @@
                                 <strong>Email:</strong>
                                 @Model.Usuario.Email
                             </p>
+
                             <p class="mb-0">
                                 <strong>DNI:</strong>
                                 @Model.Usuario.Dni
@@ -169,28 +158,65 @@
                 }
 
             </div>
-
         </div>
     </div>
 
-    <!-- PRODUCTOS DE LA ORDEN -->
-    <div class="card shadow-sm border-0"
-         style="border-radius: 12px;">
+    <!-- CAMBIAR ESTADO: SOLO ADMINISTRADOR -->
+    @if (esAdministrador)
+    {
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3">Cambiar estado de la orden</h5>
 
+                <form asp-controller="Orden"
+                asp-action="CambiarEstado"
+                method="post"
+                id="formCambiarEstado">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="id" value="@Model.IdOrden" />
+
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label for="estado" class="form-label">Estado</label>
+
+                            <select id="estado" name="estado" class="form-select" required>
+                                <option value="Pendiente" selected="@(Model.Estado == "Pendiente")">Pendiente</option>
+                                <option value="Observado" selected="@(Model.Estado == "Observado")">Observado</option>
+                                <option value="En camino" selected="@(Model.Estado == "En camino")">En camino</option>
+                                <option value="Finalizado" selected="@(Model.Estado == "Finalizado")">Finalizado</option>
+                                <option value="Cancelado" selected="@(Model.Estado == "Cancelado")">Cancelado</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <button type="button"
+                            id="btnAbrirConfirmacionEstado"
+                            class="btn w-100 text-white"
+                            style="background-color: #96713D;">
+                                <i class="fas fa-save me-2"></i>
+                                Guardar estado
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <!-- PRODUCTOS DE LA ORDEN -->
+    <div class="card shadow-sm border-0" style="border-radius: 12px;">
         <div class="card-body p-4">
 
             <h5 class="fw-bold mb-4">
-                <i class="fas fa-box-open me-2"
-                   style="color: #B08D57;"></i>
+                <i class="fas fa-box-open me-2" style="color: #B08D57;"></i>
                 Productos de la orden
             </h5>
 
             @if (Model.Detalles != null && Model.Detalles.Any())
             {
                 <div class="table-responsive">
-
                     <table class="table table-hover align-middle">
-
                         <thead style="background: #F7F1E8;">
                             <tr>
                                 <th>Producto</th>
@@ -206,8 +232,7 @@
                                 <tr>
                                     <td>
                                         <span class="fw-semibold">
-                                            @(detalle.Producto?.Nombre
-                                                ?? "Producto no disponible")
+                                            @(detalle.Producto?.Nombre ?? "Producto no disponible")
                                         </span>
                                     </td>
 
@@ -220,8 +245,7 @@
                                     </td>
 
                                     <td class="text-end fw-semibold">
-                                        @((detalle.Cantidad * detalle.PrecioUnitario)
-                                            .ToString("C", cultura))
+                                        @((detalle.Cantidad * detalle.PrecioUnitario).ToString("C", cultura))
                                     </td>
                                 </tr>
                             }
@@ -229,37 +253,77 @@
 
                         <tfoot>
                             <tr>
-                                <td colspan="3"
-                                    class="text-end fw-bold">
+                                <td colspan="3" class="text-end fw-bold">
                                     Total de la orden
                                 </td>
 
-                                <td class="text-end fw-bold fs-5"
-                                    style="color: #96713D;">
+                                <td class="text-end fw-bold fs-5" style="color: #96713D;">
                                     @Model.Total.ToString("C", cultura)
                                 </td>
                             </tr>
                         </tfoot>
-
                     </table>
-
                 </div>
             }
             else
             {
                 <div class="p-3 rounded"
                      style="background: #F7F1E8; border: 1px solid #E5D8C5;">
-
-                    <i class="fas fa-info-circle me-2"
-                       style="color: #B08D57;"></i>
-
-                    Esta orden todavía no tiene productos asociados
-                    en sus detalles.
+                    <i class="fas fa-info-circle me-2" style="color: #B08D57;"></i>
+                    Esta orden todavía no tiene productos asociados en sus detalles.
                 </div>
             }
 
         </div>
     </div>
+
+    <!-- MODAL DE CONFIRMACIÓN -->
+    <div class="modal fade"
+         id="modalConfirmarEstado"
+         tabindex="-1"
+         aria-labelledby="tituloConfirmarEstado"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="tituloConfirmarEstado">
+                        Confirmar cambio de estado
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    ¿Confirmás el cambio de estado de esta orden?
+                    <p class="mt-3 mb-0">
+                        <strong>Orden:</strong> #@Model.IdOrden
+                    </p>
+                    <p class="mb-0">
+                        <strong>Nuevo estado:</strong>
+                        <span id="nuevoEstadoConfirmacion"></span>
+                    </p>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Volver
+                    </button>
+
+                    <button type="button"
+                            id="btnConfirmarEstado"
+                            class="btn text-white"
+                            style="background-color: #96713D;">
+                        Sí, confirmar cambio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
 
     <!-- BOTÓN INFERIOR -->
     <div class="mt-4">
@@ -272,3 +336,39 @@
     </div>
 
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const formulario = document.getElementById("formCambiarEstado");
+            const selectorEstado = document.getElementById("estado");
+            const botonAbrir = document.getElementById("btnAbrirConfirmacionEstado");
+            const botonConfirmar = document.getElementById("btnConfirmarEstado");
+            const textoEstado = document.getElementById("nuevoEstadoConfirmacion");
+            const modalElemento = document.getElementById("modalConfirmarEstado");
+
+            if (!formulario || !selectorEstado || !botonAbrir ||
+                !botonConfirmar || !textoEstado || !modalElemento) {
+                return;
+            }
+
+            document.body.appendChild(modalElemento);
+
+            botonAbrir.addEventListener("click", function() {
+                if (!selectorEstado.value) {
+                    selectorEstado.reportValidity();
+                    return;
+                }
+
+                textoEstado.textContent =
+                    selectorEstado.options[selectorEstado.selectedIndex].text;
+
+                bootstrap.Modal.getOrCreateInstance(modalElemento).show();
+            });
+
+            botonConfirmar.addEventListener("click", function() {
+                formulario.requestSubmit();
+            });
+        });
+    </script>
+}

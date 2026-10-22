@@ -142,7 +142,18 @@
                             </li>
                         }
 
-                        
+                        @if (User.IsInRole("Cliente"))
+                            {
+
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                    asp-controller="Pagos"
+                                    asp-action="MisPagos">
+                                        Mis pagos
+                                    </a>
+                                </li>
+                            }
+
 
                     </ul>
 

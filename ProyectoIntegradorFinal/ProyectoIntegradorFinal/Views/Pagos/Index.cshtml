@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "Gestión de pagos";
+
+    int paginaActual = ViewBag.PaginaActual ?? 1;
+    int totalPaginas = ViewBag.TotalPaginas ?? 1;
+    int totalRegistros = ViewBag.TotalRegistros ?? 0;
 }
 
 <div class="container mt-4 mb-5">
@@ -20,7 +24,7 @@
         </div>
 
         <span class="badge rounded-pill text-bg-dark px-3 py-2">
-            @Model.Count() pagos
+            @totalRegistros pagos
         </span>
     </div>
 
@@ -28,8 +32,10 @@
 
     @if (TempData["Mensaje"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show">
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
             @TempData["Mensaje"]
+
             <button type="button"
                     class="btn-close"
                     data-bs-dismiss="alert"
@@ -75,7 +81,8 @@
                             @foreach (var pago in Model)
                             {
                                 var estado = (pago.EstadoPago ?? "")
-                                    .Trim().ToLowerInvariant();
+                                    .Trim()
+                                    .ToLowerInvariant();
 
                                 var claseEstado = estado switch
                                 {
@@ -108,7 +115,7 @@
                                         #@pago.IdOrden
                                     </td>
 
-                                    <td>
+                                    <td class="text-nowrap">
                                         @pago.FechaPago.ToString("dd/MM/yyyy HH:mm")
                                     </td>
 
@@ -119,7 +126,8 @@
                                     </td>
 
                                     <td class="text-nowrap">
-                                        @pago.Monto.ToString("C2",
+                                        @pago.Monto.ToString(
+                                            "C2",
                                             System.Globalization.CultureInfo.GetCultureInfo("es-AR"))
                                     </td>
 
@@ -143,6 +151,53 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if (totalPaginas > 1)
+                {
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mt-4 gap-3">
+
+                        <span class="text-muted small">
+                            Página @paginaActual de @totalPaginas
+                        </span>
+
+                        <nav aria-label="Paginación de pagos">
+                            <ul class="pagination justify-content-center mb-0">
+
+                                <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-controller="Pagos"
+                                       asp-action="Index"
+                                       asp-route-page="@(paginaActual - 1)">
+                                        Anterior
+                                    </a>
+                                </li>
+
+                                @for (int i = 1; i <= totalPaginas; i++)
+                                {
+                                    <li class="page-item @(i == paginaActual ? "active" : "")">
+                                        <a class="page-link"
+                                           asp-controller="Pagos"
+                                           asp-action="Index"
+                                           asp-route-page="@i">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-controller="Pagos"
+                                       asp-action="Index"
+                                       asp-route-page="@(paginaActual + 1)">
+                                        Siguiente
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </nav>
+
+                    </div>
+                }
             }
 
         </div>

@@ -4,6 +4,8 @@
     ViewData["Title"] = "Mi carrito";
 
     var items = Model?.Items;
+    var direcciones = ViewBag.Direcciones as IEnumerable<ProyectoIntegradorFinal.Models.Direccion>;
+
     decimal total = items == null
         ? 0
         : items.Sum(item => item.cantidad * item.Producto.Precio);
@@ -20,27 +22,19 @@
             </p>
         </div>
 
-        @if (TempData["MensajeCarrito"] != null)
+        @if (TempData["Mensaje"] != null || TempData["MensajeCarrito"] != null)
         {
-            <div class="alert alert-success alert-dismissible fade show"
-                 role="alert">
-                @TempData["MensajeCarrito"]
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"
-                        aria-label="Cerrar"></button>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @(TempData["Mensaje"] ?? TempData["MensajeCarrito"])
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
             </div>
         }
 
-        @if (TempData["ErrorCarrito"] != null)
+        @if (TempData["Error"] != null || TempData["ErrorCarrito"] != null)
         {
-            <div class="alert alert-danger alert-dismissible fade show"
-                 role="alert">
-                @TempData["ErrorCarrito"]
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"
-                        aria-label="Cerrar"></button>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @(TempData["Error"] ?? TempData["ErrorCarrito"])
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
             </div>
         }
 
@@ -69,7 +63,6 @@
         {
             <div class="row g-4">
 
-                <!-- Lista de productos -->
                 <div class="col-lg-8">
                     <div class="carrito-lista">
 
@@ -96,27 +89,18 @@
 
                                     <p class="carrito-precio-unitario">
                                         Precio unitario:
-                                        <strong>
-                                            @item.Producto.Precio.ToString("C")
-                                        </strong>
+                                        <strong>@item.Producto.Precio.ToString("C")</strong>
                                     </p>
 
-                                    <!-- Control de cantidad -->
                                     <div class="cantidad-control">
 
-                                        <!-- Restar una unidad -->
                                         <form asp-controller="Carrito"
                                               asp-action="ActualizarCantidad"
                                               method="post">
                                             @Html.AntiForgeryToken()
 
-                                            <input type="hidden"
-                                                   name="itemId"
-                                                   value="@item.IdItem" />
-
-                                            <input type="hidden"
-                                                   name="cantidad"
-                                                   value="@(item.cantidad - 1)" />
+                                            <input type="hidden" name="itemId" value="@item.IdItem" />
+                                            <input type="hidden" name="cantidad" value="@(item.cantidad - 1)" />
 
                                             <button type="submit"
                                                     class="btn-cantidad"
@@ -126,23 +110,15 @@
                                             </button>
                                         </form>
 
-                                        <span class="cantidad-numero">
-                                            @item.cantidad
-                                        </span>
+                                        <span class="cantidad-numero">@item.cantidad</span>
 
-                                        <!-- Sumar una unidad -->
                                         <form asp-controller="Carrito"
                                               asp-action="ActualizarCantidad"
                                               method="post">
                                             @Html.AntiForgeryToken()
 
-                                            <input type="hidden"
-                                                   name="itemId"
-                                                   value="@item.IdItem" />
-
-                                            <input type="hidden"
-                                                   name="cantidad"
-                                                   value="@(item.cantidad + 1)" />
+                                            <input type="hidden" name="itemId" value="@item.IdItem" />
+                                            <input type="hidden" name="cantidad" value="@(item.cantidad + 1)" />
 
                                             <button type="submit"
                                                     class="btn-cantidad"
@@ -157,43 +133,68 @@
                                     <p class="carrito-stock">
                                         @if (item.Producto.Stock > 0)
                                         {
-                                            <span>
-                                                Stock disponible: @item.Producto.Stock
-                                            </span>
+                                            <span>Stock disponible: @item.Producto.Stock</span>
                                         }
                                         else
                                         {
-                                            <span class="text-danger">
-                                                Sin stock disponible
-                                            </span>
+                                            <span class="text-danger">Sin stock disponible</span>
                                         }
                                     </p>
 
-                                    <!-- Eliminar producto -->
-                                    <form asp-controller="Carrito"
-                                          asp-action="EliminarItem"
-                                          method="post"
-                                          onsubmit="return confirm('¿Querés quitar este producto del carrito?');">
+                                    <button type="button"
+                                            class="btn-eliminar-carrito"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEliminarItem-@item.IdItem">
+                                        Eliminar producto
+                                    </button>
 
-                                        @Html.AntiForgeryToken()
+                                    <div class="modal fade"
+                                         id="modalEliminarItem-@item.IdItem"
+                                         tabindex="-1"
+                                         aria-labelledby="tituloEliminarItem-@item.IdItem"
+                                         aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="tituloEliminarItem-@item.IdItem">
+                                                        Eliminar producto
+                                                    </h5>
+                                                    <button type="button"
+                                                            class="btn-close"
+                                                            data-bs-dismiss="modal"
+                                                            aria-label="Cerrar"></button>
+                                                </div>
 
-                                        <input type="hidden"
-                                               name="itemId"
-                                               value="@item.IdItem" />
+                                                <div class="modal-body">
+                                                    ¿Querés quitar <strong>@item.Producto.Nombre</strong> del carrito?
+                                                </div>
 
-                                        <button type="submit"
-                                                class="btn-eliminar-carrito">
-                                            Eliminar producto
-                                        </button>
-                                    </form>
+                                                <div class="modal-footer">
+                                                    <button type="button"
+                                                            class="btn btn-outline-secondary"
+                                                            data-bs-dismiss="modal">
+                                                        Volver
+                                                    </button>
+
+                                                    <form asp-controller="Carrito"
+                                                          asp-action="EliminarItem"
+                                                          method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="itemId" value="@item.IdItem" />
+
+                                                        <button type="submit" class="btn btn-carrito">
+                                                            Sí, eliminar
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <!-- Subtotal por producto -->
                                 <div class="carrito-producto-subtotal">
                                     <span>Subtotal</span>
-                                    <strong>
-                                        @((item.cantidad * item.Producto.Precio).ToString("C"))
-                                    </strong>
+                                    <strong>@((item.cantidad * item.Producto.Precio).ToString("C"))</strong>
                                 </div>
 
                             </div>
@@ -210,7 +211,6 @@
                     </div>
                 </div>
 
-                <!-- Resumen de compra -->
                 <div class="col-lg-4">
                     <div class="carrito-resumen">
                         <h2>Resumen de compra</h2>
@@ -241,22 +241,96 @@
                             El envío y el importe definitivo se confirmarán
                             durante el proceso de compra.
                         </p>
-                        
-                        
-                        <form asp-controller="Carrito" asp-action="FinalizarCompra" method="post">
-                                <button type="submit"
-                                class="btn btn-carrito w-100"
-                                title="El proceso de compra">
+
+                        @if (direcciones != null && direcciones.Any())
+                        {
+                            <form asp-controller="Carrito"
+                                  asp-action="FinalizarCompra"
+                                  method="post"
+                                  id="formFinalizarCompra">
+                                @Html.AntiForgeryToken()
+
+                                <div class="mb-3">
+                                    <label for="idDireccion" class="form-label fw-semibold">
+                                        Dirección de entrega
+                                    </label>
+
+                                    <select id="idDireccion"
+                                            name="idDireccion"
+                                            class="form-select"
+                                            required>
+                                        <option value="">Seleccioná una dirección</option>
+
+                                        @foreach (var direccion in direcciones)
+                                        {
+                                            <option value="@direccion.IdDireccion">
+                                                @direccion.Calle @direccion.Numero,
+                                                @direccion.Ciudad, @direccion.Provincia
+                                                (CP: @direccion.CodigoPostal)
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <button type="button"
+                                        id="btnAbrirConfirmacion"
+                                        class="btn btn-carrito w-100">
                                     Finalizar compra
                                 </button>
-                        </form> 
-                        
-                        
-                        
-                            
-                        
+                            </form>
 
-                        
+                            <div class="modal fade"
+                                 id="modalConfirmarCompra"
+                                 tabindex="-1"
+                                 aria-labelledby="tituloConfirmarCompra"
+                                 aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="tituloConfirmarCompra">
+                                                Confirmar compra
+                                            </h5>
+                                            <button type="button"
+                                                    class="btn-close"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Cerrar"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            ¿Confirmás la compra con la dirección seleccionada?
+                                            <p class="mt-2 mb-0 text-muted" id="direccionConfirmacion"></p>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary"
+                                                    data-bs-dismiss="modal">
+                                                Volver
+                                            </button>
+
+                                            <button type="button"
+                                                    id="btnConfirmarCompra"
+                                                    class="btn btn-carrito">
+                                                Sí, confirmar compra
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted small">
+                                Para finalizar la compra, primero registrá una dirección de entrega.
+                            </p>
+
+                            <a asp-controller="Direccion"
+                               asp-action="Index"
+                               class="btn btn-carrito w-100">
+                                Registrar dirección
+                            </a>
+                        }
+
                     </div>
                 </div>
 
@@ -265,3 +339,40 @@
 
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const formulario = document.getElementById("formFinalizarCompra");
+            const selectorDireccion = document.getElementById("idDireccion");
+            const botonAbrir = document.getElementById("btnAbrirConfirmacion");
+            const botonConfirmar = document.getElementById("btnConfirmarCompra");
+            const textoDireccion = document.getElementById("direccionConfirmacion");
+            const modalElemento = document.getElementById("modalConfirmarCompra");
+
+            if (!formulario || !selectorDireccion || !botonAbrir ||
+                !botonConfirmar || !textoDireccion || !modalElemento) {
+                return;
+            }
+
+            // Mover el modal al body evita problemas de capas y clics.
+            document.body.appendChild(modalElemento);
+
+            botonAbrir.addEventListener("click", function() {
+                if (!selectorDireccion.value) {
+                    selectorDireccion.reportValidity();
+                    return;
+                }
+
+                textoDireccion.textContent =
+                    selectorDireccion.options[selectorDireccion.selectedIndex].text;
+
+                bootstrap.Modal.getOrCreateInstance(modalElemento).show();
+            });
+
+            botonConfirmar.addEventListener("click", function() {
+                formulario.requestSubmit();
+            });
+        });
+    </script>
+}

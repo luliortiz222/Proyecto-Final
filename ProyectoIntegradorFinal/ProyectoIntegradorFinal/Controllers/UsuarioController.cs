@@ -1,20 +1,17 @@
 ﻿
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.IO;
 using System.Linq;
 using ProyectoIntegradorFinal.Models;
 using ProyectoIntegradorFinal.Data;
-using Microsoft.AspNetCore.Authorization;
 using ProyectoIntegradorFinal.ViewModels;
-using Microsoft.AspNetCore.Identity;
-
 
 namespace ProyectoIntegradorFinal.Controllers
 {
@@ -45,11 +42,15 @@ namespace ProyectoIntegradorFinal.Controllers
             Usuario usuario,
             IFormFile? avatarArchivo)
         {
-            // Datos administrados por el servidor.
+            // Los datos sensibles del sistema los administra el servidor.
             usuario.Rol = "Cliente";
             usuario.FechaIngreso = DateTime.Now;
 
-            // Se valida el archivo manualmente.
+            usuario.Nombre = usuario.Nombre?.Trim() ?? "";
+            usuario.Apellido = usuario.Apellido?.Trim() ?? "";
+            usuario.Dni = usuario.Dni?.Trim() ?? "";
+            usuario.Email = usuario.Email?.Trim() ?? "";
+
             ModelState.Remove(nameof(Usuario.Rol));
             ModelState.Remove(nameof(Usuario.avatar));
             ModelState.Remove(nameof(Usuario.Direccion));
@@ -58,8 +59,7 @@ namespace ProyectoIntegradorFinal.Controllers
             {
                 ModelState.AddModelError(
                     "avatarArchivo",
-                    "Debés seleccionar una imagen de perfil."
-                );
+                    "Debés seleccionar una imagen de perfil.");
             }
             else
             {
@@ -74,16 +74,14 @@ namespace ProyectoIntegradorFinal.Controllers
                 {
                     ModelState.AddModelError(
                         "avatarArchivo",
-                        "La imagen debe ser JPG, JPEG, PNG o WEBP."
-                    );
+                        "La imagen debe ser JPG, JPEG, PNG o WEBP.");
                 }
 
                 if (avatarArchivo.Length > 2 * 1024 * 1024)
                 {
                     ModelState.AddModelError(
                         "avatarArchivo",
-                        "La imagen no puede superar los 2 MB."
-                    );
+                        "La imagen no puede superar los 2 MB.");
                 }
             }
 
@@ -99,8 +97,7 @@ namespace ProyectoIntegradorFinal.Controllers
             {
                 ModelState.AddModelError(
                     nameof(Usuario.Email),
-                    "Ya existe una cuenta con ese correo electrónico."
-                );
+                    "Ya existe una cuenta con ese correo electrónico.");
 
                 return View(usuario);
             }
@@ -112,8 +109,7 @@ namespace ProyectoIntegradorFinal.Controllers
             {
                 ModelState.AddModelError(
                     nameof(Usuario.Dni),
-                    "Ya existe una cuenta con ese DNI."
-                );
+                    "Ya existe una cuenta con ese DNI.");
 
                 return View(usuario);
             }
@@ -121,8 +117,7 @@ namespace ProyectoIntegradorFinal.Controllers
             string carpeta = Path.Combine(
                 _environment.WebRootPath,
                 "images",
-                "avatares"
-            );
+                "avatares");
 
             Directory.CreateDirectory(carpeta);
 
@@ -135,8 +130,7 @@ namespace ProyectoIntegradorFinal.Controllers
 
             string rutaCompleta = Path.Combine(
                 carpeta,
-                nombreArchivo
-            );
+                nombreArchivo);
 
             try
             {
@@ -147,14 +141,12 @@ namespace ProyectoIntegradorFinal.Controllers
                     await avatarArchivo.CopyToAsync(stream);
                 }
 
-                // Ruta relativa que se guarda en MySQL.
                 usuario.avatar =
                     $"/images/avatares/{nombreArchivo}";
 
-
-                var passwordHasher = new PasswordHasher<Usuario>();
-                usuario.Password = passwordHasher.HashPassword(usuario, usuario.Password);
-
+                // Hash de contraseña con BCrypt.
+                usuario.Password =
+                    BCrypt.Net.BCrypt.HashPassword(usuario.Password);
 
                 _context.Usuarios.Add(usuario);
                 await _context.SaveChangesAsync();
@@ -172,13 +164,11 @@ namespace ProyectoIntegradorFinal.Controllers
                 }
 
                 Console.WriteLine(
-                    $"Error al crear la cuenta: {ex}"
-                );
+                    $"Error al crear la cuenta: {ex}");
 
                 ModelState.AddModelError(
                     string.Empty,
-                    "No se pudo crear la cuenta. Intentá nuevamente."
-                );
+                    "No se pudo crear la cuenta. Intentá nuevamente.");
 
                 return View(usuario);
             }
@@ -194,9 +184,12 @@ namespace ProyectoIntegradorFinal.Controllers
         // POST: /Usuario/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string email,string password)
+        public async Task<IActionResult> Login(
+            string email,
+            string password)
         {
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(password))
             {
                 ViewBag.Error =
                     "Ingresá tu correo y contraseña.";
@@ -204,38 +197,59 @@ namespace ProyectoIntegradorFinal.Controllers
                 return View();
             }
 
+            email = email.Trim();
+
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u =>
-                    u.Email == email );
+                .FirstOrDefaultAsync(u => u.Email == email);
 
-            if (usuario != null)
+            bool passwordValida = false;
+
+            if (usuario != null &&
+                !string.IsNullOrWhiteSpace(usuario.Password))
             {
-                var passwordHasher = new PasswordHasher<Usuario>();
-                var resultado = passwordHasher.VerifyHashedPassword(usuario, usuario.Password, password);
-
-                if (resultado == PasswordVerificationResult.Failed)
+                try
                 {
-                    usuario = null;
+                    passwordValida =
+                        BCrypt.Net.BCrypt.Verify(
+                            password,
+                            usuario.Password);
+                }
+                catch (BCrypt.Net.SaltParseException)
+                {
+                    // El hash almacenado no tiene formato BCrypt válido.
+                    passwordValida = false;
                 }
             }
-            if (usuario == null)
+
+            if (usuario == null || !passwordValida)
             {
                 ViewBag.Error =
                     "Correo o contraseña incorrectos.";
+
                 return View();
             }
 
             var claims = new List<Claim>
-           {
-            new Claim(ClaimTypes.NameIdentifier,usuario.IdUsuario.ToString()),
+            {
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    usuario.IdUsuario.ToString()),
 
-            new Claim(ClaimTypes.Name,usuario.Nombre + " " + usuario.Apellido),
+                new Claim(
+                    ClaimTypes.Name,
+                    usuario.Nombre + " " + usuario.Apellido),
 
-            new Claim(ClaimTypes.Email,usuario.Email),
+                new Claim(
+                    ClaimTypes.Email,
+                    usuario.Email),
 
-            new Claim(ClaimTypes.Role,usuario.Rol),
+                new Claim(
+                    ClaimTypes.Role,
+                    usuario.Rol),
 
-            new Claim("Avatar",usuario.avatar ?? "")
+                new Claim(
+                    "Avatar",
+                    usuario.avatar ?? "")
             };
 
             var identidad = new ClaimsIdentity(
@@ -259,15 +273,16 @@ namespace ProyectoIntegradorFinal.Controllers
             await HttpContext.SignOutAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme);
 
-            return RedirectToAction("Login");
+            return RedirectToAction(nameof(Login));
         }
 
-
+        // GET: /Usuario/Perfil
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Perfil()
         {
-            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var idClaim =
+                User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (!int.TryParse(idClaim, out int idUsuario))
             {
@@ -275,7 +290,8 @@ namespace ProyectoIntegradorFinal.Controllers
             }
 
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario);
+                .FirstOrDefaultAsync(
+                    u => u.IdUsuario == idUsuario);
 
             if (usuario == null)
             {
@@ -294,12 +310,15 @@ namespace ProyectoIntegradorFinal.Controllers
             return View(modelo);
         }
 
+        // POST: /Usuario/Perfil
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Perfil(PerfilUsuarioViewModel modelo)
+        public async Task<IActionResult> Perfil(
+            PerfilUsuarioViewModel modelo)
         {
-            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var idClaim =
+                User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (!int.TryParse(idClaim, out int idUsuario))
             {
@@ -307,7 +326,8 @@ namespace ProyectoIntegradorFinal.Controllers
             }
 
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario);
+                .FirstOrDefaultAsync(
+                    u => u.IdUsuario == idUsuario);
 
             if (usuario == null)
             {
@@ -316,7 +336,7 @@ namespace ProyectoIntegradorFinal.Controllers
 
             modelo.AvatarActual = usuario.avatar;
 
-            // La contraseña es opcional: solo se cambia si se completa.
+            // La contraseña es opcional al editar el perfil.
             bool cambiarPassword =
                 !string.IsNullOrWhiteSpace(modelo.PasswordActual) ||
                 !string.IsNullOrWhiteSpace(modelo.NuevaPassword) ||
@@ -332,25 +352,54 @@ namespace ProyectoIntegradorFinal.Controllers
                         string.Empty,
                         "Para cambiar la contraseña, completá los tres campos.");
                 }
-                else if (usuario.Password != modelo.PasswordActual)
+                else
                 {
-                    ModelState.AddModelError(
-                        nameof(modelo.PasswordActual),
-                        "La contraseña actual es incorrecta.");
-                }
-                else if (modelo.NuevaPassword.Length < 8)
-                {
-                    ModelState.AddModelError(
-                        nameof(modelo.NuevaPassword),
-                        "La nueva contraseña debe tener al menos 8 caracteres.");
+                    bool passwordActualValida = false;
+
+                    try
+                    {
+                        passwordActualValida =
+                            BCrypt.Net.BCrypt.Verify(
+                                modelo.PasswordActual,
+                                usuario.Password);
+                    }
+                    catch (BCrypt.Net.SaltParseException)
+                    {
+                        passwordActualValida = false;
+                    }
+
+                    if (!passwordActualValida)
+                    {
+                        ModelState.AddModelError(
+                            nameof(modelo.PasswordActual),
+                            "La contraseña actual es incorrecta.");
+                    }
+
+                    if (modelo.NuevaPassword.Length < 8)
+                    {
+                        ModelState.AddModelError(
+                            nameof(modelo.NuevaPassword),
+                            "La nueva contraseña debe tener al menos 8 caracteres.");
+                    }
+
+                    if (modelo.NuevaPassword != modelo.ConfirmarPassword)
+                    {
+                        ModelState.AddModelError(
+                            nameof(modelo.ConfirmarPassword),
+                            "Las contraseñas nuevas no coinciden.");
+                    }
                 }
             }
 
-            // Validamos que el email no pertenezca a otra cuenta.
+            // Validación de correo duplicado.
             if (!string.IsNullOrWhiteSpace(modelo.Email))
             {
-                bool emailExiste = await _context.Usuarios.AnyAsync(u =>
-                    u.Email == modelo.Email && u.IdUsuario != idUsuario);
+                modelo.Email = modelo.Email.Trim();
+
+                bool emailExiste = await _context.Usuarios
+                    .AnyAsync(u =>
+                        u.Email == modelo.Email &&
+                        u.IdUsuario != idUsuario);
 
                 if (emailExiste)
                 {
@@ -360,11 +409,15 @@ namespace ProyectoIntegradorFinal.Controllers
                 }
             }
 
-            // Validamos que el DNI no pertenezca a otra cuenta.
+            // Validación de DNI duplicado.
             if (!string.IsNullOrWhiteSpace(modelo.Dni))
             {
-                bool dniExiste = await _context.Usuarios.AnyAsync(u =>
-                    u.Dni == modelo.Dni && u.IdUsuario != idUsuario);
+                modelo.Dni = modelo.Dni.Trim();
+
+                bool dniExiste = await _context.Usuarios
+                    .AnyAsync(u =>
+                        u.Dni == modelo.Dni &&
+                        u.IdUsuario != idUsuario);
 
                 if (dniExiste)
                 {
@@ -374,7 +427,7 @@ namespace ProyectoIntegradorFinal.Controllers
                 }
             }
 
-            // La imagen es opcional al editar el perfil.
+            // Validación del avatar opcional.
             if (modelo.AvatarArchivo != null &&
                 modelo.AvatarArchivo.Length > 0)
             {
@@ -410,10 +463,12 @@ namespace ProyectoIntegradorFinal.Controllers
             usuario.Dni = modelo.Dni.Trim();
             usuario.Email = modelo.Email.Trim();
 
+            // Guardar la nueva contraseña también con BCrypt.
             if (cambiarPassword)
             {
-                // Conservamos el mismo método de almacenamiento que usa actualmente el Login
-                usuario.Password = modelo.NuevaPassword!;
+                usuario.Password =
+                    BCrypt.Net.BCrypt.HashPassword(
+                        modelo.NuevaPassword!);
             }
 
             if (modelo.AvatarArchivo != null &&
@@ -429,42 +484,46 @@ namespace ProyectoIntegradorFinal.Controllers
                 string nombreArchivo =
                     $"{Guid.NewGuid()}{Path.GetExtension(modelo.AvatarArchivo.FileName).ToLowerInvariant()}";
 
-                string rutaCompleta = Path.Combine(carpeta, nombreArchivo);
+                string rutaCompleta = Path.Combine(
+                    carpeta,
+                    nombreArchivo);
 
                 using (var stream = new FileStream(
-                    rutaCompleta, FileMode.CreateNew))
+                    rutaCompleta,
+                    FileMode.CreateNew))
                 {
                     await modelo.AvatarArchivo.CopyToAsync(stream);
                 }
 
-                usuario.avatar = $"/images/avatares/{nombreArchivo}";
+                usuario.avatar =
+                    $"/images/avatares/{nombreArchivo}";
             }
 
             await _context.SaveChangesAsync();
 
-            // Actualizamos la cookie para reflejar nombre, email y avatar nuevos.
+            // Actualizar las cookies con los datos nuevos.
             var claims = new List<Claim>
-    {
-        new Claim(
-            ClaimTypes.NameIdentifier,
-            usuario.IdUsuario.ToString()),
+            {
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    usuario.IdUsuario.ToString()),
 
-        new Claim(
-            ClaimTypes.Name,
-            usuario.Nombre + " " + usuario.Apellido),
+                new Claim(
+                    ClaimTypes.Name,
+                    usuario.Nombre + " " + usuario.Apellido),
 
-        new Claim(
-            ClaimTypes.Email,
-            usuario.Email),
+                new Claim(
+                    ClaimTypes.Email,
+                    usuario.Email),
 
-        new Claim(
-            ClaimTypes.Role,
-            usuario.Rol),
+                new Claim(
+                    ClaimTypes.Role,
+                    usuario.Rol),
 
-        new Claim(
-            "Avatar",
-            usuario.avatar ?? "")
-    };
+                new Claim(
+                    "Avatar",
+                    usuario.avatar ?? "")
+            };
 
             var identidad = new ClaimsIdentity(
                 claims,
@@ -479,6 +538,5 @@ namespace ProyectoIntegradorFinal.Controllers
 
             return RedirectToAction(nameof(Perfil));
         }
-
     }
 }
