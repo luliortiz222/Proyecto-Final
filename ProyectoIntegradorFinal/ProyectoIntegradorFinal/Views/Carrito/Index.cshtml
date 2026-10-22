@@ -272,6 +272,22 @@
                                     </select>
                                 </div>
 
+                                <div class="mb-3">
+                                    <label for="metodoPago" class="form-label fw-semibold">
+                                        Método de pago
+                                    </label>
+
+                                    <select id="metodoPago"
+                                            name="metodoPago"
+                                            class="form-select"
+                                            required>
+                                        <option value="">Seleccioná cómo querés pagar</option>
+                                        <option value="Transferencia bancaria">Transferencia bancaria</option>
+                                        <option value="Tarjeta">Tarjeta</option>
+                                        <option value="Efectivo">Efectivo</option>
+                                    </select>
+                                </div>
+
                                 <button type="button"
                                         id="btnAbrirConfirmacion"
                                         class="btn btn-carrito w-100">
@@ -290,6 +306,7 @@
                                             <h5 class="modal-title" id="tituloConfirmarCompra">
                                                 Confirmar compra
                                             </h5>
+
                                             <button type="button"
                                                     class="btn-close"
                                                     data-bs-dismiss="modal"
@@ -297,8 +314,21 @@
                                         </div>
 
                                         <div class="modal-body">
-                                            ¿Confirmás la compra con la dirección seleccionada?
-                                            <p class="mt-2 mb-0 text-muted" id="direccionConfirmacion"></p>
+                                            ¿Confirmás tu compra con estos datos?
+
+                                            <p class="mt-3 mb-1">
+                                                <strong>Dirección de entrega:</strong>
+                                            </p>
+                                            <p id="direccionConfirmacion" class="text-muted"></p>
+
+                                            <p class="mb-1">
+                                                <strong>Método de pago:</strong>
+                                            </p>
+                                            <p id="metodoPagoConfirmacion" class="text-muted"></p>
+
+                                            <p class="mb-0">
+                                                <strong>Total:</strong> @total.ToString("C")
+                                            </p>
                                         </div>
 
                                         <div class="modal-footer">
@@ -342,35 +372,43 @@
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const formulario = document.getElementById("formFinalizarCompra");
             const selectorDireccion = document.getElementById("idDireccion");
+            const selectorPago = document.getElementById("metodoPago");
             const botonAbrir = document.getElementById("btnAbrirConfirmacion");
             const botonConfirmar = document.getElementById("btnConfirmarCompra");
             const textoDireccion = document.getElementById("direccionConfirmacion");
+            const textoPago = document.getElementById("metodoPagoConfirmacion");
             const modalElemento = document.getElementById("modalConfirmarCompra");
 
-            if (!formulario || !selectorDireccion || !botonAbrir ||
-                !botonConfirmar || !textoDireccion || !modalElemento) {
+            if (!formulario || !selectorDireccion || !selectorPago ||
+                !botonAbrir || !botonConfirmar || !textoDireccion ||
+                !textoPago || !modalElemento) {
                 return;
             }
 
-            // Mover el modal al body evita problemas de capas y clics.
             document.body.appendChild(modalElemento);
 
-            botonAbrir.addEventListener("click", function() {
-                if (!selectorDireccion.value) {
-                    selectorDireccion.reportValidity();
+            botonAbrir.addEventListener("click", function () {
+                if (!selectorDireccion.reportValidity()) {
+                    return;
+                }
+
+                if (!selectorPago.reportValidity()) {
                     return;
                 }
 
                 textoDireccion.textContent =
                     selectorDireccion.options[selectorDireccion.selectedIndex].text;
 
+                textoPago.textContent =
+                    selectorPago.options[selectorPago.selectedIndex].text;
+
                 bootstrap.Modal.getOrCreateInstance(modalElemento).show();
             });
 
-            botonConfirmar.addEventListener("click", function() {
+            botonConfirmar.addEventListener("click", function () {
                 formulario.requestSubmit();
             });
         });

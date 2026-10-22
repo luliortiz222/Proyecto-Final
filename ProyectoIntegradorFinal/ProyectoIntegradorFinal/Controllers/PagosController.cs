@@ -120,14 +120,12 @@ namespace ProyectoIntegradorFinal.Controllers
             return View(pago);
         }
 
-          // POST: Pagos/CambiarEstado
-         [HttpPost]
-         [ValidateAntiForgeryToken]
-         [Authorize(Roles = "Administrador")]
-          public async Task<IActionResult> CambiarEstado(
-          int id,
-          string estadoPago,
-          string? metodoPago)
+        // POST: Pagos/CambiarEstado
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> CambiarEstado(int id, string estadoPago)
         {
             var pago = await _context.Pagos
                 .FirstOrDefaultAsync(p => p.IdPago == id);
@@ -150,30 +148,17 @@ namespace ProyectoIntegradorFinal.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
 
+            // El administrador solo puede modificar el estado.
+            // MetodoPago conserva el valor elegido por el cliente.
             pago.EstadoPago = estadoPago;
-
-            if (!string.IsNullOrWhiteSpace(metodoPago))
-            {
-                var metodosPermitidos = new[]
-                {
-            "Transferencia bancaria"
-        };
-
-                if (!metodosPermitidos.Contains(metodoPago))
-                {
-                    TempData["Error"] = "El método de pago seleccionado no es válido.";
-                    return RedirectToAction(nameof(Details), new { id });
-                }
-
-                pago.MetodoPago = metodoPago;
-            }
 
             await _context.SaveChangesAsync();
 
-            TempData["Mensaje"] = "El pago se actualizó correctamente.";
+            TempData["Mensaje"] = "El estado del pago se actualizó correctamente.";
 
             return RedirectToAction(nameof(Details), new { id });
         }
+
 
     }
 }

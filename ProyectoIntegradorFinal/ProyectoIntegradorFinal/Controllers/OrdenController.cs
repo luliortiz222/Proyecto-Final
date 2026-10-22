@@ -111,5 +111,53 @@ namespace ProyectoIntegradorFinal.Controllers
 
             return RedirectToAction(nameof(Details), new { id });
         }
+
+
+        // POST: Orden/Eliminar
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> Eliminar(int id)
+        {
+            await using var transaccion =
+                await _context.Database.BeginTransactionAsync();
+
+            var orden = await _context.Ordenes
+                .Include(o => o.Detalles)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+
+            if (orden == null)
+            {
+                TempData["Error"] = "La orden que intentás eliminar no existe.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // No eliminar órdenes que ya fueron enviadas o entregadas.
+            if (orden.Estado == "En camino" ||
+                orden.Estado == "Finalizado")
+            {
+                TempData["Error"] =
+                    "No se puede eliminar una orden que ya fue enviada o finalizada.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var pagos = await _context.Pagos
+                .Where(p => p.IdOrden == id)
+                .ToListAsync();
+
+            _context.Pagos.RemoveRange(pagos);
+            _context.DetallesOrden.RemoveRange(orden.Detalles);
+            _context.Ordenes.Remove(orden);
+
+            await _context.SaveChangesAsync();
+            await transaccion.CommitAsync();
+
+            TempData["Mensaje"] =
+                $"La orden #{id} se eliminó correctamente.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

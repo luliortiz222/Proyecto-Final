@@ -240,14 +240,28 @@ namespace ProyectoIntegradorFinal.Controllers
 
 
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FinalizarCompra(int idDireccion)
+         public async Task<IActionResult> FinalizarCompra(int idDireccion, string metodoPago)
         {
             int usuarioActual = ObtenerUsuarioId();
 
             if (usuarioActual == 0)
                 return Challenge();
+
+            var metodosPermitidos = new[]
+            {
+        "Transferencia bancaria",
+        "Tarjeta",
+        "Efectivo"
+    };
+
+            if (!metodosPermitidos.Contains(metodoPago))
+            {
+                TempData["Error"] = "Seleccioná un método de pago válido.";
+                return RedirectToAction(nameof(Index));
+            }
 
             var carrito = await _context.Carritos
                 .Include(c => c.Items)
@@ -260,7 +274,6 @@ namespace ProyectoIntegradorFinal.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Verificar que la dirección elegida pertenezca al cliente.
             var direccion = await _context.Direccion
                 .FirstOrDefaultAsync(d =>
                     d.IdDireccion == idDireccion &&
@@ -300,14 +313,13 @@ namespace ProyectoIntegradorFinal.Controllers
 
             foreach (var item in carrito.Items)
             {
-                var detalleOrden = new DetalleOrden
+                orden.Detalles.Add(new DetalleOrden
                 {
                     IdProducto = item.IdProducto,
                     Cantidad = item.cantidad,
                     PrecioUnitario = item.Producto!.Precio
-                };
+                });
 
-                orden.Detalles.Add(detalleOrden);
                 item.Producto.Stock -= item.cantidad;
             }
 
@@ -319,7 +331,7 @@ namespace ProyectoIntegradorFinal.Controllers
                 IdOrden = orden.IdOrden,
                 FechaPago = DateTime.Now,
                 Monto = totalOrden,
-                MetodoPago = "Pendiente de selección",
+                MetodoPago = metodoPago,
                 EstadoPago = "Pendiente"
             };
 
@@ -330,7 +342,7 @@ namespace ProyectoIntegradorFinal.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Mensaje"] =
-                "Tu orden se creó correctamente. El pago está pendiente.";
+                $"Tu orden se creó correctamente. Método de pago: {metodoPago}. El pago está pendiente.";
 
             return RedirectToAction("Details", "Orden", new { id = orden.IdOrden });
         }

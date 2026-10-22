@@ -91,9 +91,17 @@
 
                     <div class="mb-3">
                         <span class="text-muted d-block small">
-                            Método de pago
+                            Método de pago elegido por el cliente
                         </span>
-                        <strong>@Model.MetodoPago</strong>
+
+                        <input type="text"
+                               class="form-control"
+                               value="@Model.MetodoPago"
+                               readonly />
+
+                        <div class="form-text">
+                            El método de pago es fijo y no puede ser modificado por el administrador.
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -119,16 +127,15 @@
                     {
                         <hr />
 
-                        <!-- FORMULARIO PARA ADMINISTRAR EL PAGO -->
+                        <!-- EL ADMINISTRADOR SOLO PUEDE CAMBIAR EL ESTADO -->
                         <h5 class="fw-bold mb-3">
                             <i class="fas fa-edit me-2"
                                style="color: #B08D57;"></i>
-                            Actualizar pago
+                            Actualizar estado del pago
                         </h5>
 
                         <p class="text-muted small">
-                            Seleccioná el estado y, si corresponde, el método
-                            de pago informado.
+                            Podés actualizar el estado del pago. El método seleccionado por el cliente no se puede modificar.
                         </p>
 
                         <form asp-controller="Pagos"
@@ -174,29 +181,11 @@
                                 </select>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="metodoPago"
-                                       class="form-label fw-semibold">
-                                    Método de pago
-                                </label>
-
-                                <select id="metodoPago"
-                                        name="metodoPago"
-                                        class="form-select">
-
-                                    <option value="Transferencia bancaria"
-                                            selected="@(Model.MetodoPago == "Transferencia bancaria")">
-                                        Transferencia bancaria
-                                    </option>
-                                </select>
-                            </div>
-
                             <button type="submit"
                                     class="btn text-white w-100"
-                                    style="background-color: #96713D;"
-                                    onclick="return confirm('¿Confirmás la actualización del pago #@Model.IdPago?');">
+                                    style="background-color: #96713D;">
                                 <i class="fas fa-save me-2"></i>
-                                Guardar cambios
+                                Guardar estado del pago
                             </button>
                         </form>
                     }

@@ -4,6 +4,11 @@
     ViewData["Title"] = $"Orden #{Model.IdOrden}";
     bool esAdministrador = User.IsInRole("Administrador");
     var cultura = new System.Globalization.CultureInfo("es-AR");
+
+    bool permiteEliminar = Model.Estado != "En camino"
+                        && Model.Estado != "Finalizado"
+                        && Model.Estado != "Enviado"
+                        && Model.Estado != "Entregado";
 }
 
 <div class="container mt-4 mb-5">
@@ -33,6 +38,27 @@
             Volver a las órdenes
         </a>
     </div>
+
+    <!-- MENSAJES -->
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["Mensaje"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
 
     <!-- INFORMACIÓN GENERAL -->
     <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
@@ -169,9 +195,10 @@
                 <h5 class="fw-bold mb-3">Cambiar estado de la orden</h5>
 
                 <form asp-controller="Orden"
-                asp-action="CambiarEstado"
-                method="post"
-                id="formCambiarEstado">
+                      asp-action="CambiarEstado"
+                      method="post"
+                      id="formCambiarEstado">
+
                     @Html.AntiForgeryToken()
 
                     <input type="hidden" name="id" value="@Model.IdOrden" />
@@ -191,9 +218,9 @@
 
                         <div class="col-md-4">
                             <button type="button"
-                            id="btnAbrirConfirmacionEstado"
-                            class="btn w-100 text-white"
-                            style="background-color: #96713D;">
+                                    id="btnAbrirConfirmacionEstado"
+                                    class="btn w-100 text-white"
+                                    style="background-color: #96713D;">
                                 <i class="fas fa-save me-2"></i>
                                 Guardar estado
                             </button>
@@ -277,52 +304,157 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMACIÓN -->
-    <div class="modal fade"
-         id="modalConfirmarEstado"
-         tabindex="-1"
-         aria-labelledby="tituloConfirmarEstado"
-         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="tituloConfirmarEstado">
-                        Confirmar cambio de estado
-                    </h5>
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Cerrar"></button>
-                </div>
+    <!-- ACCIONES DEL ADMINISTRADOR -->
+    @if (esAdministrador)
+    {
+        <div class="card shadow-sm border-0 mt-4" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-2">
+                    <i class="fas fa-tools me-2" style="color: #B08D57;"></i>
+                    Acciones de administración
+                </h5>
 
-                <div class="modal-body">
-                    ¿Confirmás el cambio de estado de esta orden?
-                    <p class="mt-3 mb-0">
-                        <strong>Orden:</strong> #@Model.IdOrden
+                @if (permiteEliminar)
+                {
+                    <p class="text-muted">
+                        Si la orden se generó por error, podés eliminarla.
                     </p>
-                    <p class="mb-0">
-                        <strong>Nuevo estado:</strong>
-                        <span id="nuevoEstadoConfirmacion"></span>
+
+                    <button type="button"
+                            class="btn btn-outline-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalEliminarOrden">
+                        <i class="fas fa-trash-alt me-2"></i>
+                        Eliminar orden
+                    </button>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">
+                        Esta orden ya fue enviada o finalizada y no se puede eliminar desde aquí.
                     </p>
-                </div>
+                }
+            </div>
+        </div>
+    }
 
-                <div class="modal-footer">
-                    <button type="button"
-                            class="btn btn-outline-secondary"
-                            data-bs-dismiss="modal">
-                        Volver
-                    </button>
+    <!-- MODAL DE CONFIRMACIÓN DEL CAMBIO DE ESTADO -->
+    @if (esAdministrador)
+    {
+        <div class="modal fade"
+             id="modalConfirmarEstado"
+             tabindex="-1"
+             aria-labelledby="tituloConfirmarEstado"
+             aria-hidden="true">
 
-                    <button type="button"
-                            id="btnConfirmarEstado"
-                            class="btn text-white"
-                            style="background-color: #96713D;">
-                        Sí, confirmar cambio
-                    </button>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold" id="tituloConfirmarEstado">
+                            Confirmar cambio de estado
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        ¿Confirmás el cambio de estado de esta orden?
+
+                        <p class="mt-3 mb-0">
+                            <strong>Orden:</strong> #@Model.IdOrden
+                        </p>
+
+                        <p class="mb-0">
+                            <strong>Nuevo estado:</strong>
+                            <span id="nuevoEstadoConfirmacion"></span>
+                        </p>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">
+                            Volver
+                        </button>
+
+                        <button type="button"
+                                id="btnConfirmarEstado"
+                                class="btn text-white"
+                                style="background-color: #96713D;">
+                            Sí, confirmar cambio
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+        @if (permiteEliminar)
+        {
+            <div class="modal fade"
+                 id="modalEliminarOrden"
+                 tabindex="-1"
+                 aria-labelledby="tituloModalEliminarOrden"
+                 aria-hidden="true">
+
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold"
+                                id="tituloModalEliminarOrden">
+                                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                Confirmar eliminación
+                            </h5>
+
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Cerrar"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            ¿Estás seguro de que querés eliminar la orden
+                            <strong>#@Model.IdOrden</strong>?
+
+                            <p class="text-danger small mt-3 mb-0">
+                                Esta acción eliminará la orden y sus detalles y pagos asociados.
+                                No se puede deshacer.
+                            </p>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    data-bs-dismiss="modal">
+                                No, volver
+                            </button>
+
+                            <form asp-controller="Orden"
+                                  asp-action="Eliminar"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@Model.IdOrden" />
+
+                                <button type="submit"
+                                        class="btn btn-danger">
+                                    <i class="fas fa-trash-alt me-2"></i>
+                                    Sí, eliminar orden
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
     }
 
     <!-- BOTÓN INFERIOR -->
@@ -339,7 +471,7 @@
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const formulario = document.getElementById("formCambiarEstado");
             const selectorEstado = document.getElementById("estado");
             const botonAbrir = document.getElementById("btnAbrirConfirmacionEstado");
@@ -347,28 +479,26 @@
             const textoEstado = document.getElementById("nuevoEstadoConfirmacion");
             const modalElemento = document.getElementById("modalConfirmarEstado");
 
-            if (!formulario || !selectorEstado || !botonAbrir ||
-                !botonConfirmar || !textoEstado || !modalElemento) {
-                return;
+            if (formulario && selectorEstado && botonAbrir &&
+                botonConfirmar && textoEstado && modalElemento) {
+
+                document.body.appendChild(modalElemento);
+
+                botonAbrir.addEventListener("click", function () {
+                            if (!selectorEstado.reportValidity()) {
+                        return;
+                    }
+
+                    textoEstado.textContent =
+                        selectorEstado.options[selectorEstado.selectedIndex].text;
+
+                    bootstrap.Modal.getOrCreateInstance(modalElemento).show();
+                        });
+
+                botonConfirmar.addEventListener("click", function () {
+                    formulario.requestSubmit();
+                        });
             }
-
-            document.body.appendChild(modalElemento);
-
-            botonAbrir.addEventListener("click", function() {
-                if (!selectorEstado.value) {
-                    selectorEstado.reportValidity();
-                    return;
-                }
-
-                textoEstado.textContent =
-                    selectorEstado.options[selectorEstado.selectedIndex].text;
-
-                bootstrap.Modal.getOrCreateInstance(modalElemento).show();
-            });
-
-            botonConfirmar.addEventListener("click", function() {
-                formulario.requestSubmit();
-            });
-        });
+                });
     </script>
 }
