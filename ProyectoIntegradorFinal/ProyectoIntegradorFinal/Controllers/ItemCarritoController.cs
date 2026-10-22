@@ -51,23 +51,33 @@ namespace ProyectoIntegradorFinal.Controllers
             int idProducto,
             int cantidad = 1)
         {
-            if (cantidad <= 0)
+            if (cantidad < 1)
             {
-                TempData["Error"] =
-                    "La cantidad debe ser mayor que cero.";
-
+                TempData["Error"] = "La cantidad debe ser mayor que cero.";
                 return RedirectToAction("Index", "Productos");
             }
 
-            int idUsuario = int.Parse(
-                User.FindFirstValue(ClaimTypes.NameIdentifier)!
-            );
+            var identificadorUsuario =
+                User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(identificadorUsuario, out int idUsuario))
+            {
+                return Challenge();
+            }
 
             var producto = await _context.Productos
-                .FindAsync(idProducto);
+                .FirstOrDefaultAsync(p => p.IdProducto == idProducto);
 
             if (producto == null)
+            {
                 return NotFound();
+            }
+
+            if (producto.Stock < 1)
+            {
+                TempData["Error"] = "Este perfume no tiene stock disponible.";
+                return RedirectToAction("Index", "Productos");
+            }
 
             var carrito = await _context.Carritos
                 .Include(c => c.Items)
@@ -78,8 +88,7 @@ namespace ProyectoIntegradorFinal.Controllers
                 carrito = new Carrito
                 {
                     IdUsuario = idUsuario,
-                    FechaActualizacion = DateTime.Now,
-                    Items = new List<ItemCarrito>()
+                    FechaActualizacion = DateTime.Now
                 };
 
                 _context.Carritos.Add(carrito);
@@ -90,6 +99,16 @@ namespace ProyectoIntegradorFinal.Controllers
                 .FirstOrDefaultAsync(i =>
                     i.IdCarrito == carrito.IdCarrito &&
                     i.IdProducto == idProducto);
+
+            int cantidadActual = item?.cantidad ?? 0;
+
+            if (cantidadActual + cantidad > producto.Stock)
+            {
+                TempData["Error"] =
+                    $"Solo hay {producto.Stock} unidades disponibles de este perfume.";
+
+                return RedirectToAction("Index", "Productos");
+            }
 
             if (item == null)
             {
@@ -111,12 +130,10 @@ namespace ProyectoIntegradorFinal.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["Mensaje"] =
-                "Producto agregado al carrito correctamente.";
+            TempData["Mensaje"] = "¡Perfume agregado al carrito!";
 
             return RedirectToAction(nameof(Index));
         }
-
         // GET: ItemCarrito/Edit/5
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)

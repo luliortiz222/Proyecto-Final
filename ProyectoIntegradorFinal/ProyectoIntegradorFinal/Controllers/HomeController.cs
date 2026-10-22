@@ -16,7 +16,17 @@ namespace ProyectoIntegradorFinal.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            var perfumes = await _context.Productos.Include(p => p.Marca).Include(p => p.Categoria).ToListAsync();
+            var perfumes = await _context.Productos
+                .Include(p => p.Marca)
+                .Include(p => p.Categoria)
+                .ToListAsync();
+
+            var categorias = await _context.Categorias
+                .OrderBy(c => c.Nombre)
+                .ToListAsync();
+
+            ViewBag.Categorias = categorias;
+
             return View(perfumes);
         }
 

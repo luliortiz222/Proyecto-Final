@@ -1,111 +1,196 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ProyectoIntegradorFinal.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using ProyectoIntegradorFinal.Data;
-namespace ProyectoIntegradorFinal.Controllers
+using ProyectoIntegradorFinal.Models;
 
+namespace ProyectoIntegradorFinal.Controllers
 {
     [Authorize(Roles = "Cliente")]
     public class CarritoController : Controller
     {
         private readonly AppDbContext _context;
+
         public CarritoController(AppDbContext context)
         {
             _context = context;
         }
 
+        // Obtiene el ID del cliente que inició sesión.
+        private bool IntentarObtenerUsuarioId(out int usuarioId)
+        {
+            return int.TryParse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier),
+                out usuarioId
+            );
+        }
+
         // GET: Carrito
         public async Task<IActionResult> Index()
         {
-            int usuarioId = int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!
-            );
+            if (!IntentarObtenerUsuarioId(out int usuarioId))
+            {
+                return Challenge();
+            }
 
             var carrito = await _context.Carritos
-                .Include(c => c.Items).ThenInclude(i => i.Producto).FirstOrDefaultAsync(c => c.IdUsuario == usuarioId);
-
+                .Include(c => c.Items)
+                    .ThenInclude(i => i.Producto)
+                .FirstOrDefaultAsync(c => c.IdUsuario == usuarioId);
 
             if (carrito == null)
             {
-                // Si no hay un carrito para el usuario, crea uno nuevo
-                carrito = new Carrito { IdUsuario = usuarioId, FechaActualizacion = DateTime.Now };
+                carrito = new Carrito
+                {
+                    IdUsuario = usuarioId,
+                    FechaActualizacion = DateTime.Now
+                };
+
                 _context.Carritos.Add(carrito);
                 await _context.SaveChangesAsync();
             }
-
 
             return View(carrito);
         }
 
-
-        // POST: Carrito/AgregarItem
+        // POST: Carrito/Agregar
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Agregar(int IdProducto, int cantidad)
+        public async Task<IActionResult> Agregar(
+            int IdProducto,
+            int cantidad = 1)
         {
-            int usuarioId = 1; // despues reemplazamos con el ID del usuario actual
+            if (!IntentarObtenerUsuarioId(out int usuarioId))
+            {
+                return Challenge();
+            }
+
+            if (cantidad < 1)
+            {
+                TempData["Error"] =
+                    "La cantidad debe ser mayor que cero.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            var producto = await _context.Productos
+                .FirstOrDefaultAsync(p => p.IdProducto == IdProducto);
+
+            if (producto == null)
+            {
+                return NotFound();
+            }
+
+            if (producto.Stock < 1)
+            {
+                TempData["Error"] =
+                    "Este perfume no tiene stock disponible.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
             var carrito = await _context.Carritos
-                .Include(c => c.Items).FirstOrDefaultAsync(c => c.IdUsuario == usuarioId);
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.IdUsuario == usuarioId);
 
             if (carrito == null)
             {
-                // Si no hay un carrito para el usuario, crea uno nuevo
-                carrito = new Carrito { IdUsuario = usuarioId, FechaActualizacion = DateTime.Now };
+                carrito = new Carrito
+                {
+                    IdUsuario = usuarioId,
+                    FechaActualizacion = DateTime.Now
+                };
+
                 _context.Carritos.Add(carrito);
                 await _context.SaveChangesAsync();
             }
 
+            var itemExistente = await _context.ItemsCarrito
+                .FirstOrDefaultAsync(i =>
+                    i.IdCarrito == carrito.IdCarrito &&
+                    i.IdProducto == IdProducto);
 
-            var itemExistente = carrito.Items?.FirstOrDefault(i => i.IdProducto == IdProducto);
+            int cantidadActual = itemExistente?.cantidad ?? 0;
+
+            if (cantidadActual + cantidad > producto.Stock)
+            {
+                TempData["Error"] =
+                    $"Solo hay {producto.Stock} unidades disponibles de este perfume.";
+
+                return RedirectToAction(nameof(Index));
+            }
 
             if (itemExistente != null)
             {
-                // Si el item ya existe, actualiza la cantidad
                 itemExistente.cantidad += cantidad;
             }
             else
             {
-                // Si el item no existe, crea uno nuevo
-                var nuevoItem = new ItemCarrito { IdProducto = IdProducto, cantidad = cantidad, IdCarrito = carrito.IdCarrito };
+                var nuevoItem = new ItemCarrito
+                {
+                    IdProducto = IdProducto,
+                    cantidad = cantidad,
+                    IdCarrito = carrito.IdCarrito
+                };
+
                 _context.ItemsCarrito.Add(nuevoItem);
             }
 
             carrito.FechaActualizacion = DateTime.Now;
+
             await _context.SaveChangesAsync();
 
-            string referer = Request.Headers["Referer"].ToString();
+            TempData["Mensaje"] =
+                "¡Perfume agregado al carrito correctamente!";
 
-            if (!string.IsNullOrEmpty(referer))
-            {
-                // Si existe la URL anterior, lo devolvemos ahí
-                return Redirect(referer);
-            }
-
-            // Por si acaso no hay referer, lo mandamos al Home por defecto
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction(nameof(Index));
         }
 
-        // POST: Carrito/EliminarItem (Para sacar un perfume de la bolsa)
+        // POST: Carrito/EliminarItem
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarItem(int itemId)
         {
-            var item = await _context.ItemsCarrito.FindAsync(itemId);
-            if (item != null)
+            if (!IntentarObtenerUsuarioId(out int usuarioId))
             {
-                _context.ItemsCarrito.Remove(item);
-                await _context.SaveChangesAsync();
+                return Challenge();
             }
+
+            var item = await _context.ItemsCarrito
+                .Include(i => i.Carrito)
+                .FirstOrDefaultAsync(i =>
+                    i.IdItem == itemId &&
+                    i.Carrito.IdUsuario == usuarioId);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            item.Carrito.FechaActualizacion = DateTime.Now;
+
+            _context.ItemsCarrito.Remove(item);
+
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] =
+                "Producto eliminado del carrito.";
+
             return RedirectToAction(nameof(Index));
         }
 
         // POST: Carrito/ActualizarCantidad
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ActualizarCantidad(int itemId, int cantidad)
+        public async Task<IActionResult> ActualizarCantidad(
+            int itemId,
+            int cantidad)
         {
-            int usuarioId = 1; // Temporal.
+            if (!IntentarObtenerUsuarioId(out int usuarioId))
+            {
+                return Challenge();
+            }
 
             var item = await _context.ItemsCarrito
                 .Include(i => i.Carrito)
@@ -121,13 +206,17 @@ namespace ProyectoIntegradorFinal.Controllers
 
             if (item.Producto.Stock < 1)
             {
-                TempData["Error"] = "Este perfume no tiene stock disponible.";
+                TempData["Error"] =
+                    "Este perfume no tiene stock disponible.";
+
                 return RedirectToAction(nameof(Index));
             }
 
             if (cantidad < 1 || cantidad > item.Producto.Stock)
             {
-                TempData["Error"] = "La cantidad debe estar entre 1 y el stock disponible.";
+                TempData["Error"] =
+                    $"La cantidad debe estar entre 1 y {item.Producto.Stock}.";
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -136,8 +225,10 @@ namespace ProyectoIntegradorFinal.Controllers
 
             await _context.SaveChangesAsync();
 
+            TempData["Mensaje"] =
+                "Cantidad actualizada correctamente.";
+
             return RedirectToAction(nameof(Index));
         }
-
     }
 }
