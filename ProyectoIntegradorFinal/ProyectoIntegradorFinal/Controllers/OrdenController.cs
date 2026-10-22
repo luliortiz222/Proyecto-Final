@@ -42,7 +42,7 @@ namespace ProyectoIntegradorFinal.Controllers
             return View(ordenes);
         }
 
-        // GET: Orden/Details/5
+       // GET: Orden/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -51,14 +51,17 @@ namespace ProyectoIntegradorFinal.Controllers
             var consulta = _context.Ordenes
                 .Include(o => o.Usuario)
                 .Include(o => o.Direccion)
+                .Include(o => o.Detalles)
+                    .ThenInclude(d => d.Producto)
                 .AsQueryable();
 
             // El cliente solo puede consultar sus propias órdenes.
             if (User.IsInRole("Cliente"))
             {
-                int idUsuario = int.Parse(
-                    User.FindFirstValue(ClaimTypes.NameIdentifier)!
-                );
+                var valorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (!int.TryParse(valorId, out int idUsuario))
+                    return Forbid();
 
                 consulta = consulta.Where(o => o.IdUsuario == idUsuario);
             }

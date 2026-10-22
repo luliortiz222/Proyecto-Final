@@ -27,5 +27,8 @@ namespace ProyectoIntegradorFinal.Models
 
         [Required]
         public string Estado { get; set; }
+
+     public virtual ICollection<DetalleOrden> Detalles { get; set; }
+    = new List<DetalleOrden>();
     }
 }

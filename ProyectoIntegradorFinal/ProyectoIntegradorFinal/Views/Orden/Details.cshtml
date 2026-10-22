@@ -1,1 +1,270 @@
-﻿
+﻿@model ProyectoIntegradorFinal.Models.Orden
+
+@{
+    ViewData["Title"] = $"Orden #{Model.IdOrden}";
+
+    bool esAdministrador = User.IsInRole("Administrador");
+
+    var cultura = new System.Globalization.CultureInfo("es-AR");
+}
+
+<div class="container mt-4 mb-5">
+
+    <!-- ENCABEZADO -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <span class="text-uppercase small"
+                  style="letter-spacing: 3px; color: #B08D57;">
+                HOME ELIXIR
+            </span>
+
+            <h2 class="fw-bold mt-2 mb-1">
+                <i class="fas fa-receipt me-2"
+                   style="color: #B08D57;"></i>
+                Orden #@Model.IdOrden
+            </h2>
+
+            <p class="text-muted mb-0">
+                Detalle de la compra
+            </p>
+        </div>
+
+        <a asp-controller="Orden"
+           asp-action="Index"
+           class="btn btn-outline-dark">
+            <i class="fas fa-arrow-left me-1"></i>
+            Volver a las órdenes
+        </a>
+    </div>
+
+    <!-- INFORMACIÓN GENERAL -->
+    <div class="card shadow-sm border-0 mb-4"
+         style="border-radius: 12px;">
+
+        <div class="card-body p-4">
+
+            <div class="row g-4">
+
+                <!-- DATOS DE LA ORDEN -->
+                <div class="col-md-6">
+
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-file-invoice me-2"
+                           style="color: #B08D57;"></i>
+                        Información de la orden
+                    </h5>
+
+                    <p>
+                        <strong>Número:</strong>
+                        #@Model.IdOrden
+                    </p>
+
+                    <p>
+                        <strong>Fecha:</strong>
+                        @Model.FechaOrden.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+
+                    <p>
+                        <strong>Estado:</strong>
+
+                        @{
+                            string claseEstado = Model.Estado switch
+                            {
+                                "Pendiente" => "bg-warning text-dark",
+                                "Procesando" => "bg-info text-dark",
+                                "Enviado" => "bg-primary",
+                                "Entregado" => "bg-success",
+                                "Cancelado" => "bg-danger",
+                                _ => "bg-secondary"
+                            };
+                        }
+
+                        <span class="badge @claseEstado">
+                            @Model.Estado
+                        </span>
+                    </p>
+
+                    <p class="fs-5 mb-0">
+                        <strong>Total:</strong>
+
+                        <span class="fw-bold"
+                              style="color: #96713D;">
+                            @Model.Total.ToString("C", cultura)
+                        </span>
+                    </p>
+
+                </div>
+
+                <!-- DIRECCIÓN -->
+                <div class="col-md-6">
+
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-map-marker-alt me-2"
+                           style="color: #B08D57;"></i>
+                        Dirección de entrega
+                    </h5>
+
+                    @if (Model.Direccion != null)
+                    {
+                        <p class="mb-2">
+                            @Model.Direccion.Calle
+                            @Model.Direccion.Numero
+                        </p>
+
+                        <p class="mb-2">
+                            @Model.Direccion.Ciudad,
+                            @Model.Direccion.Provincia
+                        </p>
+
+                        <p class="mb-0">
+                            <strong>Código postal:</strong>
+                            @Model.Direccion.CodigoPostal
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">
+                            No hay una dirección disponible.
+                        </p>
+                    }
+
+                </div>
+
+                <!-- DATOS DEL CLIENTE: SOLO ADMINISTRADOR -->
+                @if (esAdministrador)
+                {
+                    <div class="col-12">
+                        <hr />
+
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-user me-2"
+                               style="color: #B08D57;"></i>
+                            Datos del cliente
+                        </h5>
+
+                        @if (Model.Usuario != null)
+                        {
+                            <p>
+                                <strong>Nombre:</strong>
+                                @Model.Usuario.Nombre
+                                @Model.Usuario.Apellido
+                            </p>
+
+                            <p class="mb-0">
+                                <strong>Email:</strong>
+                                @Model.Usuario.Email
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="text-muted">
+                                No hay datos del cliente disponibles.
+                            </p>
+                        }
+                    </div>
+                }
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PRODUCTOS DE LA ORDEN -->
+    <div class="card shadow-sm border-0"
+         style="border-radius: 12px;">
+
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold mb-4">
+                <i class="fas fa-box-open me-2"
+                   style="color: #B08D57;"></i>
+                Productos de la orden
+            </h5>
+
+            @if (Model.Detalles != null && Model.Detalles.Any())
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead style="background: #F7F1E8;">
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Precio unitario</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var detalle in Model.Detalles)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="fw-semibold">
+                                            @(detalle.Producto?.Nombre
+                                                ?? "Producto no disponible")
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        @detalle.Cantidad
+                                    </td>
+
+                                    <td class="text-end">
+                                        @detalle.PrecioUnitario.ToString("C", cultura)
+                                    </td>
+
+                                    <td class="text-end fw-semibold">
+                                        @((detalle.Cantidad * detalle.PrecioUnitario)
+                                            .ToString("C", cultura))
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                        <tfoot>
+                            <tr>
+                                <td colspan="3"
+                                    class="text-end fw-bold">
+                                    Total de la orden
+                                </td>
+
+                                <td class="text-end fw-bold fs-5"
+                                    style="color: #96713D;">
+                                    @Model.Total.ToString("C", cultura)
+                                </td>
+                            </tr>
+                        </tfoot>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="p-3 rounded"
+                     style="background: #F7F1E8; border: 1px solid #E5D8C5;">
+
+                    <i class="fas fa-info-circle me-2"
+                       style="color: #B08D57;"></i>
+
+                    Esta orden todavía no tiene productos asociados
+                    en sus detalles.
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!-- BOTÓN INFERIOR -->
+    <div class="mt-4">
+        <a asp-controller="Orden"
+           asp-action="Index"
+           class="btn btn-outline-dark">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver a las órdenes
+        </a>
+    </div>
+
+</div>

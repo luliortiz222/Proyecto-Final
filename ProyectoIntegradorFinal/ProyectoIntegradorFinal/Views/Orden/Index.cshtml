@@ -1,0 +1,146 @@
+﻿@model IEnumerable<ProyectoIntegradorFinal.Models.Orden>
+
+@{
+    ViewData["Title"] = "Mis órdenes";
+    bool esAdministrador = User.IsInRole("Administrador");
+}
+
+<div class="container mt-4 mb-5">
+
+    <div class="mb-4">
+        <span class="text-uppercase small" style="letter-spacing: 3px; color: #B08D57;">
+            HOME ELIXIR
+        </span>
+
+        <h2 class="mt-2">
+            @(esAdministrador ? "Gestión de órdenes" : "Mis órdenes")
+        </h2>
+
+        <p class="text-muted">
+            @(esAdministrador
+                ? "Consultá las órdenes realizadas por todos los clientes."
+                : "Consultá tus compras, sus importes y el estado de cada pedido.")
+        </p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5"
+             style="background: #fff; border: 1px solid #E5D8C5; border-radius: 12px;">
+            <i class="fas fa-box-open fa-3x mb-3" style="color: #B08D57;"></i>
+
+            <h5>No hay órdenes registradas</h5>
+
+            <p class="text-muted mb-0">
+                @(esAdministrador
+                    ? "Cuando se realicen compras, aparecerán en esta sección."
+                    : "Cuando realices una compra, podrás consultar tu pedido aquí.")
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive"
+             style="background: #fff; border: 1px solid #E5D8C5; border-radius: 12px;">
+
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: #F7F1E8;">
+                    <tr>
+                        <th class="ps-3">N.º orden</th>
+
+                        @if (esAdministrador)
+                        {
+                            <th>Cliente</th>
+                        }
+
+                        <th>Fecha</th>
+                        <th>Dirección de entrega</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var orden in Model)
+                    {
+                        <tr>
+                            <td class="ps-3 fw-semibold">
+                                #@orden.IdOrden
+                            </td>
+
+                            @if (esAdministrador)
+                            {
+                                <td>
+                                    @if (orden.Usuario != null)
+                                    {
+                                        @($"{orden.Usuario.Nombre} {orden.Usuario.Apellido}")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin información</span>
+                                    }
+                                </td>
+                            }
+
+                            <td>
+                                @orden.FechaOrden.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+
+                            <td>
+                                @if (orden.Direccion != null)
+                                {
+                                    @($"{orden.Direccion.Calle} {orden.Direccion.Numero}, {orden.Direccion.Ciudad}")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin dirección</span>
+                                }
+                            </td>
+
+                            <td class="fw-semibold">
+                                @orden.Total.ToString("C", new System.Globalization.CultureInfo("es-AR"))
+                            </td>
+
+                            <td>
+                                @{
+                                    string claseEstado = orden.Estado?.ToLower() switch
+                                    {
+                                        "entregado" => "bg-success",
+                                        "cancelado" => "bg-danger",
+                                        "enviado" => "bg-primary",
+                                        "procesando" => "bg-info text-dark",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+
+                                <span class="badge @claseEstado">
+                                    @orden.Estado
+                                </span>
+                            </td>
+
+                            <td class="text-center">
+                                <a asp-action="Details"
+                                   asp-route-id="@orden.IdOrden"
+                                   class="btn btn-sm btn-outline-dark">
+                                    <i class="fas fa-eye me-1"></i>
+                                    Ver detalle
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-controller="Productos"
+           asp-action="Index"
+           class="btn btn-outline-dark">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver al catálogo
+        </a>
+    </div>
+
+</div>
