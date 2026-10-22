@@ -11,6 +11,8 @@ using System.IO;
 using System.Linq;
 using ProyectoIntegradorFinal.Models;
 using ProyectoIntegradorFinal.Data;
+using Microsoft.AspNetCore.Authorization;
+using ProyectoIntegradorFinal.ViewModels;
 
 namespace ProyectoIntegradorFinal.Controllers
 {
@@ -257,5 +259,224 @@ namespace ProyectoIntegradorFinal.Controllers
 
             return RedirectToAction("Login");
         }
+
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Perfil()
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(idClaim, out int idUsuario))
+            {
+                return Challenge();
+            }
+
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario);
+
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            var modelo = new PerfilUsuarioViewModel
+            {
+                Nombre = usuario.Nombre,
+                Apellido = usuario.Apellido,
+                Dni = usuario.Dni,
+                Email = usuario.Email,
+                AvatarActual = usuario.avatar
+            };
+
+            return View(modelo);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Perfil(PerfilUsuarioViewModel modelo)
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(idClaim, out int idUsuario))
+            {
+                return Challenge();
+            }
+
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario);
+
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            modelo.AvatarActual = usuario.avatar;
+
+            // La contraseña es opcional: solo se cambia si se completa.
+            bool cambiarPassword =
+                !string.IsNullOrWhiteSpace(modelo.PasswordActual) ||
+                !string.IsNullOrWhiteSpace(modelo.NuevaPassword) ||
+                !string.IsNullOrWhiteSpace(modelo.ConfirmarPassword);
+
+            if (cambiarPassword)
+            {
+                if (string.IsNullOrWhiteSpace(modelo.PasswordActual) ||
+                    string.IsNullOrWhiteSpace(modelo.NuevaPassword) ||
+                    string.IsNullOrWhiteSpace(modelo.ConfirmarPassword))
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "Para cambiar la contraseña, completá los tres campos.");
+                }
+                else if (usuario.Password != modelo.PasswordActual)
+                {
+                    ModelState.AddModelError(
+                        nameof(modelo.PasswordActual),
+                        "La contraseña actual es incorrecta.");
+                }
+                else if (modelo.NuevaPassword.Length < 8)
+                {
+                    ModelState.AddModelError(
+                        nameof(modelo.NuevaPassword),
+                        "La nueva contraseña debe tener al menos 8 caracteres.");
+                }
+            }
+
+            // Validamos que el email no pertenezca a otra cuenta.
+            if (!string.IsNullOrWhiteSpace(modelo.Email))
+            {
+                bool emailExiste = await _context.Usuarios.AnyAsync(u =>
+                    u.Email == modelo.Email && u.IdUsuario != idUsuario);
+
+                if (emailExiste)
+                {
+                    ModelState.AddModelError(
+                        nameof(modelo.Email),
+                        "Ese correo ya está registrado.");
+                }
+            }
+
+            // Validamos que el DNI no pertenezca a otra cuenta.
+            if (!string.IsNullOrWhiteSpace(modelo.Dni))
+            {
+                bool dniExiste = await _context.Usuarios.AnyAsync(u =>
+                    u.Dni == modelo.Dni && u.IdUsuario != idUsuario);
+
+                if (dniExiste)
+                {
+                    ModelState.AddModelError(
+                        nameof(modelo.Dni),
+                        "Ese DNI ya está registrado.");
+                }
+            }
+
+            // La imagen es opcional al editar el perfil.
+            if (modelo.AvatarArchivo != null &&
+                modelo.AvatarArchivo.Length > 0)
+            {
+                string extension = Path
+                    .GetExtension(modelo.AvatarArchivo.FileName)
+                    .ToLowerInvariant();
+
+                string[] extensionesPermitidas =
+                    { ".jpg", ".jpeg", ".png", ".webp" };
+
+                if (!extensionesPermitidas.Contains(extension))
+                {
+                    ModelState.AddModelError(
+                        nameof(modelo.AvatarArchivo),
+                        "La imagen debe ser JPG, JPEG, PNG o WEBP.");
+                }
+
+                if (modelo.AvatarArchivo.Length > 2 * 1024 * 1024)
+                {
+                    ModelState.AddModelError(
+                        nameof(modelo.AvatarArchivo),
+                        "La imagen no puede superar los 2 MB.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(modelo);
+            }
+
+            usuario.Nombre = modelo.Nombre.Trim();
+            usuario.Apellido = modelo.Apellido.Trim();
+            usuario.Dni = modelo.Dni.Trim();
+            usuario.Email = modelo.Email.Trim();
+
+            if (cambiarPassword)
+            {
+                // Conservamos el mismo método de almacenamiento que usa actualmente el Login
+                usuario.Password = modelo.NuevaPassword!;
+            }
+
+            if (modelo.AvatarArchivo != null &&
+                modelo.AvatarArchivo.Length > 0)
+            {
+                string carpeta = Path.Combine(
+                    _environment.WebRootPath,
+                    "images",
+                    "avatares");
+
+                Directory.CreateDirectory(carpeta);
+
+                string nombreArchivo =
+                    $"{Guid.NewGuid()}{Path.GetExtension(modelo.AvatarArchivo.FileName).ToLowerInvariant()}";
+
+                string rutaCompleta = Path.Combine(carpeta, nombreArchivo);
+
+                using (var stream = new FileStream(
+                    rutaCompleta, FileMode.CreateNew))
+                {
+                    await modelo.AvatarArchivo.CopyToAsync(stream);
+                }
+
+                usuario.avatar = $"/images/avatares/{nombreArchivo}";
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Actualizamos la cookie para reflejar nombre, email y avatar nuevos.
+            var claims = new List<Claim>
+    {
+        new Claim(
+            ClaimTypes.NameIdentifier,
+            usuario.IdUsuario.ToString()),
+
+        new Claim(
+            ClaimTypes.Name,
+            usuario.Nombre + " " + usuario.Apellido),
+
+        new Claim(
+            ClaimTypes.Email,
+            usuario.Email),
+
+        new Claim(
+            ClaimTypes.Role,
+            usuario.Rol),
+
+        new Claim(
+            "Avatar",
+            usuario.avatar ?? "")
+    };
+
+            var identidad = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identidad));
+
+            TempData["MensajePerfil"] =
+                "Tu perfil se actualizó correctamente.";
+
+            return RedirectToAction(nameof(Perfil));
+        }
+
     }
 }

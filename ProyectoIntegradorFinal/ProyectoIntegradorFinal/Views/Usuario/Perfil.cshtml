@@ -1,0 +1,275 @@
+﻿@model ProyectoIntegradorFinal.ViewModels.PerfilUsuarioViewModel
+
+@{
+    ViewData["Title"] = "Mi perfil";
+}
+
+<div class="container py-5">
+    <div class="card border-0 shadow-sm mx-auto"
+         style="max-width: 850px; border-radius: 18px; overflow: hidden;">
+
+        <div class="p-4 p-md-5"
+             style="background-color: #F1E7D8;">
+
+            <div class="text-center mb-4">
+                <h2 class="mb-2">Mi perfil</h2>
+                <p class="text-muted">
+                    Administrá tus datos personales y tu cuenta.
+                </p>
+
+                @if (TempData["MensajePerfil"] != null)
+                {
+                    <div class="alert alert-success">
+                        @TempData["MensajePerfil"]
+                    </div>
+                }
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3"></div>
+
+                <img id="vistaPreviaAvatar"
+                     src="@(string.IsNullOrWhiteSpace(Model.AvatarActual)
+                                         ? "/images/avatares/default.png"
+                                         : Model.AvatarActual)"
+                     alt="Vista previa de la foto de perfil"
+                     class="rounded-circle shadow-sm mb-3"
+                     style="width: 115px; height: 115px; object-fit: cover;" />
+
+                <p class="text-muted small">
+                    @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                </p>
+            </div>
+
+            <form asp-controller="Usuario"
+                  asp-action="Perfil"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <h5 class="mb-3">Datos personales</h5>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Nombre" class="form-label">
+                            Nombre
+                        </label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Apellido" class="form-label">
+                            Apellido
+                        </label>
+                        <input asp-for="Apellido" class="form-control" />
+                        <span asp-validation-for="Apellido"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Dni" class="form-label">DNI</label>
+                        <input asp-for="Dni" class="form-control" />
+                        <span asp-validation-for="Dni"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label">
+                            Correo electrónico
+                        </label>
+                        <input asp-for="Email"
+                               type="email"
+                               class="form-control" />
+                        <span asp-validation-for="Email"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12 mb-4">
+                        <label asp-for="AvatarArchivo" class="form-label">
+                            Foto de perfil
+                        </label>
+
+                        <input asp-for="AvatarArchivo"
+                               id="AvatarArchivo"
+                               type="file"
+                               class="form-control"
+                               accept=".jpg,.jpeg,.png,.webp" />
+
+                        <span asp-validation-for="AvatarArchivo"
+                              class="text-danger"></span>
+
+                        <small class="text-muted">
+                            Opcional. JPG, PNG o WEBP, hasta 2 MB.
+                            Si no elegís otra imagen, se conserva la actual.
+                        </small>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <h5 class="mb-2">Cambiar contraseña</h5>
+                <p class="text-muted small">
+                    Dejá estos campos vacíos si no querés cambiarla.
+                    Podés usar el ícono del ojo para revisar lo que escribiste.
+                </p>
+
+                <div class="mb-3">
+                    <label asp-for="PasswordActual" class="form-label">
+                        Contraseña actual
+                    </label>
+
+                    <div class="input-group">
+                        <input asp-for="PasswordActual"
+                               type="password"
+                               class="form-control"
+                               id="PasswordActual"
+                               autocomplete="current-password" />
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                onclick="alternarPassword('PasswordActual', this)"
+                                aria-label="Mostrar contraseña actual"
+                                title="Mostrar contraseña">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <span asp-validation-for="PasswordActual"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="NuevaPassword" class="form-label">
+                            Nueva contraseña
+                        </label>
+
+                        <div class="input-group">
+                            <input asp-for="NuevaPassword"
+                                   type="password"
+                                   class="form-control"
+                                   id="NuevaPassword"
+                                   autocomplete="new-password" />
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    onclick="alternarPassword('NuevaPassword', this)"
+                                    aria-label="Mostrar nueva contraseña"
+                                    title="Mostrar contraseña">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+
+                        <span asp-validation-for="NuevaPassword"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ConfirmarPassword"
+                               class="form-label">
+                            Confirmar contraseña
+                        </label>
+
+                        <div class="input-group">
+                            <input asp-for="ConfirmarPassword"
+                                   type="password"
+                                   class="form-control"
+                                   id="ConfirmarPassword"
+                                   autocomplete="new-password" />
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    onclick="alternarPassword('ConfirmarPassword', this)"
+                                    aria-label="Mostrar confirmación de contraseña"
+                                    title="Mostrar contraseña">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+
+                        <span asp-validation-for="ConfirmarPassword"
+                              class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+                    <button type="submit"
+                            class="btn btn-dark px-4">
+                        Guardar cambios
+                    </button>
+
+                    <a asp-controller="Home"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary px-4">
+                        Volver a la tienda
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function alternarPassword(id, boton) {
+            const campo = document.getElementById(id);
+            const icono = boton.querySelector('i');
+
+            if (campo.type === 'password') {
+                campo.type = 'text';
+                icono.classList.remove('fa-eye');
+                icono.classList.add('fa-eye-slash');
+                boton.setAttribute('aria-label', 'Ocultar contraseña');
+                boton.setAttribute('title', 'Ocultar contraseña');
+            } else {
+                campo.type = 'password';
+                icono.classList.remove('fa-eye-slash');
+                icono.classList.add('fa-eye');
+                boton.setAttribute('aria-label', 'Mostrar contraseña');
+                boton.setAttribute('title', 'Mostrar contraseña');
+            }
+        }
+
+        const inputAvatar = document.getElementById('AvatarArchivo');
+        const vistaPrevia = document.getElementById('vistaPreviaAvatar');
+
+        if (inputAvatar && vistaPrevia) {
+            inputAvatar.addEventListener('change', function() {
+                const archivo = this.files[0];
+
+                if (!archivo) {
+                    return;
+                }
+
+                const extensionesPermitidas = [
+                    'image/jpeg',
+                    'image/png',
+                    'image/webp'
+                ];
+
+                if (!extensionesPermitidas.includes(archivo.type)) {
+                    this.value = '';
+                    alert('Seleccioná una imagen JPG, PNG o WEBP.');
+                    return;
+                }
+
+                if (archivo.size > 2 * 1024 * 1024) {
+                    this.value = '';
+                    alert('La imagen no puede superar los 2 MB.');
+                    return;
+                }
+
+                const lector = new FileReader();
+
+                lector.onload = function(evento) {
+                    vistaPrevia.src = evento.target.result;
+                };
+
+                lector.readAsDataURL(archivo);
+            });
+        }
+    </script>
+}
