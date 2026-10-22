@@ -13,6 +13,8 @@ using ProyectoIntegradorFinal.Models;
 using ProyectoIntegradorFinal.Data;
 using Microsoft.AspNetCore.Authorization;
 using ProyectoIntegradorFinal.ViewModels;
+using Microsoft.AspNetCore.Identity;
+
 
 namespace ProyectoIntegradorFinal.Controllers
 {
@@ -149,6 +151,11 @@ namespace ProyectoIntegradorFinal.Controllers
                 usuario.avatar =
                     $"/images/avatares/{nombreArchivo}";
 
+
+                var passwordHasher = new PasswordHasher<Usuario>();
+                usuario.Password = passwordHasher.HashPassword(usuario, usuario.Password);
+
+
                 _context.Usuarios.Add(usuario);
                 await _context.SaveChangesAsync();
 
@@ -187,12 +194,9 @@ namespace ProyectoIntegradorFinal.Controllers
         // POST: /Usuario/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(
-            string email,
-            string password)
+        public async Task<IActionResult> Login(string email,string password)
         {
-            if (string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
                 ViewBag.Error =
                     "Ingresá tu correo y contraseña.";
@@ -202,39 +206,37 @@ namespace ProyectoIntegradorFinal.Controllers
 
             var usuario = await _context.Usuarios
                 .FirstOrDefaultAsync(u =>
-                    u.Email == email &&
-                    u.Password == password);
+                    u.Email == email );
 
+            if (usuario != null)
+            {
+                var passwordHasher = new PasswordHasher<Usuario>();
+                var resultado = passwordHasher.VerifyHashedPassword(usuario, usuario.Password, password);
+
+                if (resultado == PasswordVerificationResult.Failed)
+                {
+                    usuario = null;
+                }
+            }
             if (usuario == null)
             {
                 ViewBag.Error =
-                    "El correo electrónico o la contraseña son incorrectos.";
-
+                    "Correo o contraseña incorrectos.";
                 return View();
             }
 
             var claims = new List<Claim>
            {
-    new Claim(
-        ClaimTypes.NameIdentifier,
-        usuario.IdUsuario.ToString()),
+            new Claim(ClaimTypes.NameIdentifier,usuario.IdUsuario.ToString()),
 
-    new Claim(
-        ClaimTypes.Name,
-        usuario.Nombre + " " + usuario.Apellido),
+            new Claim(ClaimTypes.Name,usuario.Nombre + " " + usuario.Apellido),
 
-    new Claim(
-        ClaimTypes.Email,
-        usuario.Email),
+            new Claim(ClaimTypes.Email,usuario.Email),
 
-    new Claim(
-        ClaimTypes.Role,
-        usuario.Rol),
+            new Claim(ClaimTypes.Role,usuario.Rol),
 
-    new Claim(
-        "Avatar",
-        usuario.avatar ?? "")
-             };
+            new Claim("Avatar",usuario.avatar ?? "")
+            };
 
             var identidad = new ClaimsIdentity(
                 claims,
