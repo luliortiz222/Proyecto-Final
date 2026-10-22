@@ -16,19 +16,23 @@ namespace ProyectoIntegradorFinal.Controllers
             _context = context;
         }
 
-        // Obtiene el ID del cliente que inició sesión.
-        private bool IntentarObtenerUsuarioId(out int usuarioId)
+        private int ObtenerUsuarioId()
         {
-            return int.TryParse(
-                User.FindFirstValue(ClaimTypes.NameIdentifier),
-                out usuarioId
-            );
+            // Buscamos el identificador del usuario en los claims de la sesión actual
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (int.TryParse(userIdClaim, out int usuarioId))
+            {
+                return usuarioId;
+            }
+
+            return 0; 
         }
 
         // GET: Carrito
         public async Task<IActionResult> Index()
         {
-            int usuarioId = 1; // despues reemplazamos con el ID del usuario actual
+            int usuarioId = ObtenerUsuarioId();
 
             if (usuarioId == 0)
             {
@@ -61,7 +65,9 @@ namespace ProyectoIntegradorFinal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Agregar(int IdProducto, int cantidad)
         {
-            if (!IntentarObtenerUsuarioId(out int usuarioId))
+            var usuarioId = ObtenerUsuarioId();
+
+            if (usuarioId == 0)
             {
                 return Challenge();
             }
@@ -150,10 +156,7 @@ namespace ProyectoIntegradorFinal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarItem(int itemId)
         {
-            if (!IntentarObtenerUsuarioId(out int usuarioId))
-            {
-                return Challenge();
-            }
+            var usuarioId = ObtenerUsuarioId();
 
             var item = await _context.ItemsCarrito
                 .Include(i => i.Carrito)
@@ -183,7 +186,7 @@ namespace ProyectoIntegradorFinal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActualizarCantidad(int itemId, int cantidad)
         {
-            int usuarioId = 1; // Temporal.
+            int usuarioId = ObtenerUsuarioId();
 
             if (usuarioId == 0)
             {
@@ -228,6 +231,74 @@ namespace ProyectoIntegradorFinal.Controllers
                 "Cantidad actualizada correctamente.";
 
             return RedirectToAction(nameof(Index));
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FinalizarCompra()
+        {
+            int usuarioActual = ObtenerUsuarioId();
+
+            var carrito = await _context.Carritos
+            .Include(c => c.Items)
+            .ThenInclude(i => i.Producto)
+            .FirstOrDefaultAsync(c => c.IdUsuario == usuarioActual);
+
+            if (carrito == null || carrito.Items == null || !carrito.Items.Any())
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            var direccion = await _context.Direccion.FirstOrDefaultAsync(d => d.IdUsuario == usuarioActual);
+
+            if (direccion == null)
+            {
+                TempData["Error"] = "Debe tener una dirección registrada para finalizar la compra.";
+                return RedirectToAction("Index", "Direcciones");
+            }
+
+            decimal totalOrden = 0;
+            foreach (var item in carrito.Items)
+            {
+                totalOrden += item.cantidad * item.Producto.Precio;
+            }
+
+            var orden = new Orden
+            {
+                IdUsuario = usuarioActual,
+                IdDireccion = direccion.IdDireccion,
+                FechaOrden = DateTime.Now,
+                Total = totalOrden,
+                Estado = "Pendiente"
+            };
+
+
+            foreach (var item in carrito.Items)
+            {
+                var detalleOrden = new DetalleOrden
+                {
+                    IdProducto = item.IdProducto,
+                    Cantidad = item.cantidad,
+                    PrecioUnitario = item.Producto.Precio,
+                    
+                };
+                orden.Detalles.Add(detalleOrden);
+                
+                // Actualizar el stock del producto
+                item.Producto.Stock -= item.cantidad;
+                _context.Productos.Update(item.Producto);
+
+            }
+
+            _context.Ordenes.Add(orden);
+
+            _context.ItemsCarrito.RemoveRange(carrito.Items);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Details", "Orden", new { id = orden.IdOrden });
+
         }
 
     }

@@ -242,25 +242,19 @@
                             durante el proceso de compra.
                         </p>
                         
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <form asp-controller="Carrito" asp-action="FinalizarCompra" method="post">
-                                <button type="button"
+                        
+                        <form asp-controller="Carrito" asp-action="FinalizarCompra" method="post">
+                                <button type="submit"
                                 class="btn btn-carrito w-100"
                                 title="El proceso de compra">
                                     Finalizar compra
                                 </button>
-                            </form> 
-                        }
-                        else
-                        {
-                            <button type="button"
-                            class="btn btn-carrito w-100"
-                            disabled
-                            title="El proceso de compra">
-                                Debes iniciar sesión para finalizar la compra
-                            </button>
-                        }
+                        </form> 
+                        
+                        
+                        
+                            
+                        
 
                         
                     </div>
