@@ -2,6 +2,7 @@
 using ProyectoIntegradorFinal.Models;
 using Microsoft.EntityFrameworkCore;
 using ProyectoIntegradorFinal.Data;
+using System.Security.Claims;
 namespace ProyectoIntegradorFinal.Controllers
 {
     public class CarritoController : Controller
@@ -15,7 +16,13 @@ namespace ProyectoIntegradorFinal.Controllers
         // GET: Carrito
         public async Task<IActionResult> Index()
         {
-            int usuarioId = 1; // despues reemplazamos con el ID del usuario actual
+            int usuarioId = ObtenerUsuarioId();
+
+            if (usuarioId == 0)
+            {
+                // Si no está logueado, lo mandamos al Login
+                return RedirectToAction("Login", "Usuarios");
+            }
 
             var carrito = await _context.Carritos
                 .Include(c => c.Items).ThenInclude(i => i.Producto).FirstOrDefaultAsync(c => c.IdUsuario == usuarioId);
@@ -39,7 +46,14 @@ namespace ProyectoIntegradorFinal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Agregar(int IdProducto, int cantidad)
         {
-            int usuarioId = 1; // despues reemplazamos con el ID del usuario actual
+            int usuarioId = ObtenerUsuarioId();
+
+            if (usuarioId == 0)
+            {
+                // Si no está logueado, lo mandamos al Login
+                return RedirectToAction("Login", "Usuarios");
+            }
+
             var carrito = await _context.Carritos
                 .Include(c => c.Items).FirstOrDefaultAsync(c => c.IdUsuario == usuarioId);
 
@@ -99,7 +113,13 @@ namespace ProyectoIntegradorFinal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActualizarCantidad(int itemId, int cantidad)
         {
-            int usuarioId = 1; // Temporal.
+            int usuarioId = ObtenerUsuarioId();
+
+            if (usuarioId == 0)
+            {
+                // Si no está logueado, lo mandamos al Login
+                return RedirectToAction("Login", "Usuarios");
+            }
 
             var item = await _context.ItemsCarrito
                 .Include(i => i.Carrito)
@@ -131,6 +151,95 @@ namespace ProyectoIntegradorFinal.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private int ObtenerUsuarioId()
+        {
+            
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (int.TryParse(userIdClaim, out int usuarioId))
+            {
+                return usuarioId;
+            }
+
+            return 0; // Retorna 0 si no hay usuario logueado
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FinalizarCompra()
+        {
+            int usuarioIdActual = ObtenerUsuarioId();
+
+            if (usuarioIdActual == 0)
+            {
+                // Si no está logueado, lo mandamos al Login
+                return RedirectToAction("Login", "Usuarios");
+            }
+
+            var carrito = await _context.Carritos
+                .Include(c => c.Items).ThenInclude(i => i.Producto)
+                .FirstOrDefaultAsync(c => c.IdUsuario == usuarioIdActual);
+            if (carrito == null || carrito.Items == null || !carrito.Items.Any())
+            {
+                TempData["Error"] = "No hay items en el carrito para finalizar la compra.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var direccionEnvio = await _context.Direccion.FirstOrDefaultAsync(d => d.IdUsuario == usuarioIdActual);
+
+            if (direccionEnvio == null)
+            {
+                TempData["Error"] = "No hay una dirección de envío asociada al usuario.";
+                return RedirectToAction("Index","Direcciones");
+            }
+
+
+            decimal totalOrden = 0;
+            foreach (var item in carrito.Items) 
+            { 
+                if (item.Producto.Stock < item.cantidad)
+                {
+                    TempData["Error"] = $"Lo sentimos, no hay suficiente stock para el perfume: {item.Producto.Nombre}. Stock disponible: {item.Producto.Stock}";
+                    return RedirectToAction(nameof(Index));
+                }
+                totalOrden += item.Producto.Precio * item.cantidad;
+            }
+
+            var orden = new Orden
+            {
+                IdUsuario = usuarioIdActual,
+                FechaOrden = DateTime.Now,
+                Total = totalOrden,
+                IdDireccion = direccionEnvio.IdDireccion,
+                Estado = "Pendiente"
+                
+            };
+
+            foreach (var item in carrito.Items)
+            {
+                var detalle = new DetalleOrden
+                {
+                    IdProducto = item.IdProducto,
+                    Cantidad = item.cantidad,
+                    PrecioUnitario = item.Producto.Precio
+                };
+
+                item.Producto.Stock -= item.cantidad;
+                _context.Productos.Update(item.Producto);
+            }
+
+            _context.Ordenes.Add(orden);
+
+            _context.ItemsCarrito.RemoveRange(carrito.Items);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Ordenes");
+
+
+
         }
 
     }

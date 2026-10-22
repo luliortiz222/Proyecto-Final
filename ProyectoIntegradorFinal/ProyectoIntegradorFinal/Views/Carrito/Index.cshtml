@@ -241,13 +241,28 @@
                             El envío y el importe definitivo se confirmarán
                             durante el proceso de compra.
                         </p>
-
-                        <button type="button"
+                        
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <form asp-controller="Carrito" asp-action="FinalizarCompra" method="post">
+                                <button type="button"
                                 class="btn btn-carrito w-100"
-                                disabled
-                                title="El proceso de compra se habilitará próximamente">
-                            Finalizar compra próximamente
-                        </button>
+                                title="El proceso de compra">
+                                    Finalizar compra
+                                </button>
+                            </form> 
+                        }
+                        else
+                        {
+                            <button type="button"
+                            class="btn btn-carrito w-100"
+                            disabled
+                            title="El proceso de compra">
+                                Debes iniciar sesión para finalizar la compra
+                            </button>
+                        }
+
+                        
                     </div>
                 </div>
 
