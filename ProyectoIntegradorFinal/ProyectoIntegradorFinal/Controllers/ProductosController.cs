@@ -18,15 +18,21 @@ namespace ProyectoIntegradorFinal.Controllers
         //GET prdouctos
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> Index(
-    string? buscar,
-    int? idCategoria,
-    int? idMarca)
+        public async Task<IActionResult> Index(string? buscar,int? idCategoria,int? idMarca, int? pagina)
         {
+
+            int pageSize = 8;
+
+            int pageNumber = pagina ?? 1;
+
+
+
             var consulta = _context.Productos
                 .Include(p => p.Marca)
                 .Include(p => p.Categoria)
                 .AsQueryable();
+
+
 
             // Buscar en los productos guardados en MySQL
             if (!string.IsNullOrWhiteSpace(buscar))
@@ -55,13 +61,21 @@ namespace ProyectoIntegradorFinal.Controllers
                     p.IdMarca == idMarca.Value);
             }
 
+
+            int totalRegistros = await consulta.CountAsync();
+
+
             var productos = await consulta
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .OrderBy(p => p.Nombre)
                 .ToListAsync();
 
             ViewBag.Buscar = buscar;
             ViewBag.IdCategoria = idCategoria;
             ViewBag.IdMarca = idMarca;
+            ViewBag.PaginaActual = pageNumber;
+            ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / pageSize);
 
             ViewBag.Categorias = await _context.Categorias
                 .OrderBy(c => c.Nombre)

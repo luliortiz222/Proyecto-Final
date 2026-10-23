@@ -14,18 +14,33 @@ namespace ProyectoIntegradorFinal.Controllers
         {
             _context = context;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? pagina)
         {
-            var perfumes = await _context.Productos
+
+            int pageSize = 8;
+            int pageNumber = pagina ?? 1;
+
+            var query = _context.Productos
                 .Include(p => p.Marca)
                 .Include(p => p.Categoria)
+                .AsQueryable();
+
+            int totalRegistros = await query.CountAsync();
+
+            var perfumes = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+
 
             var categorias = await _context.Categorias
                 .OrderBy(c => c.Nombre)
                 .ToListAsync();
 
             ViewBag.Categorias = categorias;
+            ViewBag.PaginaActual = pageNumber;
+            ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / pageSize);
 
             return View(perfumes);
         }

@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Inicio";
+    int paginaActual = ViewBag.PaginaActual ?? 1;
+    int totalPaginas = ViewBag.TotalPaginas ?? 1;
 }
 
 <!-- PORTADA PRINCIPAL -->
@@ -220,6 +222,32 @@
                     </div>
                 }
             </div>
+            @if (totalPaginas > 1)
+            {
+                <nav aria-label="Navegación de páginas" class="my-4">
+                    <ul class="pagination justify-content-center">
+
+                        <!-- Botón Anterior -->
+                        <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)">Anterior</a>
+                        </li>
+
+                        <!-- Números de Página Dinámicos -->
+                        @for (int i = 1; i <= totalPaginas; i++)
+                        {
+                            <li class="page-item @(i == paginaActual ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
+                            </li>
+                        }
+
+                        <!-- Botón Siguiente -->
+                        <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)">Siguiente</a>
+                        </li>
+
+                    </ul>
+                </nav>
+            }
         }
         else
         {
