@@ -2416,7 +2416,7 @@ a {
     font-size: 1.3rem;
 }
 
-@@media (max-width: 767.98px) {
+@media (max-width: 767.98px) {
     .ordenes-pagina .panel-busqueda {
         padding: 17px;
     }
@@ -2430,7 +2430,7 @@ a {
     }
 }
 
-@@media (max-width: 576px) {
+@media (max-width: 576px) {
     .sugerencias-ordenes {
         max-height: 260px;
     }
