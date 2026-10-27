@@ -195,7 +195,103 @@
 
 </div>
 
+
+<!-- SECCIÓN VUE: GESTIÓN REACTIVA DE MARCAS -->
+<div id="pruebaVueMarcas" class="mt-5">
+
+    <hr class="my-4" />
+
+    <h3>{{ mensaje }}</h3>
+    <p class="text-muted">
+        Gestión de marcas mediante Vue y Web API.
+    </p>
+
+    <div class="card card-body mb-4">
+        <h5>
+            {{ idMarcaEditando === null ? 'Nueva marca' : 'Editar marca' }}
+        </h5>
+
+        <form v-on:submit.prevent="guardarMarca">
+            <label for="nombreMarcaVue" class="form-label">
+                Nombre de la marca
+            </label>
+
+            <input id="nombreMarcaVue"
+                   v-model="nombreFormulario"
+                   class="form-control mb-3"
+                   maxlength="100"
+                   required
+                   placeholder="Ej.: Bulgari" />
+
+            <div class="d-flex gap-2">
+                <button type="submit"
+                        class="btn btn-dark"
+                        :disabled="guardando">
+                    {{ guardando ? 'Guardando...' : (idMarcaEditando === null ? 'Crear marca' : 'Guardar cambios') }}
+                </button>
+
+                <button v-if="idMarcaEditando !== null"
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        v-on:click="cancelarEdicion">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div v-if="error" class="alert alert-danger">
+        {{ error }}
+    </div>
+
+    <div v-if="mensajeOperacion" class="alert alert-success">
+        {{ mensajeOperacion }}
+    </div>
+
+    <p v-if="cargando">Cargando marcas...</p>
+
+    <div v-if="!cargando" class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr v-for="marca in marcas" :key="marca.idMarca">
+                    <td>{{ marca.idMarca }}</td>
+                    <td>{{ marca.nombre }}</td>
+                    <td class="text-end">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary me-1"
+                                v-on:click="iniciarEdicion(marca)">
+                            Editar
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                v-on:click="eliminarMarca(marca)">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+
+                <tr v-if="marcas.length === 0">
+                    <td colspan="3" class="text-center">
+                        No hay marcas registradas.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
 @section Scripts {
+    <!-- Búsqueda automática de marcas en el servidor -->
     <script>
         (() => {
             const formulario = document.getElementById('formBuscarMarcas');
@@ -273,7 +369,7 @@
                             );
                         }
 
-                        // Evita reemplazar los resultados con una respuesta antigua.
+                        // Ignorar respuestas de búsquedas anteriores.
                         if (controlador !== controladorActual) {
                             return;
                         }
@@ -294,7 +390,203 @@
                 }, 200);
             });
 
-            // El enlace Limpiar lleva al listado sin filtros.
-        })();
+            // Limpiar búsqueda sin recargar la página.
+            limpiar.addEventListener('click', event => {
+                    event.preventDefault();
+                        buscador.value = '';
+                        clearTimeout(temporizador);
+
+                        if (controladorActual) {
+                            controladorActual.abort();
+                        }
+
+                        buscador.dispatchEvent(new Event('input'));
+                    });
+
+                    // Evitar que el formulario recargue la página.
+                    formulario.addEventListener('submit', event => {
+                        event.preventDefault();
+                        clearTimeout(temporizador);
+                        buscador.dispatchEvent(new Event('input'));
+                    });
+                })();
+    </script>
+
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <script>
+        if (typeof Vue !== 'undefined') {
+            Vue.createApp({
+                data() {
+                    return {
+                        mensaje: 'Gestión de marcas con Vue',
+                        marcas: [],
+                        cargando: true,
+                        guardando: false,
+                        error: '',
+                        mensajeOperacion: '',
+                        idMarcaEditando: null,
+                        nombreFormulario: ''
+                    };
+                },
+
+                async mounted() {
+                    await this.cargarMarcas();
+                },
+
+                methods: {
+                    async cargarMarcas() {
+                        this.cargando = true;
+                        this.error = '';
+
+                        try {
+                            const respuesta = await fetch('/api/marca');
+
+                            if (!respuesta.ok) {
+                                throw new Error(
+                                    'No se pudieron cargar las marcas de la API.'
+                                );
+                            }
+
+                            this.marcas = await respuesta.json();
+                        } catch (error) {
+                            this.error = error.message;
+                        } finally {
+                            this.cargando = false;
+                        }
+                    },
+
+                    iniciarEdicion(marca) {
+                        this.idMarcaEditando = marca.idMarca;
+                        this.nombreFormulario = marca.nombre;
+                        this.error = '';
+                        this.mensajeOperacion = '';
+                    },
+
+                    cancelarEdicion() {
+                        this.idMarcaEditando = null;
+                        this.nombreFormulario = '';
+                        this.error = '';
+                    },
+
+                    async guardarMarca() {
+                        const nombre = this.nombreFormulario.trim();
+
+                        if (!nombre) {
+                            this.error = 'Ingresá el nombre de la marca.';
+                            return;
+                        }
+
+                        this.guardando = true;
+                        this.error = '';
+                        this.mensajeOperacion = '';
+
+                        const editando = this.idMarcaEditando !== null;
+
+                        const url = editando
+                            ? `/api/marca/${this.idMarcaEditando}`
+                            : '/api/marca';
+
+                        const metodo = editando ? 'PUT' : 'POST';
+
+                        const datos = editando
+                            ? {
+                                idMarca: this.idMarcaEditando,
+                                nombre: nombre
+                            }
+                            : { nombre: nombre };
+
+                        try {
+                            const respuesta = await fetch(url, {
+                                method: metodo,
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(datos)
+                            });
+
+                            if (!respuesta.ok) {
+                                let detalle = 'No se pudo guardar la marca.';
+
+                                try {
+                                    const cuerpo = await respuesta.json();
+                                    if (cuerpo.mensaje) {
+                                        detalle = cuerpo.mensaje;
+                                    }
+                                } catch (_) { }
+
+                                throw new Error(detalle);
+                            }
+
+                            this.idMarcaEditando = null;
+                            this.nombreFormulario = '';
+
+                            await this.cargarMarcas();
+
+                            this.mensajeOperacion = editando
+                                ? 'Marca actualizada correctamente.'
+                                : 'Marca creada correctamente.';
+                        } catch (error) {
+                            this.error = error.message;
+                        } finally {
+                            this.guardando = false;
+                        }
+                    },
+
+                    async eliminarMarca(marca) {
+                        const confirmar = confirm(
+                            `¿Querés eliminar la marca "${marca.nombre}"?`
+                        );
+
+                        if (!confirmar) return;
+
+                        this.error = '';
+                        this.mensajeOperacion = '';
+
+                        try {
+                            const respuesta = await fetch(
+                                `/api/marca/${marca.idMarca}`,
+                                { method: 'DELETE' }
+                            );
+
+                            if (!respuesta.ok) {
+                                let detalle = 'No se pudo eliminar la marca.';
+
+                                try {
+                                    const cuerpo = await respuesta.json();
+                                    if (cuerpo.mensaje) {
+                                        detalle = cuerpo.mensaje;
+                                    }
+                                } catch (_) { }
+
+                                throw new Error(detalle);
+                            }
+
+                            if (this.idMarcaEditando === marca.idMarca) {
+                                this.cancelarEdicion();
+                            }
+
+                            await this.cargarMarcas();
+
+                            this.mensajeOperacion =
+                                'Marca eliminada correctamente.';
+                        } catch (error) {
+                            this.error = error.message;
+                        }
+                    }
+                }
+            }).mount('#pruebaVueMarcas');
+        } else {
+            const contenedor =
+                document.getElementById('pruebaVueMarcas');
+
+            if (contenedor) {
+                contenedor.textContent =
+                    'No se pudo cargar Vue. Verificá tu conexión a Internet.';
+            }
+        }
     </script>
 }
+
+
