@@ -195,7 +195,114 @@
 
 </div>
 
+<!-- SECCIÓN VUE: GESTIÓN REACTIVA DE CATEGORÍAS -->
+<div id="pruebaVueCategorias" class="mt-5">
+
+    <hr class="my-4" />
+
+    <h3>{{ mensaje }}</h3>
+    <p class="text-muted">
+        Gestión de categorías mediante Vue.
+    </p>
+
+    <!-- FORMULARIO -->
+    <div class="card card-body mb-4">
+        <h5>
+            {{ idCategoriaEditando === null
+            ? 'Nueva categoría'
+            : 'Editar categoría' }}
+        </h5>
+
+        <form v-on:submit.prevent="guardarCategoria">
+            <label for="nombreCategoriaVue" class="form-label">
+                Nombre de la categoría
+            </label>
+
+            <input id="nombreCategoriaVue"
+                   v-model="nombreFormulario"
+                   class="form-control mb-3"
+                   maxlength="100"
+                   required
+                   placeholder="Ej.: Amaderada" />
+
+            <div class="d-flex gap-2">
+                <button type="submit"
+                        class="btn btn-dark"
+                        :disabled="guardando">
+                    {{ guardando
+                    ? 'Guardando...'
+                    : (idCategoriaEditando === null
+                    ? 'Crear categoría'
+                    : 'Guardar cambios') }}
+                </button>
+
+                <button v-if="idCategoriaEditando !== null"
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        v-on:click="cancelarEdicion">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- MENSAJES -->
+    <div v-if="error" class="alert alert-danger">
+        {{ error }}
+    </div>
+
+    <div v-if="mensajeOperacion" class="alert alert-success">
+        {{ mensajeOperacion }}
+    </div>
+
+    <p v-if="cargando">Cargando categorías...</p>
+
+    <!-- TABLA REACTIVA -->
+    <div v-if="!cargando" class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr v-for="categoria in categorias"
+                    :key="categoria.idCategoria">
+                    <td>{{ categoria.idCategoria }}</td>
+                    <td>{{ categoria.nombre }}</td>
+
+                    <td class="text-end">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary me-1"
+                                v-on:click="iniciarEdicion(categoria)">
+                            Editar
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                v-on:click="eliminarCategoria(categoria)">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+
+                <tr v-if="categorias.length === 0">
+                    <td colspan="3" class="text-center">
+                        No hay categorías registradas.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
 @section Scripts {
+
+    <!-- BÚSQUEDA AUTOMÁTICA DE CATEGORÍAS -->
     <script>
         (() => {
             const formulario =
@@ -228,7 +335,8 @@
                     ? 'inline-block'
                     : 'none';
 
-                estado.textContent = 'Buscando familias olfativas...';
+                estado.textContent =
+                    'Buscando familias olfativas...';
 
                 temporizador = setTimeout(async () => {
                     if (controladorActual) {
@@ -242,7 +350,6 @@
                         new FormData(formulario)
                     );
 
-                    // Una nueva búsqueda siempre comienza en la página 1.
                     parametros.delete('pagina');
 
                     const url =
@@ -265,10 +372,11 @@
 
                         const html = await respuesta.text();
 
-                        const documento = new DOMParser().parseFromString(
-                            html,
-                            'text/html'
-                        );
+                        const documento =
+                            new DOMParser().parseFromString(
+                                html,
+                                'text/html'
+                            );
 
                         const nuevaTabla =
                             documento.getElementById('tablaCategorias');
@@ -286,18 +394,19 @@
                             );
                         }
 
-                        // Ignorar respuestas de búsquedas anteriores.
                         if (controlador !== controladorActual) {
                             return;
                         }
 
                         tabla.innerHTML = nuevaTabla.innerHTML;
                         contador.innerHTML = nuevoContador.innerHTML;
-                        paginacion.innerHTML = nuevaPaginacion.innerHTML;
+                        paginacion.innerHTML =
+                            nuevaPaginacion.innerHTML;
 
-                        estado.textContent = 'Resultados actualizados.';
-                    }
-                    catch (error) {
+                        estado.textContent =
+                            'Resultados actualizados.';
+
+                    } catch (error) {
                         if (error.name !== 'AbortError') {
                             console.error(error);
                             estado.textContent =
@@ -306,6 +415,224 @@
                     }
                 }, 200);
             });
+
+            limpiar.addEventListener('click', event => {
+                event.preventDefault();
+
+                buscador.value = '';
+                clearTimeout(temporizador);
+
+                if (controladorActual) {
+                    controladorActual.abort();
+                }
+
+                buscador.dispatchEvent(new Event('input'));
+            });
+
+            formulario.addEventListener('submit', event => {
+                event.preventDefault();
+                clearTimeout(temporizador);
+                buscador.dispatchEvent(new Event('input'));
+            });
+        })();
+    </script>
+
+    <!-- VUE 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <!-- CRUD REACTIVO DE CATEGORÍAS -->
+    <script>
+        (() => {
+            const contenedor =
+                document.getElementById('pruebaVueCategorias');
+
+            if (!contenedor) return;
+
+            if (typeof Vue === 'undefined') {
+                contenedor.textContent =
+                    'No se pudo cargar Vue. Verificá tu conexión a Internet.';
+                return;
+            }
+
+            Vue.createApp({
+                data() {
+                    return {
+                        mensaje: 'Gestión de categorías con Vue',
+                        categorias: [],
+                        cargando: true,
+                        guardando: false,
+                        error: '',
+                        mensajeOperacion: '',
+                        idCategoriaEditando: null,
+                        nombreFormulario: ''
+                    };
+                },
+
+                mounted() {
+                    this.cargarCategorias();
+                },
+
+                methods: {
+                    async cargarCategorias() {
+                        this.cargando = true;
+                        this.error = '';
+
+                        try {
+                            const respuesta =
+                                await fetch('/api/categoria');
+
+                            if (!respuesta.ok) {
+                                throw new Error(
+                                    'No se pudieron cargar las categorías.'
+                                );
+                            }
+
+                            this.categorias =
+                                await respuesta.json();
+
+                        } catch (error) {
+                            this.error = error.message;
+                        } finally {
+                            this.cargando = false;
+                        }
+                    },
+
+                    iniciarEdicion(categoria) {
+                        this.idCategoriaEditando =
+                            categoria.idCategoria;
+                        this.nombreFormulario = categoria.nombre;
+                        this.error = '';
+                        this.mensajeOperacion = '';
+                    },
+
+                    cancelarEdicion() {
+                        this.idCategoriaEditando = null;
+                        this.nombreFormulario = '';
+                        this.error = '';
+                        this.mensajeOperacion = '';
+                    },
+
+                    async guardarCategoria() {
+                        const nombre =
+                            this.nombreFormulario.trim();
+
+                        if (!nombre) {
+                            this.error =
+                                'Ingresá el nombre de la categoría.';
+                            return;
+                        }
+
+                        this.guardando = true;
+                        this.error = '';
+                        this.mensajeOperacion = '';
+
+                        const editando =
+                            this.idCategoriaEditando !== null;
+
+                        const url = editando
+                            ? `/api/categoria/${this.idCategoriaEditando}`
+                            : '/api/categoria';
+
+                        const metodo = editando ? 'PUT' : 'POST';
+
+                        const datos = editando
+                            ? {
+                                idCategoria: this.idCategoriaEditando,
+                                nombre: nombre
+                            }
+                            : { nombre: nombre };
+
+                        try {
+                            const respuesta = await fetch(url, {
+                                method: metodo,
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(datos)
+                            });
+
+                            if (!respuesta.ok) {
+                                let detalle =
+                                    'No se pudo guardar la categoría.';
+
+                                try {
+                                    const cuerpo =
+                                        await respuesta.json();
+
+                                    if (cuerpo.mensaje) {
+                                        detalle = cuerpo.mensaje;
+                                    }
+                                } catch (_) { }
+
+                                throw new Error(detalle);
+                            }
+
+                            this.idCategoriaEditando = null;
+                            this.nombreFormulario = '';
+
+                            await this.cargarCategorias();
+
+                            this.mensajeOperacion = editando
+                                ? 'Categoría actualizada correctamente.'
+                                : 'Categoría creada correctamente.';
+
+                        } catch (error) {
+                            this.error = error.message;
+                        } finally {
+                            this.guardando = false;
+                        }
+                    },
+
+                    async eliminarCategoria(categoria) {
+                        const confirmar = confirm(
+                            `¿Querés eliminar la categoría "${categoria.nombre}"?`
+                        );
+
+                        if (!confirmar) return;
+
+                        this.error = '';
+                        this.mensajeOperacion = '';
+
+                        try {
+                            const respuesta = await fetch(
+                                `/api/categoria/${categoria.idCategoria}`,
+                                { method: 'DELETE' }
+                            );
+
+                            if (!respuesta.ok) {
+                                let detalle =
+                                    'No se pudo eliminar la categoría.';
+
+                                try {
+                                    const cuerpo =
+                                        await respuesta.json();
+
+                                    if (cuerpo.mensaje) {
+                                        detalle = cuerpo.mensaje;
+                                    }
+                                } catch (_) { }
+
+                                throw new Error(detalle);
+                            }
+
+                            if (
+                                this.idCategoriaEditando ===
+                                categoria.idCategoria
+                            ) {
+                                this.cancelarEdicion();
+                            }
+
+                            await this.cargarCategorias();
+
+                            this.mensajeOperacion =
+                                'Categoría eliminada correctamente.';
+
+                        } catch (error) {
+                            this.error = error.message;
+                        }
+                    }
+                }
+            }).mount('#pruebaVueCategorias');
         })();
     </script>
 }
