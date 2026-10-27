@@ -70,17 +70,36 @@
                             </li>
                         }
 
-                        @if (User.IsInRole("Administrador")){
+                        @if (User.IsInRole("Administrador"))
+                        {
                             <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Productos"
-                               asp-action="Index">
-                                Productos
-                            </a>
+                                <a class="nav-link"
+                                   asp-controller="Productos"
+                                   asp-action="Index">
+                                    <i class="fas fa-spray-can me-1"></i>
+                                    Productos
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Marcas"
+                                   asp-action="Index">
+                                    <i class="fas fa-tags me-1"></i>
+                                    Marcas
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Categorias"
+                                   asp-action="Index">
+                                    <i class="fas fa-layer-group me-1"></i>
+                                    Categorías
+                                </a>
                             </li>
                         }
-                        
-
+                     
                         <li class="nav-item">
                             @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
                             {

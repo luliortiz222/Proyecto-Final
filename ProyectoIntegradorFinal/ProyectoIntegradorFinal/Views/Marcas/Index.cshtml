@@ -1,39 +1,300 @@
-﻿@model IEnumerable<ProyectoIntegradorFinal.Models.Marca>
+﻿@using System.Linq
+@model IEnumerable<ProyectoIntegradorFinal.Models.Marca>
 
 @{
     ViewData["Title"] = "Gestión de Marcas";
+
+    string buscar = ViewBag.Buscar as string ?? "";
+    int paginaActual = ViewBag.PaginaActual ?? 1;
+    int totalPaginas = ViewBag.TotalPaginas ?? 0;
+    int totalRegistros = ViewBag.TotalRegistros ?? 0;
 }
 
-<div class="container mt-4">
-    <h2>Marcas Registradas</h2>
-    <hr />
+<div class="container mt-4 mb-5 he-marcas">
 
-    <p>
-        <a asp-action="Create" class="btn btn-primary">Agregar Nueva Marca</a>
-    </p>
+    <!-- ENCABEZADO -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <span class="he-etiqueta">HOME ELIXIR</span>
+            <h2 class="he-titulo mt-2">Marcas registradas</h2>
+            <p class="text-muted mb-0">
+                Administrá las marcas de nuestra perfumería.
+            </p>
+        </div>
 
-    <div class="col-md-6">
-        <table class="table table-striped table-hover mt-3">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre de la Marca</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@item.IdMarca</td>
-                        <td class="fw-bold">@item.Nombre</td>
-                        <td>
-                            <!-- Botón para futura funcionalidad -->
-                            <a asp-action="Edit" asp-route-id="@item.IdMarca" class="btn btn-sm btn-outline-secondary">Editar</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <a asp-action="Create" class="btn he-btn-dorado">
+            <i class="fas fa-plus me-2"></i>
+            Nueva marca
+        </a>
     </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["Mensaje"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar"></button>
+        </div>
+    }
+
+    <!-- BUSCADOR AUTOMÁTICO -->
+    <form id="formBuscarMarcas"
+          asp-controller="Marcas"
+          asp-action="Index"
+          method="get"
+          class="he-buscador mb-4">
+
+        <div class="input-group">
+            <span class="input-group-text he-icono-busqueda">
+                <i class="fas fa-search"></i>
+            </span>
+
+            <input type="search"
+                   id="buscarMarcas"
+                   name="buscar"
+                   value="@buscar"
+                   class="form-control"
+                   placeholder="Buscar marca..."
+                   aria-label="Buscar marca"
+                   autocomplete="off" />
+
+            <a asp-action="Index"
+               id="limpiarBusquedaMarcas"
+               class="btn he-btn-limpiar"
+               style="display: @(string.IsNullOrWhiteSpace(buscar) ? "none" : "inline-block")">
+                <i class="fas fa-times me-1"></i>
+                Limpiar
+            </a>
+        </div>
+
+        <small id="estadoBusquedaMarcas"
+               class="text-muted d-block mt-2"
+               aria-live="polite">
+            Escribí una letra o el nombre de una marca para buscar.
+        </small>
+    </form>
+
+    <!-- TABLA DE MARCAS -->
+    <div class="he-tabla-contenedor">
+        <div class="table-responsive">
+            <table class="table he-tabla align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre de la marca</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaMarcas">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var marca in Model)
+                        {
+                            <tr>
+                                <td>@marca.IdMarca</td>
+
+                                <td class="fw-semibold">
+                                    @marca.Nombre
+                                </td>
+
+                                <td class="text-end">
+                                    <a asp-action="Edit"
+                                       asp-route-id="@marca.IdMarca"
+                                       class="btn btn-sm he-btn-editar">
+                                        <i class="fas fa-pen me-1"></i>
+                                        Editar
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center py-5">
+                                <i class="fas fa-tags he-icono-vacio"></i>
+
+                                <p class="mt-3 mb-1 fw-semibold">
+                                    No se encontraron marcas.
+                                </p>
+
+                                <span class="text-muted">
+                                    Probá con otra letra o palabra.
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- RESULTADOS Y PAGINACIÓN -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-3">
+
+        <small class="text-muted" id="contadorMarcas">
+            Resultados: @totalRegistros
+        </small>
+
+        <nav id="contenedorPaginacion"
+             aria-label="Paginación de marcas">
+
+            @if (totalPaginas > 1)
+            {
+                <ul class="pagination he-paginacion mb-0">
+
+                    <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-buscar="@buscar"
+                           asp-route-pagina="@(paginaActual - 1)">
+                            Anterior
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= totalPaginas; i++)
+                    {
+                        <li class="page-item @(i == paginaActual ? "active" : "")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-buscar="@buscar"
+                               asp-route-pagina="@i">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-buscar="@buscar"
+                           asp-route-pagina="@(paginaActual + 1)">
+                            Siguiente
+                        </a>
+                    </li>
+
+                </ul>
+            }
+        </nav>
+    </div>
+
+    <!-- VOLVER A PRODUCTOS -->
+    <div class="d-flex justify-content-start mt-4">
+        <a asp-controller="Productos"
+           asp-action="Index"
+           class="btn he-btn-volver">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver a Productos
+        </a>
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const formulario = document.getElementById('formBuscarMarcas');
+            const buscador = document.getElementById('buscarMarcas');
+            const limpiar = document.getElementById('limpiarBusquedaMarcas');
+            const estado = document.getElementById('estadoBusquedaMarcas');
+            const tabla = document.getElementById('tablaMarcas');
+            const contador = document.getElementById('contadorMarcas');
+            const paginacion = document.getElementById('contenedorPaginacion');
+
+            if (!formulario || !buscador || !limpiar ||
+                !estado || !tabla || !contador || !paginacion) {
+                return;
+            }
+
+            let temporizador;
+            let controladorActual = null;
+
+            buscador.addEventListener('input', () => {
+                clearTimeout(temporizador);
+
+                limpiar.style.display = buscador.value.trim()
+                    ? 'inline-block'
+                    : 'none';
+
+                estado.textContent = 'Buscando marcas...';
+
+                temporizador = setTimeout(async () => {
+                    if (controladorActual) {
+                        controladorActual.abort();
+                    }
+
+                    const controlador = new AbortController();
+                    controladorActual = controlador;
+
+                    const parametros = new URLSearchParams(
+                        new FormData(formulario)
+                    );
+
+                    // Cada nueva búsqueda comienza en la página 1.
+                    parametros.delete('pagina');
+
+                    const url = formulario.action + '?' + parametros.toString();
+
+                    try {
+                        const respuesta = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            signal: controlador.signal
+                        });
+
+                        if (!respuesta.ok) {
+                            throw new Error('No se pudieron cargar las marcas.');
+                        }
+
+                        const html = await respuesta.text();
+
+                        const documento = new DOMParser().parseFromString(
+                            html,
+                            'text/html'
+                        );
+
+                        const nuevaTabla =
+                            documento.getElementById('tablaMarcas');
+                        const nuevoContador =
+                            documento.getElementById('contadorMarcas');
+                        const nuevaPaginacion =
+                            documento.getElementById('contenedorPaginacion');
+
+                        if (!nuevaTabla || !nuevoContador || !nuevaPaginacion) {
+                            throw new Error(
+                                'La respuesta no contiene los resultados esperados.'
+                            );
+                        }
+
+                        // Evita reemplazar los resultados con una respuesta antigua.
+                        if (controlador !== controladorActual) {
+                            return;
+                        }
+
+                        tabla.innerHTML = nuevaTabla.innerHTML;
+                        contador.innerHTML = nuevoContador.innerHTML;
+                        paginacion.innerHTML = nuevaPaginacion.innerHTML;
+
+                        estado.textContent = 'Resultados actualizados.';
+                    }
+                    catch (error) {
+                        if (error.name !== 'AbortError') {
+                            console.error(error);
+                            estado.textContent =
+                                'No se pudo completar la búsqueda. Intentá nuevamente.';
+                        }
+                    }
+                }, 200);
+            });
+
+            // El enlace Limpiar lleva al listado sin filtros.
+        })();
+    </script>
+}
