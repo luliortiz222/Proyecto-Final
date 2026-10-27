@@ -10,6 +10,21 @@
     int totalRegistros = ViewBag.TotalRegistros ?? 0;
     int registrosPorPagina = ViewBag.RegistrosPorPagina ?? 3;
 
+    string direccionBuscada = ViewBag.DireccionBuscada as string ?? "";
+    string estadoBuscado = ViewBag.EstadoBuscado as string ?? "";
+
+    bool hayFiltros = !string.IsNullOrWhiteSpace(direccionBuscada)
+                   || !string.IsNullOrWhiteSpace(estadoBuscado);
+
+    var estados = new[]
+    {
+        "Pendiente",
+        "Observado",
+        "En camino",
+        "Finalizado",
+        "Cancelado"
+    };
+
     int primerRegistro = totalRegistros == 0
         ? 0
         : ((paginaActual - 1) * registrosPorPagina) + 1;
@@ -20,76 +35,150 @@
     );
 }
 
-<div class="container mt-4 mb-5">
+<div class="container ordenes-pagina mt-4 mb-5">
 
-    <div class="mb-4">
-        <span class="text-uppercase small"
-              style="letter-spacing: 3px; color: #B08D57;">
-            HOME ELIXIR
-        </span>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+        <div>
+            <div class="etiqueta-seccion mb-2">
+                Home Elixir · @(esAdministrador ? "Administración" : "Mi cuenta")
+            </div>
 
-        <h2 class="mt-2">
-            @(esAdministrador ? "Gestión de órdenes" : "Mis órdenes")
-        </h2>
+            <h1 class="titulo-principal mb-2">
+                @(esAdministrador ? "Gestión de órdenes" : "Mis órdenes")
+            </h1>
 
-        <p class="text-muted">
-            @(esAdministrador
-                ? "Consultá las órdenes realizadas por todos los clientes."
-                : "Consultá tus compras, sus importes y el estado de cada pedido.")
-        </p>
-    </div>
-
-    @if (TempData["Mensaje"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show"
-             role="alert">
-            @TempData["Mensaje"]
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Cerrar"></button>
-        </div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show"
-             role="alert">
-            @TempData["Error"]
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Cerrar"></button>
-        </div>
-    }
-
-    @if (totalRegistros == 0)
-    {
-        <div class="text-center py-5"
-             style="background: #fff; border: 1px solid #E5D8C5; border-radius: 12px;">
-
-            <i class="fas fa-box-open fa-3x mb-3"
-               style="color: #B08D57;"></i>
-
-            <h5>No hay órdenes registradas</h5>
-
-            <p class="text-muted mb-0">
+            <p class="texto-secundario mb-0">
                 @(esAdministrador
-                    ? "Cuando se realicen compras, aparecerán en esta sección."
-                    : "Cuando realices una compra, podrás consultar tu pedido aquí.")
+                    ? "Consultá y revisá las órdenes de compra registradas."
+                    : "Consultá el estado y los detalles de tus compras.")
             </p>
         </div>
-    }
-    else
-    {
-        <div class="table-responsive"
-             style="background: #fff; border: 1px solid #E5D8C5; border-radius: 12px;">
 
-            <table class="table table-hover align-middle mb-0">
+        <div class="texto-secundario small">
+            <i class="fas fa-receipt me-1" style="color:#96713D;"></i>
+            @totalRegistros @(totalRegistros == 1 ? "orden registrada" : "órdenes registradas")
+        </div>
+    </div>
 
-                <thead style="background: #F7F1E8;">
+    <div class="panel-busqueda mb-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="fas fa-search" style="color:#96713D;"></i>
+            <h2 class="h6 fw-bold mb-0">Buscar órdenes</h2>
+        </div>
+
+        <form asp-controller="Orden"
+              asp-action="Index"
+              method="get"
+              id="formBusquedaOrdenes">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-5">
+                    <label for="direccion" class="form-label fw-semibold">
+                        Dirección de entrega
+                    </label>
+
+                    <div class="position-relative buscador-ordenes">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </span>
+
+                            <input type="text"
+                                   id="direccion"
+                                   name="direccion"
+                                   value="@direccionBuscada"
+                                   class="form-control"
+                                   placeholder="Escribí una calle o ciudad..."
+                                   autocomplete="off"
+                                   aria-autocomplete="list"
+                                   aria-controls="listaSugerenciasOrdenes" />
+                        </div>
+
+                        <div id="listaSugerenciasOrdenes"
+                             class="sugerencias-ordenes"
+                             role="listbox">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <label for="estado" class="form-label fw-semibold">
+                        Estado de la orden
+                    </label>
+
+                    <select id="estado"
+                            name="estado"
+                            class="form-select filtro-estado">
+                        <option value="">Todos los estados</option>
+
+                        @foreach (var estadoItem in estados.Distinct())
+                        {
+                            if (estadoBuscado == estadoItem)
+                            {
+                                <option value="@estadoItem" selected>
+                                    @estadoItem
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@estadoItem">
+                                    @estadoItem
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-buscar flex-grow-1">
+                            <i class="fas fa-search me-1"></i>
+                            Buscar
+                        </button>
+
+                        @if (hayFiltros)
+                        {
+                            <a asp-controller="Orden"
+                               asp-action="Index"
+                               class="btn btn-limpiar"
+                               title="Limpiar filtros"
+                               aria-label="Limpiar filtros">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+        <div class="texto-secundario small mt-3">
+            <i class="fas fa-info-circle me-1"></i>
+            Escribí una calle o ciudad para ver sugerencias. La búsqueda se realiza en el servidor.
+        </div>
+    </div>
+
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+        <h2 class="h5 fw-semibold mb-0">
+            Resultados
+        </h2>
+
+        @if (totalRegistros > 0)
+        {
+            <span class="texto-secundario small">
+                Mostrando @primerRegistro–@ultimoRegistro de @totalRegistros
+            </span>
+        }
+    </div>
+
+    <div class="tabla-contenedor">
+        @if (Model != null && Model.Any())
+        {
+            <table class="table tabla-ordenes">
+                <thead>
                     <tr>
-                        <th class="ps-3">N.º orden</th>
+                        <th>Orden</th>
 
                         @if (esAdministrador)
                         {
@@ -98,7 +187,6 @@
 
                         <th>Fecha</th>
                         <th>Dirección de entrega</th>
-                        <th>Total</th>
                         <th>Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
@@ -107,71 +195,81 @@
                 <tbody>
                     @foreach (var orden in Model)
                     {
+                        string estadoOrden = orden.Estado ?? "Pendiente";
+                        string claseEstado = estadoOrden.ToLowerInvariant() switch
+                        {
+                            "pendiente" => "estado-pendiente",
+                            "finalizado" => "estado-finalizado",
+                            "entregado" => "estado-entregado",
+                            "cancelado" => "estado-cancelado",
+                            "observado" => "estado-observado",
+                            _ => ""
+                        };
+
                         <tr>
-                            <td class="ps-3 fw-semibold">
-                                #@orden.IdOrden
+                            <td>
+                                <span class="numero-orden">
+                                    #@orden.IdOrden
+                                </span>
                             </td>
 
                             @if (esAdministrador)
                             {
                                 <td>
-                                    @if (orden.Usuario != null)
-                                    {
-                                        @($"{orden.Usuario.Nombre} {orden.Usuario.Apellido}")
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Sin información</span>
-                                    }
+                                    <div class="fw-semibold">
+                                        @(
+                                            orden.Usuario != null
+                                                ? $"{orden.Usuario.Nombre} {orden.Usuario.Apellido}"
+                                                : "Cliente no disponible"
+                                        )
+                                    </div>
                                 </td>
                             }
 
                             <td>
-                                @orden.FechaOrden.ToString("dd/MM/yyyy HH:mm")
+                                <div class="fw-semibold">
+                                    @orden.FechaOrden.ToString("dd/MM/yyyy")
+                                </div>
+                                <div class="texto-secundario small">
+                                    @orden.FechaOrden.ToString("HH:mm")
+                                </div>
                             </td>
 
                             <td>
                                 @if (orden.Direccion != null)
                                 {
-                                    @($"{orden.Direccion.Calle} {orden.Direccion.Numero}, {orden.Direccion.Ciudad}")
+                                    <div class="fw-semibold">
+                                        @orden.Direccion.Calle
+                                        @if (orden.Direccion.Numero != null)
+                                        {
+                                            <span>@orden.Direccion.Numero</span>
+                                        }
+                                    </div>
+
+                                    <div class="texto-secundario small">
+                                        @orden.Direccion.Ciudad
+                                    </div>
                                 }
                                 else
                                 {
-                                    <span class="text-muted">Sin dirección</span>
+                                    <span class="texto-secundario">
+                                        Sin dirección registrada
+                                    </span>
                                 }
-                            </td>
-
-                            <td class="fw-semibold">
-                                @orden.Total.ToString(
-                                    "C",
-                                    new System.Globalization.CultureInfo("es-AR")
-                                )
                             </td>
 
                             <td>
-                                @{
-                                    string claseEstado = orden.Estado?.ToLower() switch
-                                    {
-                                        "entregado" or "finalizado" => "bg-success",
-                                        "cancelado" => "bg-danger",
-                                        "enviado" or "en camino" => "bg-primary",
-                                        "procesando" => "bg-info text-dark",
-                                        "observado" => "bg-warning text-dark",
-                                        "pendiente" => "bg-secondary",
-                                        _ => "bg-secondary"
-                                    };
-                                }
-
-                                <span class="badge @claseEstado">
-                                    @orden.Estado
+                                <span class="estado-badge @claseEstado">
+                                    @estadoOrden
                                 </span>
                             </td>
 
                             <td class="text-center">
-                                <a asp-action="Details"
+                                <a asp-controller="Orden"
+                                   asp-action="Details"
                                    asp-route-id="@orden.IdOrden"
-                                   class="btn btn-sm btn-outline-dark">
-                                    <i class="fas fa-eye me-1"></i>
+                                   class="btn-detalle">
+                                    <i class="fas fa-eye"></i>
                                     Ver detalle
                                 </a>
                             </td>
@@ -179,79 +277,331 @@
                     }
                 </tbody>
             </table>
-        </div>
+        }
+        else
+        {
+            <div class="sin-resultados">
+                <div class="sin-resultados-icono">
+                    <i class="fas fa-box-open"></i>
+                </div>
 
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3">
+                <h3 class="h5 fw-semibold mb-2">
+                    No se encontraron órdenes
+                </h3>
 
-            <small class="text-muted">
-                Mostrando @primerRegistro–@ultimoRegistro de @totalRegistros
-                @(totalRegistros == 1 ? "orden" : "órdenes")
-            </small>
+                <p class="texto-secundario mb-3">
+                    @(
+                        hayFiltros
+                            ? "Probá cambiar la dirección o el estado seleccionado."
+                            : "Todavía no hay órdenes para mostrar."
+                    )
+                </p>
+
+                @if (hayFiltros)
+                {
+                    <a asp-controller="Orden"
+                       asp-action="Index"
+                       class="btn btn-limpiar">
+                        <i class="fas fa-times me-1"></i>
+                        Limpiar filtros
+                    </a>
+                }
+            </div>
+        }
+    </div>
+
+    @if (totalPaginas > 1)
+    {
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-4">
+
+            <div class="texto-secundario small">
+                Página @paginaActual de @totalPaginas
+            </div>
 
             <nav aria-label="Paginación de órdenes">
-                <ul class="pagination pagination-sm mb-0">
+                <ul class="pagination paginacion mb-0">
 
                     <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
-                        @if (paginaActual > 1)
+                        @if (paginaActual <= 1)
                         {
-                            <a class="page-link"
-                               asp-action="Index"
-                               asp-route-pagina="@(paginaActual - 1)"
-                               style="color: #6F5128;">
-                                <i class="fas fa-chevron-left me-1"></i>
-                                Anterior
-                            </a>
+                            <span class="page-link">
+                                <i class="fas fa-chevron-left"></i>
+                            </span>
                         }
                         else
                         {
-                            <span class="page-link">Anterior</span>
+                            <a class="page-link"
+                               asp-controller="Orden"
+                               asp-action="Index"
+                               asp-route-pagina="@(paginaActual - 1)"
+                               asp-route-direccion="@direccionBuscada"
+                               asp-route-estado="@estadoBuscado"
+                               aria-label="Página anterior">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
                         }
                     </li>
 
                     @for (int i = 1; i <= totalPaginas; i++)
                     {
                         <li class="page-item @(i == paginaActual ? "active" : "")">
+                            @if (i == paginaActual)
+                            {
+                                <span class="page-link" aria-current="page">
+                                    @i
+                                </span>
+                            }
+                            else
+                            {
+                                <a class="page-link"
+                                   asp-controller="Orden"
+                                   asp-action="Index"
+                                   asp-route-pagina="@i"
+                                   asp-route-direccion="@direccionBuscada"
+                                   asp-route-estado="@estadoBuscado">
+                                    @i
+                                </a>
+                            }
+                        </li>
+                    }
+
+                    <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+                        @if (paginaActual >= totalPaginas)
+                        {
+                            <span class="page-link">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
+                        }
+                        else
+                        {
                             <a class="page-link"
+                               asp-controller="Orden"
                                asp-action="Index"
-                               asp-route-pagina="@i"
-                               aria-current="@(i == paginaActual ? "page" : null)"
-                               style="@(i == paginaActual
-                                                                  ? "background-color: #B08D57; border-color: #B08D57; color: white;"
-                                                                  : "color: #6F5128;")">
-                    @i
-                </a>
-            </li>
-        }
+                               asp-route-pagina="@(paginaActual + 1)"
+                               asp-route-direccion="@direccionBuscada"
+                               asp-route-estado="@estadoBuscado"
+                               aria-label="Página siguiente">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        }
+                    </li>
 
-        <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
-            @if (paginaActual < totalPaginas)
-            {
-                <a class="page-link"
-                   asp-action="Index"
-                   asp-route-pagina="@(paginaActual + 1)"
-                   style="color: #6F5128;">
-                    Siguiente
-                    <i class="fas fa-chevron-right ms-1"></i>
-                </a>
-            }
-            else
-            {
-                <span class="page-link">Siguiente</span>
-            }
-        </li>
-
-    </ul>
-</nav>
-</div>
+                </ul>
+            </nav>
+        </div>
     }
-
-<div class="mt-4">
-    <a asp-controller="Productos"
-       asp-action="Index"
-       class="btn btn-outline-dark">
-        <i class="fas fa-arrow-left me-2"></i>
-        Volver al catálogo
-    </a>
 </div>
 
-</div>
+@section Scripts {
+    <script>
+        (() => {
+            const campo = document.getElementById('direccion');
+            const estado = document.getElementById('estado');
+            const formulario = document.getElementById('formBusquedaOrdenes');
+            const lista = document.getElementById('listaSugerenciasOrdenes');
+
+            if (!campo || !estado || !formulario || !lista) {
+                return;
+            }
+
+            let temporizador;
+            let controlador;
+            let indiceActivo = -1;
+            let resultados = [];
+
+            function cerrarSugerencias() {
+                lista.style.display = 'none';
+                lista.replaceChildren();
+                resultados = [];
+                indiceActivo = -1;
+            }
+
+            function enviarBusqueda(valor = campo.value) {
+                clearTimeout(temporizador);
+
+                campo.value = valor.trim();
+
+                let pagina = formulario.querySelector('[name="pagina"]');
+
+                if (!pagina) {
+                    pagina = document.createElement('input');
+                    pagina.type = 'hidden';
+                    pagina.name = 'pagina';
+                    formulario.appendChild(pagina);
+                }
+
+                pagina.value = '1';
+                cerrarSugerencias();
+                formulario.requestSubmit();
+            }
+
+            function mostrarSugerencias(datos) {
+                lista.replaceChildren();
+                resultados = datos;
+                indiceActivo = -1;
+
+                if (!datos.length) {
+                    const vacio = document.createElement('div');
+                    vacio.className = 'sugerencias-ordenes-mensaje';
+                    vacio.textContent = 'No se encontraron coincidencias';
+                    lista.appendChild(vacio);
+                    lista.style.display = 'block';
+                    return;
+                }
+
+                datos.forEach((item) => {
+                    const boton = document.createElement('button');
+                    boton.type = 'button';
+                    boton.className = 'sugerencia-orden';
+                    boton.setAttribute('role', 'option');
+                    boton.setAttribute('aria-selected', 'false');
+
+                    const icono = document.createElement('span');
+                    icono.className = 'sugerencia-orden-icono';
+
+                    const pin = document.createElement('i');
+                    pin.className = 'fas fa-map-marker-alt';
+                    icono.appendChild(pin);
+
+                    const contenido = document.createElement('span');
+                    contenido.className = 'sugerencia-orden-contenido';
+
+                    const calle = document.createElement('span');
+                    calle.className = 'sugerencia-orden-calle';
+                    calle.textContent = item.texto || 'Dirección sin calle';
+
+                    const ciudad = document.createElement('span');
+                    ciudad.className = 'sugerencia-orden-ciudad';
+                    ciudad.textContent = item.ciudad || 'Ciudad no especificada';
+
+                    contenido.append(calle, ciudad);
+                    boton.append(icono, contenido);
+
+                    boton.addEventListener('click', () => {
+                        enviarBusqueda(item.texto || item.ciudad || '');
+                    });
+
+                    lista.appendChild(boton);
+                });
+
+                lista.style.display = 'block';
+            }
+
+            campo.addEventListener('input', () => {
+                clearTimeout(temporizador);
+
+                if (controlador) {
+                    controlador.abort();
+                }
+
+                const termino = campo.value.trim();
+
+                if (!termino) {
+                    cerrarSugerencias();
+                    return;
+                }
+
+                temporizador = setTimeout(async () => {
+                    const actual = new AbortController();
+                    controlador = actual;
+
+                    try {
+                        const url = '@Url.Action("SugerenciasDireccion", "Orden")'
+                            + '?termino=' + encodeURIComponent(termino);
+
+                        const respuesta = await fetch(url, {
+                            signal: actual.signal,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (!respuesta.ok) {
+                            throw new Error('No se pudieron cargar las sugerencias.');
+                        }
+
+                        const datos = await respuesta.json();
+
+                        if (campo.value.trim() !== termino) {
+                            return;
+                        }
+
+                        mostrarSugerencias(datos);
+                    } catch (error) {
+                        if (error.name !== 'AbortError') {
+                            console.error(error);
+                        }
+                    }
+                }, 200);
+            });
+
+            campo.addEventListener('keydown', (evento) => {
+                const botones = [...lista.querySelectorAll('button')];
+
+                if (evento.key === 'Escape') {
+                    cerrarSugerencias();
+                    return;
+                }
+
+                if (lista.style.display === 'none' || !resultados.length) {
+                    if (evento.key === 'Enter') {
+                        evento.preventDefault();
+                        enviarBusqueda();
+                    }
+                    return;
+                }
+
+                if (evento.key === 'ArrowDown') {
+                    evento.preventDefault();
+                    indiceActivo = (indiceActivo + 1) % resultados.length;
+                } else if (evento.key === 'ArrowUp') {
+                    evento.preventDefault();
+                    indiceActivo =
+                        (indiceActivo - 1 + resultados.length) % resultados.length;
+                } else if (evento.key === 'Enter') {
+                    evento.preventDefault();
+
+                    if (indiceActivo >= 0) {
+                        const item = resultados[indiceActivo];
+                        enviarBusqueda(item.texto || item.ciudad || '');
+                    } else {
+                        enviarBusqueda();
+                    }
+
+                    return;
+                } else {
+                    return;
+                }
+
+                botones.forEach((boton, i) => {
+                    const activa = i === indiceActivo;
+
+                    boton.classList.toggle('activa', activa);
+                    boton.setAttribute('aria-selected', String(activa));
+
+                    if (activa) {
+                        boton.scrollIntoView({ block: 'nearest' });
+                    }
+                });
+            });
+
+            estado.addEventListener('change', () => {
+                enviarBusqueda();
+            });
+
+            document.addEventListener('click', (evento) => {
+                if (!campo.contains(evento.target) &&
+                    !lista.contains(evento.target)) {
+                    cerrarSugerencias();
+                }
+            });
+
+            formulario.addEventListener('submit', () => {
+                cerrarSugerencias();
+            });
+        })();
+    </script>
+}
+
+
+

@@ -1,11 +1,18 @@
-﻿@model IEnumerable<ProyectoIntegradorFinal.Models.Pago>
+﻿@using System.Linq
+@model IEnumerable<ProyectoIntegradorFinal.Models.Pago>
 
 @{
     ViewData["Title"] = "Gestión de pagos";
 
+    string buscar = ViewBag.Buscar as string ?? "";
+    string metodoSeleccionado = ViewBag.MetodoPago as string ?? "";
+
     int paginaActual = ViewBag.PaginaActual ?? 1;
     int totalPaginas = ViewBag.TotalPaginas ?? 1;
     int totalRegistros = ViewBag.TotalRegistros ?? 0;
+
+    var metodosPago = ViewBag.MetodosPago as IEnumerable<string>
+        ?? Enumerable.Empty<string>();
 }
 
 <div class="container mt-4 mb-5 he-pagos">
@@ -19,11 +26,12 @@
         <div>
             <h2>Gestión de pagos</h2>
             <p class="text-muted mb-0">
-                Consultá los pagos registrados y su estado.
+                Consultá y filtrá los pagos registrados.
             </p>
         </div>
 
-        <span class="badge rounded-pill text-bg-dark px-3 py-2">
+        <span class="badge rounded-pill text-bg-dark px-3 py-2"
+              id="totalPagos">
             @totalRegistros pagos
         </span>
     </div>
@@ -39,28 +47,84 @@
             <button type="button"
                     class="btn-close"
                     data-bs-dismiss="alert"
-                    aria-label="Cerrar">
-            </button>
+                    aria-label="Cerrar"></button>
         </div>
     }
 
-    <div class="card shadow-sm he-card-pagos">
-        <div class="card-body">
+    <!-- BÚSQUEDA Y FILTRO POR SERVIDOR -->
+    <form id="formBuscarPagos"
+          asp-controller="Pagos"
+          asp-action="Index"
+          method="get"
+          class="he-buscador mb-4">
 
-            @if (!Model.Any())
-            {
-                <div class="text-center py-5">
-                    <i class="fas fa-receipt fa-3x mb-3"
-                       style="color: #B08D57;"></i>
+        <div class="row g-3">
 
-                    <h5>No hay pagos registrados</h5>
+            <div class="col-md-7">
+                <label for="buscarPagos" class="form-label">
+                    Buscar pago
+                </label>
 
-                    <p class="text-muted mb-0">
-                        Cuando existan pagos, aparecerán en este listado.
-                    </p>
+                <div class="input-group">
+                    <span class="input-group-text he-icono-busqueda">
+                        <i class="fas fa-search"></i>
+                    </span>
+
+                    <input type="search"
+                           id="buscarPagos"
+                           name="buscar"
+                           value="@buscar"
+                           class="form-control"
+                           placeholder="N.º de pago, orden o cliente..."
+                           autocomplete="off" />
                 </div>
-            }
-            else
+            </div>
+
+            <div class="col-md-5">
+                <label for="metodoPago" class="form-label">
+                    Método de pago
+                </label>
+
+                <select id="metodoPago"
+                        name="metodoPago"
+                        class="form-select">
+                    <option value="">Todos los métodos</option>
+
+                    @foreach (var metodo in metodosPago)
+                    {
+                        <option value="@metodo"
+                                selected="@(metodo == metodoSeleccionado)">
+                            @metodo
+                        </option>
+                    }
+                </select>
+            </div>
+
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-2 gap-2">
+            <small id="estadoBusquedaPagos"
+                   class="text-muted"
+                   aria-live="polite">
+                Los resultados se actualizan automáticamente.
+            </small>
+
+            <a asp-controller="Pagos"
+               asp-action="Index"
+               id="limpiarFiltrosPagos"
+               class="btn he-btn-limpiar"
+               style="display: @(string.IsNullOrWhiteSpace(buscar) && string.IsNullOrWhiteSpace(metodoSeleccionado) ? "none" : "inline-block")">
+                <i class="fas fa-times me-1"></i>
+                Limpiar filtros
+            </a>
+        </div>
+    </form>
+
+    <!-- TABLA -->
+    <div class="card shadow-sm he-card-pagos">
+        <div class="card-body" id="resultadosPagos">
+
+            @if (Model != null && Model.Any())
             {
                 <div class="table-responsive">
                     <table class="table align-middle table-hover he-tabla-pagos">
@@ -105,15 +169,11 @@
                                         }
                                         else
                                         {
-                                            <span class="text-muted">
-                                                Sin datos
-                                            </span>
+                                            <span class="text-muted">Sin datos</span>
                                         }
                                     </td>
 
-                                    <td>
-                                        #@pago.IdOrden
-                                    </td>
+                                    <td>#@pago.IdOrden</td>
 
                                     <td class="text-nowrap">
                                         @pago.FechaPago.ToString("dd/MM/yyyy HH:mm")
@@ -151,7 +211,23 @@
                         </tbody>
                     </table>
                 </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-receipt fa-3x mb-3"
+                       style="color: #B08D57;"></i>
 
+                    <h5>No se encontraron pagos</h5>
+
+                    <p class="text-muted mb-0">
+                        Probá con otro texto o seleccioná otro método de pago.
+                    </p>
+                </div>
+            }
+
+            <!-- PAGINACIÓN -->
+            <div id="paginacionPagos">
                 @if (totalPaginas > 1)
                 {
                     <div class="d-flex flex-wrap justify-content-between align-items-center mt-4 gap-3">
@@ -161,12 +237,13 @@
                         </span>
 
                         <nav aria-label="Paginación de pagos">
-                            <ul class="pagination justify-content-center mb-0">
+                            <ul class="pagination justify-content-center mb-0 he-paginacion">
 
                                 <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
                                     <a class="page-link"
-                                       asp-controller="Pagos"
                                        asp-action="Index"
+                                       asp-route-buscar="@buscar"
+                                       asp-route-metodoPago="@metodoSeleccionado"
                                        asp-route-page="@(paginaActual - 1)">
                                         Anterior
                                     </a>
@@ -176,8 +253,9 @@
                                 {
                                     <li class="page-item @(i == paginaActual ? "active" : "")">
                                         <a class="page-link"
-                                           asp-controller="Pagos"
                                            asp-action="Index"
+                                           asp-route-buscar="@buscar"
+                                           asp-route-metodoPago="@metodoSeleccionado"
                                            asp-route-page="@i">
                                             @i
                                         </a>
@@ -186,8 +264,9 @@
 
                                 <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
                                     <a class="page-link"
-                                       asp-controller="Pagos"
                                        asp-action="Index"
+                                       asp-route-buscar="@buscar"
+                                       asp-route-metodoPago="@metodoSeleccionado"
                                        asp-route-page="@(paginaActual + 1)">
                                         Siguiente
                                     </a>
@@ -195,11 +274,122 @@
 
                             </ul>
                         </nav>
-
                     </div>
                 }
-            }
+            </div>
 
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const formulario = document.getElementById('formBuscarPagos');
+            const buscador = document.getElementById('buscarPagos');
+            const metodo = document.getElementById('metodoPago');
+            const limpiar = document.getElementById('limpiarFiltrosPagos');
+            const estado = document.getElementById('estadoBusquedaPagos');
+            const resultados = document.getElementById('resultadosPagos');
+
+            if (!formulario || !buscador || !metodo ||
+                !limpiar || !estado || !resultados) {
+                return;
+            }
+
+            let temporizador;
+            let controladorActual = null;
+
+            function actualizarVisibilidadLimpiar() {
+                limpiar.style.display =
+                    buscador.value.trim() || metodo.value
+                        ? 'inline-block'
+                        : 'none';
+            }
+
+            async function buscarPagos() {
+                if (controladorActual) {
+                    controladorActual.abort();
+                }
+
+                const controlador = new AbortController();
+                controladorActual = controlador;
+
+                const parametros = new URLSearchParams(
+                    new FormData(formulario)
+                );
+
+                // Reiniciar la paginación al modificar los filtros.
+                parametros.delete('page');
+
+                estado.textContent = 'Buscando pagos...';
+
+                try {
+                    const respuesta = await fetch(
+                        formulario.action + '?' + parametros.toString(),
+                        {
+                            method: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            signal: controlador.signal
+                        }
+                    );
+
+                    if (!respuesta.ok) {
+                        throw new Error('Error al consultar los pagos.');
+                    }
+
+                    const html = await respuesta.text();
+
+                    const documento = new DOMParser().parseFromString(
+                        html,
+                        'text/html'
+                    );
+
+                    const nuevosResultados =
+                        documento.getElementById('resultadosPagos');
+                    const nuevoTotal =
+                        documento.getElementById('totalPagos');
+
+                    if (!nuevosResultados || !nuevoTotal) {
+                        throw new Error('No se recibieron los resultados esperados.');
+                    }
+
+                    if (controlador !== controladorActual) {
+                        return;
+                    }
+
+                    resultados.innerHTML = nuevosResultados.innerHTML;
+
+                    const totalActual = document.getElementById('totalPagos');
+                    if (totalActual) {
+                        totalActual.textContent = nuevoTotal.textContent;
+                    }
+
+                    estado.textContent = 'Resultados actualizados.';
+                }
+                catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.error(error);
+                        estado.textContent =
+                            'No se pudieron cargar los pagos. Intentá nuevamente.';
+                    }
+                }
+            }
+
+            buscador.addEventListener('input', () => {
+                clearTimeout(temporizador);
+                actualizarVisibilidadLimpiar();
+
+                temporizador = setTimeout(buscarPagos, 250);
+            });
+
+            metodo.addEventListener('change', () => {
+                clearTimeout(temporizador);
+                actualizarVisibilidadLimpiar();
+                buscarPagos();
+            });
+        })();
+    </script>
+}

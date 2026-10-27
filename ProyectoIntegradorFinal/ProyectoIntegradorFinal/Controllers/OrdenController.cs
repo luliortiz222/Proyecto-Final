@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ProyectoIntegradorFinal.Data;
@@ -20,17 +19,22 @@ namespace ProyectoIntegradorFinal.Controllers
         }
 
         // GET: Orden/Index
-        public async Task<IActionResult> Index(int pagina = 1)
+
+        public async Task<IActionResult> Index(
+            int pagina = 1,
+            string? direccion = null,
+            string? estado = null)
         {
             if (pagina < 1)
                 pagina = 1;
 
+            // Consulta inicial en el servidor.
             var consulta = _context.Ordenes
                 .Include(o => o.Usuario)
                 .Include(o => o.Direccion)
                 .AsQueryable();
 
-            // Cada cliente ve únicamente sus propias órdenes.
+            // Seguridad: cada cliente consulta únicamente sus órdenes.
             if (User.IsInRole("Cliente"))
             {
                 var valorId = User.FindFirstValue(
@@ -42,6 +46,31 @@ namespace ProyectoIntegradorFinal.Controllers
 
                 consulta = consulta.Where(
                     o => o.IdUsuario == idUsuario
+                );
+            }
+
+            // Búsqueda por calle o ciudad.
+            if (!string.IsNullOrWhiteSpace(direccion))
+            {
+                string termino = direccion.Trim();
+
+                consulta = consulta.Where(o =>
+                    o.Direccion != null &&
+                    (
+                        (o.Direccion.Calle != null &&
+                         o.Direccion.Calle.Contains(termino))
+                        ||
+                        (o.Direccion.Ciudad != null &&
+                         o.Direccion.Ciudad.Contains(termino))
+                    )
+                );
+            }
+
+            // Búsqueda por estado seleccionado.
+            if (!string.IsNullOrWhiteSpace(estado))
+            {
+                consulta = consulta.Where(
+                    o => o.Estado == estado
                 );
             }
 
@@ -68,6 +97,10 @@ namespace ProyectoIntegradorFinal.Controllers
             ViewBag.TotalPaginas = totalPaginas;
             ViewBag.TotalRegistros = totalRegistros;
             ViewBag.RegistrosPorPagina = RegistrosPorPagina;
+
+            // Mantener los valores de los filtros en la vista.
+            ViewBag.DireccionBuscada = direccion ?? "";
+            ViewBag.EstadoBuscado = estado ?? "";
 
             return View(ordenes);
         }
@@ -211,5 +244,60 @@ namespace ProyectoIntegradorFinal.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> SugerenciasDireccion(string? termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino) || termino.Trim().Length < 1)
+                return Json(new List<object>());
+
+            termino = termino.Trim();
+
+            var consulta = _context.Ordenes
+                .AsNoTracking()
+                .Include(o => o.Direccion)
+                .AsQueryable();
+
+            // El cliente solo puede buscar entre sus propias órdenes.
+            if (User.IsInRole("Cliente"))
+            {
+                var valorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (!int.TryParse(valorId, out int idUsuario))
+                    return Forbid();
+
+                consulta = consulta.Where(o => o.IdUsuario == idUsuario);
+            }
+
+            var sugerencias = await consulta
+                .Where(o => o.Direccion != null &&
+                    (
+                        (o.Direccion.Calle != null &&
+                         o.Direccion.Calle.Contains(termino))
+                        ||
+                        (o.Direccion.Ciudad != null &&
+                         o.Direccion.Ciudad.Contains(termino))
+                    ))
+                .Select(o => new
+                {
+                    calle = o.Direccion!.Calle ?? "",
+                    ciudad = o.Direccion!.Ciudad ?? "",
+                    numero = o.Direccion!.Numero
+                })
+                .Distinct()
+                .Take(8)
+                .ToListAsync();
+
+            var resultado = sugerencias.Select(d => new
+            {
+                texto = string.Join(" ", new[] { d.calle, Convert.ToString(d.numero) }
+                    .Where(s => !string.IsNullOrWhiteSpace(s))),
+                ciudad = d.ciudad
+            }).ToList();
+
+            return Json(resultado);
+        }
+
     }
 }
