@@ -8,7 +8,7 @@
     int totalRegistros = ViewBag.TotalRegistros ?? 0;
 }
 
-<div class="container mt-4 mb-5">
+<div class="container mt-4 mb-5 he-pagos">
 
     <span class="text-uppercase small"
           style="letter-spacing: .15em; color: #96713D;">
@@ -44,7 +44,7 @@
         </div>
     }
 
-    <div class="card shadow-sm" style="border-color: #E5D8C5;">
+    <div class="card shadow-sm he-card-pagos">
         <div class="card-body">
 
             @if (!Model.Any())
@@ -63,7 +63,7 @@
             else
             {
                 <div class="table-responsive">
-                    <table class="table align-middle table-hover">
+                    <table class="table align-middle table-hover he-tabla-pagos">
                         <thead>
                             <tr>
                                 <th>N.º de pago</th>

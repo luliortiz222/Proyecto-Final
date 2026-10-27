@@ -25,7 +25,7 @@ namespace ProyectoIntegradorFinal.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Index(int page = 1)
         {
-            const int pageSize = 10;
+            const int pageSize = 2;
 
             if (page < 1)
                 page = 1;
@@ -63,7 +63,7 @@ namespace ProyectoIntegradorFinal.Controllers
         [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> MisPagos(int page = 1)
         {
-            const int pageSize = 10;
+            const int pageSize = 2;
 
             var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

@@ -1527,3 +1527,307 @@ a {
         transition: none;
     }
 }
+
+/*Paginacion*/
+.he-collection .pagination {
+    gap: 8px;
+    margin-top: 30px;
+}
+
+.he-collection .pagination .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 42px;
+    padding: 8px 14px;
+    background-color: #F7F1E8;
+    color: #6F5128;
+    border: 1px solid #E5D8C5;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+    /* Hover */
+    .he-collection .pagination .page-link:hover {
+        background-color: #B08D57;
+        color: #FFFFFF;
+        border-color: #B08D57;
+    }
+
+/* Página actual */
+.he-collection .pagination .page-item.active .page-link {
+    background-color: #171717;
+    color: #F7F1E8;
+    border-color: #171717;
+    font-weight: 600;
+}
+
+/* Botones deshabilitados */
+.he-collection .pagination .page-item.disabled .page-link {
+    background-color: #F7F1E8;
+    color: #B9AA96;
+    border-color: #E5D8C5;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Quitar el contorno azul predeterminado */
+.he-collection .pagination .page-link:focus {
+    box-shadow: 0 0 0 0.15rem rgba(176, 141, 87, 0.2);
+    outline: none;
+}
+
+
+
+/*Gestion de pagos*/
+.he-pagos .pagination {
+    gap: 8px;
+}
+
+/* Botones numerados */
+.he-pagos .pagination .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 42px;
+    padding: 8px 14px;
+    background-color: #F7F1E8;
+    color: #6F5128;
+    border: 1px solid #E5D8C5;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+    /* Al pasar el cursor: dorado */
+    .he-pagos .pagination .page-link:hover {
+        background-color: #B08D57;
+        color: #FFFFFF;
+        border-color: #B08D57;
+        transform: translateY(-1px);
+    }
+
+/* Página seleccionada: negro elegante */
+.he-pagos .pagination .page-item.active .page-link {
+    background-color: #171717;
+    color: #F7F1E8;
+    border-color: #171717;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(23, 23, 23, 0.15);
+}
+
+/* Botones deshabilitados */
+.he-pagos .pagination .page-item.disabled .page-link {
+    background-color: #F7F1E8;
+    color: #B9AA96;
+    border-color: #E5D8C5;
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Foco accesible */
+.he-pagos .pagination .page-link:focus {
+    box-shadow: 0 0 0 0.15rem rgba(176, 141, 87, 0.2);
+}
+
+/* Adaptación a celulares */
+@media (max-width: 576px) {
+    .he-pagos .pagination {
+        gap: 5px;
+    }
+
+        .he-pagos .pagination .page-link {
+            min-width: 36px;
+            height: 36px;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+        }
+}
+
+/*Mis pagos*/
+.he-mis-pagos .he-eyebrow-pagos {
+    letter-spacing: .15em;
+    color: #96713D;
+}
+
+.he-mis-pagos .he-badge-pagos {
+    background-color: #171717;
+    color: #F7F1E8;
+}
+
+.he-mis-pagos .he-card-pagos {
+    border: 1px solid #E5D8C5;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.he-mis-pagos .he-icono-pagos {
+    color: #B08D57;
+}
+
+.he-mis-pagos .he-tabla-pagos {
+    margin-bottom: 0;
+}
+
+    .he-mis-pagos .he-tabla-pagos thead th {
+        background-color: #F7F1E8;
+        color: #6F5128;
+        border-bottom: 1px solid #E5D8C5;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .he-mis-pagos .he-tabla-pagos tbody td {
+        border-color: #EEE5D8;
+    }
+
+    .he-mis-pagos .he-tabla-pagos tbody tr:hover > * {
+        background-color: #FBF7F0;
+    }
+
+/* Estados de pago */
+.he-mis-pagos .he-estado-aprobado {
+    background-color: #E2EBDD;
+    color: #35543A;
+}
+
+.he-mis-pagos .he-estado-rechazado {
+    background-color: #F4DEDA;
+    color: #8A342A;
+}
+
+.he-mis-pagos .he-estado-revision {
+    background-color: #E5E8EC;
+    color: #34465A;
+}
+
+.he-mis-pagos .he-estado-pendiente {
+    background-color: #F3E7CE;
+    color: #76551D;
+}
+
+/* Paginación */
+.he-mis-pagos .he-pagination {
+    gap: 8px;
+}
+
+    .he-mis-pagos .he-pagination .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 42px;
+        height: 42px;
+        padding: 8px 14px;
+        background-color: #F7F1E8;
+        color: #6F5128;
+        border: 1px solid #E5D8C5;
+        border-radius: 4px;
+        font-size: .85rem;
+        text-decoration: none;
+        transition: all .25s ease;
+    }
+
+        .he-mis-pagos .he-pagination .page-link:hover {
+            background-color: #B08D57;
+            color: #FFFFFF;
+            border-color: #B08D57;
+        }
+
+    .he-mis-pagos .he-pagination .page-item.active .page-link {
+        background-color: #171717;
+        color: #F7F1E8;
+        border-color: #171717;
+        font-weight: 600;
+    }
+
+    .he-mis-pagos .he-pagination .page-item.disabled .page-link {
+        background-color: #F7F1E8;
+        color: #B9AA96;
+        border-color: #E5D8C5;
+        opacity: .7;
+        cursor: not-allowed;
+    }
+
+    .he-mis-pagos .he-pagination .page-link:focus {
+        box-shadow: 0 0 0 .15rem rgba(176, 141, 87, .2);
+    }
+
+@media (max-width: 576px) {
+    .he-mis-pagos .he-pagination {
+        gap: 5px;
+    }
+
+        .he-mis-pagos .he-pagination .page-link {
+            min-width: 36px;
+            height: 36px;
+            padding: 6px 10px;
+            font-size: .8rem;
+        }
+}
+
+/*Productos*/
+.he-productos .pagination {
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Botones y números */
+.he-productos .pagination .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 42px;
+    padding: 8px 14px;
+    background-color: #F7F1E8;
+    color: #6F5128;
+    border: 1px solid #E5D8C5;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+    /* Hover dorado */
+    .he-productos .pagination .page-link:hover {
+        background-color: #B08D57;
+        color: #FFFFFF;
+        border-color: #B08D57;
+        transform: translateY(-1px);
+    }
+
+/* Página actual en negro */
+.he-productos .pagination .page-item.active .page-link {
+    background-color: #171717;
+    color: #F7F1E8;
+    border-color: #171717;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(23, 23, 23, 0.15);
+}
+
+/* Anterior y siguiente deshabilitados */
+.he-productos .pagination .page-item.disabled .page-link {
+    background-color: #F7F1E8;
+    color: #B9AA96;
+    border-color: #E5D8C5;
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Foco */
+.he-productos .pagination .page-link:focus {
+    box-shadow: 0 0 0 0.15rem rgba(176, 141, 87, 0.2);
+}
+

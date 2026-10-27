@@ -21,7 +21,7 @@ namespace ProyectoIntegradorFinal.Controllers
         public async Task<IActionResult> Index(string? buscar,int? idCategoria,int? idMarca, int? pagina)
         {
 
-            int pageSize = 8;
+            int pageSize = 4;
 
             int pageNumber = pagina ?? 1;
 
