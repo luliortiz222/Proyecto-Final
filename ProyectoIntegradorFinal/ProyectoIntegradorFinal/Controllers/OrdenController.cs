@@ -246,23 +246,25 @@ namespace ProyectoIntegradorFinal.Controllers
         }
 
 
+
         [HttpGet]
         public async Task<IActionResult> SugerenciasDireccion(string? termino)
         {
-            if (string.IsNullOrWhiteSpace(termino) || termino.Trim().Length < 1)
+            if (string.IsNullOrWhiteSpace(termino))
                 return Json(new List<object>());
 
             termino = termino.Trim();
 
             var consulta = _context.Ordenes
                 .AsNoTracking()
-                .Include(o => o.Direccion)
                 .AsQueryable();
 
             // El cliente solo puede buscar entre sus propias órdenes.
             if (User.IsInRole("Cliente"))
             {
-                var valorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var valorId = User.FindFirstValue(
+                    ClaimTypes.NameIdentifier
+                );
 
                 if (!int.TryParse(valorId, out int idUsuario))
                     return Forbid();
@@ -271,7 +273,8 @@ namespace ProyectoIntegradorFinal.Controllers
             }
 
             var sugerencias = await consulta
-                .Where(o => o.Direccion != null &&
+                .Where(o =>
+                    o.Direccion != null &&
                     (
                         (o.Direccion.Calle != null &&
                          o.Direccion.Calle.Contains(termino))
@@ -289,15 +292,36 @@ namespace ProyectoIntegradorFinal.Controllers
                 .Take(8)
                 .ToListAsync();
 
-            var resultado = sugerencias.Select(d => new
+            var resultado = sugerencias.Select(d =>
             {
-                texto = string.Join(" ", new[] { d.calle, Convert.ToString(d.numero) }
-                    .Where(s => !string.IsNullOrWhiteSpace(s))),
-                ciudad = d.ciudad
+                // Mostrar la calle con el número, si está disponible.
+                string texto = string.Join(" ", new[]
+                {
+            d.calle,
+            Convert.ToString(d.numero)
+        }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                // Enviar un valor que coincida con el filtro del Index.
+                string busqueda =
+                    !string.IsNullOrWhiteSpace(d.calle) &&
+                    d.calle.Contains(
+                        termino,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                        ? d.calle
+                        : d.ciudad;
+
+                return new
+                {
+                    texto,
+                    ciudad = d.ciudad,
+                    busqueda
+                };
             }).ToList();
 
             return Json(resultado);
         }
+
 
     }
 }

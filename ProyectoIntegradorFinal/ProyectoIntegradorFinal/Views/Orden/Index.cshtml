@@ -478,7 +478,7 @@
                     boton.append(icono, contenido);
 
                     boton.addEventListener('click', () => {
-                        enviarBusqueda(item.texto || item.ciudad || '');
+                        enviarBusqueda(item.busqueda || item.texto || item.ciudad || '');
                     });
 
                     lista.appendChild(boton);
@@ -563,7 +563,7 @@
 
                     if (indiceActivo >= 0) {
                         const item = resultados[indiceActivo];
-                        enviarBusqueda(item.texto || item.ciudad || '');
+                        enviarBusqueda(item.busqueda || item.texto || item.ciudad || '');
                     } else {
                         enviarBusqueda();
                     }
