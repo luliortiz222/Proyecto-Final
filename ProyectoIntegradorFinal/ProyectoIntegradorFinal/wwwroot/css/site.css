@@ -2439,3 +2439,245 @@ a {
         padding: 12px;
     }
 }
+
+.he-marcas .he-etiqueta {
+    color: #96713D;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+}
+
+.he-marcas .he-titulo {
+    color: #171717;
+    font-weight: 600;
+}
+
+.he-marcas .he-btn-dorado {
+    background: #B08D57;
+    color: #171717;
+    border: 1px solid #B08D57;
+    padding: 10px 18px;
+}
+
+    .he-marcas .he-btn-dorado:hover {
+        background: #96713D;
+        color: white;
+    }
+
+.he-marcas .he-buscador {
+    padding: 18px;
+    background: #F7F1E8;
+    border: 1px solid #E5D8C5;
+    border-radius: 14px;
+}
+
+.he-marcas .he-icono-busqueda {
+    background: #E5D8C5;
+    border-color: #E5D8C5;
+    color: #6F5128;
+}
+
+.he-marcas .he-btn-limpiar {
+    background: #171717;
+    color: #F7F1E8;
+}
+
+.he-marcas .he-tabla-contenedor {
+    border: 1px solid #E5D8C5;
+    border-radius: 14px;
+    overflow: hidden;
+    background: white;
+}
+
+.he-marcas .he-tabla thead th {
+    background: #171717;
+    color: #F7F1E8;
+    padding: 15px;
+}
+
+.he-marcas .he-tabla tbody td {
+    padding: 14px 15px;
+}
+
+.he-marcas .he-btn-editar {
+    color: #6F5128;
+    border: 1px solid #B08D57;
+}
+
+    .he-marcas .he-btn-editar:hover {
+        background: #B08D57;
+        color: #171717;
+    }
+
+.he-marcas .he-icono-vacio {
+    font-size: 2rem;
+    color: #B08D57;
+}
+
+.he-marcas .he-paginacion .page-link {
+    color: #6F5128;
+    border-color: #E5D8C5;
+}
+
+.he-marcas .he-paginacion .active .page-link {
+    background: #171717;
+    border-color: #171717;
+    color: #F7F1E8;
+}
+
+.he-marcas .he-btn-volver {
+    color: #6F5128;
+    background: #F7F1E8;
+    border: 1px solid #B08D57;
+    border-radius: 8px;
+    padding: 10px 18px;
+    transition: all 0.25s ease;
+}
+
+    .he-marcas .he-btn-volver:hover {
+        color: #F7F1E8;
+        background: #171717;
+        border-color: #171717;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+
+/* Modal personalizado Home Elixir */
+.he-modal-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(23, 23, 23, .65);
+    backdrop-filter: blur(3px);
+}
+
+.he-modal-caja {
+    width: 100%;
+    max-width: 460px;
+    background: #F7F1E8;
+    color: #171717;
+    border: 1px solid #B08D57;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+    animation: he-modal-entrada .18s ease-out;
+}
+
+.he-modal-contenido {
+    padding: 35px 30px 30px;
+    text-align: center;
+}
+
+.he-modal-icono {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #E5D8C5;
+    color: #96713D;
+    font-size: 26px;
+}
+
+.he-modal-etiqueta {
+    color: #96713D;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+}
+
+.he-modal-titulo {
+    margin-top: 10px;
+    margin-bottom: 14px;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.he-modal-descripcion {
+    color: #555;
+    line-height: 1.6;
+}
+
+.he-modal-nombre {
+    color: #6F5128;
+    overflow-wrap: anywhere;
+}
+
+.he-modal-aclaracion {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 22px;
+    color: #777;
+    font-size: .84rem;
+}
+
+.he-modal-botones {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.he-modal-cancelar,
+.he-modal-confirmar {
+    min-width: 130px;
+    padding: 10px 16px;
+    border-radius: 8px;
+}
+
+.he-modal-cancelar {
+    background: transparent;
+    color: #171717;
+    border: 1px solid #B08D57;
+}
+
+    .he-modal-cancelar:hover {
+        background: #E5D8C5;
+        color: #171717;
+    }
+
+.he-modal-confirmar {
+    background: #171717;
+    color: #F7F1E8;
+    border: 1px solid #171717;
+}
+
+    .he-modal-confirmar:hover {
+        background: #B08D57;
+        border-color: #B08D57;
+        color: #171717;
+    }
+
+    .he-modal-confirmar:disabled,
+    .he-modal-cancelar:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+    }
+
+@keyframes he-modal-entrada {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .he-modal-contenido {
+        padding: 28px 20px 24px;
+    }
+
+    .he-modal-botones button {
+        width: 100%;
+    }
+}

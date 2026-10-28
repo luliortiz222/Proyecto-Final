@@ -350,10 +350,29 @@
         </div>
 
         <div v-if="mensaje"
-             class="alert"
+             class="alert alert-dismissible fade show d-flex align-items-start gap-3 shadow-sm"
              :class="esError ? 'alert-danger' : 'alert-success'"
-             role="alert">
-            {{ mensaje }}
+             role="alert"
+             style="border-radius: 8px;">
+
+            <i :class="esError
+                ? 'fas fa-circle-exclamation fs-4 mt-1'
+                : 'fas fa-circle-check fs-4 mt-1'">
+            </i>
+
+            <div class="flex-grow-1">
+                <div class="fw-semibold mb-1">
+                    {{ esError ? 'No se pudo completar la operación' : 'Operación exitosa' }}
+                </div>
+
+                <div>{{ mensaje }}</div>
+            </div>
+
+            <button type="button"
+                    class="btn-close"
+                    aria-label="Cerrar mensaje"
+                @@click="mensaje = ''">
+            </button>
         </div>
 
         <div v-if="cargando" class="text-center py-4">
@@ -1184,35 +1203,59 @@
                             }
                         },
 
-                        async eliminarProducto(producto) {
-                            const confirmar = confirm(
-                                "¿Querés eliminar el perfume " + producto.nombre + "?"
-                            );
+                        
+async eliminarProducto(producto) {
+    const confirmar = confirm(
+        "¿Querés eliminar el perfume " + producto.nombre + "?"
+    );
 
-                            if (!confirmar) return;
+    if (!confirmar) return;
 
-                            try {
-                                const respuesta = await fetch(
-                                    "/api/productos/" + producto.idProducto,
-                                    { method: "DELETE" }
-                                );
+    this.mensaje = "";
+    this.esError = false;
 
-                                if (!respuesta.ok) {
-                                    const texto = await respuesta.text();
-                                    throw new Error(
-                                        texto || "No se pudo eliminar el perfume."
-                                    );
-                                }
+    try {
+        const respuesta = await fetch(
+            "/api/productos/" + producto.idProducto,
+            { method: "DELETE" }
+        );
 
-                                this.mensaje = "Perfume eliminado correctamente.";
-                                this.esError = false;
-                                await this.cargarProductos();
-                            } catch (error) {
-                                this.mensaje = error.message;
-                                this.esError = true;
-                                console.error(error);
-                            }
-                        },
+        if (!respuesta.ok) {
+            const texto = await respuesta.text();
+            let mensajeError =
+                "No se pudo eliminar el perfume. Intentá nuevamente.";
+
+            if (texto) {
+                try {
+                    const detalle = JSON.parse(texto);
+
+                    mensajeError =
+                        detalle.mensaje ||
+                        detalle.title ||
+                        mensajeError;
+                } catch {
+
+                }
+            }
+
+            throw new Error(mensajeError);
+        }
+
+        this.mensaje =
+            "El perfume se eliminó correctamente del catálogo.";
+        this.esError = false;
+
+        await this.cargarProductos();
+
+    } catch (error) {
+        this.mensaje = error.message ||
+            "Ocurrió un error al intentar eliminar el perfume.";
+        this.esError = true;
+
+        console.error("Error al eliminar el perfume:", error);
+    }
+},
+
 
                         formatoPrecio(precio) {
                             return new Intl.NumberFormat("es-AR", {

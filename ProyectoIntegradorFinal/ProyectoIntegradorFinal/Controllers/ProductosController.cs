@@ -422,6 +422,19 @@ namespace ProyectoIntegradorFinal.Controllers
             if (producto == null)
                 return NotFound();
 
+            // No permitir iniciar la eliminación si el producto
+            // ya está asociado a una orden.
+            bool tieneOrdenes = await _context.DetallesOrden
+                .AnyAsync(d => d.IdProducto == id);
+
+            if (tieneOrdenes)
+            {
+                TempData["Error"] =
+                    "No se puede eliminar el perfume porque está asociado a una o más órdenes.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
             return View(producto);
         }
 
@@ -431,12 +444,28 @@ namespace ProyectoIntegradorFinal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var producto = await _context.Productos.FindAsync(id);
+            var producto = await _context.Productos
+                .FirstOrDefaultAsync(p => p.IdProducto == id);
 
             if (producto == null)
                 return NotFound();
 
-            // Eliminar la imagen solo si está en la carpeta de perfumes.
+            // Volver a comprobar antes de eliminar.
+            // Esta validación también protege los envíos directos del formulario.
+            bool tieneOrdenes = await _context.DetallesOrden
+                .AnyAsync(d => d.IdProducto == id);
+
+            if (tieneOrdenes)
+            {
+                TempData["Error"] =
+                    "No se puede eliminar el perfume porque está asociado a una o más órdenes.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            string? rutaFisicaImagen = null;
+
+            // Preparar la ruta de la imagen, sin borrarla todavía.
             if (!string.IsNullOrWhiteSpace(producto.ImagenUrl) &&
                 producto.ImagenUrl.StartsWith(
                     "/images/perfumes/",
@@ -445,21 +474,50 @@ namespace ProyectoIntegradorFinal.Controllers
                 string rutaRelativa = producto.ImagenUrl.TrimStart('/')
                     .Replace('/', Path.DirectorySeparatorChar);
 
-                string rutaFisica = Path.Combine(
+                rutaFisicaImagen = Path.Combine(
                     Directory.GetCurrentDirectory(),
                     "wwwroot",
                     rutaRelativa);
-
-                if (System.IO.File.Exists(rutaFisica))
-                {
-                    System.IO.File.Delete(rutaFisica);
-                }
             }
 
             _context.Productos.Remove(producto);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                TempData["Error"] =
+                    "No se pudo eliminar el perfume porque tiene registros asociados.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Borrar la imagen únicamente después de confirmar
+            // que la eliminación del producto se guardó correctamente.
+            if (!string.IsNullOrWhiteSpace(rutaFisicaImagen) &&
+                System.IO.File.Exists(rutaFisicaImagen))
+            {
+                try
+                {
+                    System.IO.File.Delete(rutaFisicaImagen);
+                }
+                catch (IOException)
+                {
+                    // El producto ya fue eliminado de la base de datos.
+                    // Un fallo al borrar el archivo no debe revertir la operación.
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // No impedir la operación por un problema de permisos del archivo.
+                }
+            }
+
+            TempData["Mensaje"] = "Perfume eliminado correctamente.";
 
             return RedirectToAction(nameof(Index));
         }
+
     }
 }

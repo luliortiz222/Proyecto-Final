@@ -222,14 +222,43 @@ namespace ProyectoIntegradorFinal.ApiControllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProducto(int id)
         {
-            var producto = await _context.Productos.FindAsync(id);
+            var producto = await _context.Productos
+                .FirstOrDefaultAsync(p => p.IdProducto == id);
+
             if (producto == null)
             {
-                return NotFound(new { mensaje = $"No se encontró el producto con el ID {id}" });
+                return NotFound(new
+                {
+                    mensaje = $"No se encontró el producto con el ID {id}."
+                });
+            }
+
+            // Verificar si el producto está asociado a alguna orden.
+            var tieneOrdenes = await _context.DetallesOrden
+                .AnyAsync(d => d.IdProducto == id);
+
+            if (tieneOrdenes)
+            {
+                return Conflict(new
+                {
+                    mensaje = "No se puede eliminar este producto porque está asociado a una o más órdenes."
+                });
             }
 
             _context.Productos.Remove(producto);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // Protección adicional ante restricciones de la base de datos.
+                return Conflict(new
+                {
+                    mensaje = "No se puede eliminar el producto porque tiene registros asociados."
+                });
+            }
 
             return NoContent();
         }

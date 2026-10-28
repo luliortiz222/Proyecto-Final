@@ -1,4 +1,5 @@
-﻿@using System.Linq
+﻿
+@using System.Linq
 @model IEnumerable<ProyectoIntegradorFinal.Models.Marca>
 
 @{
@@ -78,7 +79,7 @@
         </small>
     </form>
 
-    <!-- TABLA DE MARCAS -->
+    <!-- TABLA MVC -->
     <div class="he-tabla-contenedor">
         <div class="table-responsive">
             <table class="table he-tabla align-middle mb-0">
@@ -101,6 +102,7 @@
                                 <td class="fw-semibold">
                                     @marca.Nombre
                                 </td>
+
                                 <td class="text-end">
                                     <a asp-action="Edit"
                                        asp-route-id="@marca.IdMarca"
@@ -198,20 +200,20 @@
             Volver a Productos
         </a>
     </div>
-
 </div>
 
-
-<!-- SECCIÓN VUE: GESTIÓN REACTIVA DE MARCAS -->
-<div id="pruebaVueMarcas" class="mt-5">
+<!-- GESTIÓN DE MARCAS CON VUE -->
+<div id="pruebaVueMarcas" class="container mt-5 mb-5">
 
     <hr class="my-4" />
 
-    <h3>{{ mensaje }}</h3>
+    <span class="he-etiqueta">HOME ELIXIR · ADMINISTRACIÓN</span>
+    <h3 class="he-titulo mt-2">{{ mensaje }}</h3>
     <p class="text-muted">
-        Gestión de marcas mediante Vue.
+        Gestión de marcas mediante Vue y la API REST.
     </p>
 
+    <!-- FORMULARIO -->
     <div class="card card-body mb-4">
         <h5>
             {{ idMarcaEditando === null ? 'Nueva marca' : 'Editar marca' }}
@@ -229,7 +231,7 @@
                    required
                    placeholder="Ej.: Bulgari" />
 
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap">
                 <button type="submit"
                         class="btn btn-dark"
                         :disabled="guardando">
@@ -246,19 +248,22 @@
         </form>
     </div>
 
-    <div v-if="error" class="alert alert-danger">
+    <div v-if="error" class="alert alert-danger" role="alert">
         {{ error }}
     </div>
 
-    <div v-if="mensajeOperacion" class="alert alert-success">
+    <div v-if="mensajeOperacion"
+         class="alert alert-success"
+         role="status">
         {{ mensajeOperacion }}
     </div>
 
     <p v-if="cargando">Cargando marcas...</p>
 
+    <!-- TABLA VUE -->
     <div v-if="!cargando" class="table-responsive">
         <table class="table table-bordered table-hover align-middle">
-            <thead>
+            <thead class="table-dark">
                 <tr>
                     <th>ID</th>
                     <th>Nombre</th>
@@ -270,23 +275,26 @@
                 <tr v-for="marca in marcas" :key="marca.idMarca">
                     <td>{{ marca.idMarca }}</td>
                     <td>{{ marca.nombre }}</td>
+
                     <td class="text-end">
                         <button type="button"
                                 class="btn btn-sm btn-outline-primary me-1"
                                 v-on:click="iniciarEdicion(marca)">
+                            <i class="fas fa-pen me-1"></i>
                             Editar
                         </button>
 
                         <button type="button"
                                 class="btn btn-sm btn-outline-danger"
                                 v-on:click="eliminarMarca(marca)">
+                            <i class="fas fa-trash me-1"></i>
                             Eliminar
                         </button>
                     </td>
                 </tr>
 
                 <tr v-if="marcas.length === 0">
-                    <td colspan="3" class="text-center">
+                    <td colspan="3" class="text-center py-4">
                         No hay marcas registradas.
                     </td>
                 </tr>
@@ -294,10 +302,73 @@
         </table>
     </div>
 
+    <!-- MODAL PERSONALIZADO -->
+    <div v-if="modalEliminarAbierto"
+         class="he-modal-fondo"
+         v-on:click.self="cerrarModalEliminarMarca"
+         v-on:keydown.esc="cerrarModalEliminarMarca"
+         role="presentation">
+
+        <div class="he-modal-caja"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="tituloModalEliminarMarca"
+             aria-describedby="descripcionModalEliminarMarca">
+
+            <div class="he-modal-contenido">
+
+                <div class="he-modal-icono">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+
+                <span class="he-modal-etiqueta">HOME ELIXIR</span>
+
+                <h4 id="tituloModalEliminarMarca"
+                    class="he-modal-titulo">
+                    Confirmar eliminación
+                </h4>
+
+                <p id="descripcionModalEliminarMarca"
+                   class="he-modal-descripcion mb-0">
+                    ¿Querés eliminar la marca
+                    <strong class="he-modal-nombre">
+                        {{ marcaPendienteEliminar ? marcaPendienteEliminar.nombre : '' }}
+                    </strong>?
+                </p>
+
+                <small class="he-modal-aclaracion">
+                    Solo se podrá eliminar si no tiene perfumes asociados.
+                </small>
+
+                <div v-if="error"
+                     class="alert alert-danger text-start"
+                     role="alert">
+                    {{ error }}
+                </div>
+
+                <div class="he-modal-botones">
+                    <button type="button"
+                            class="btn he-modal-cancelar"
+                            v-on:click="cerrarModalEliminarMarca"
+                            :disabled="eliminando">
+                        Cancelar
+                    </button>
+
+                    <button type="button"
+                            class="btn he-modal-confirmar"
+                            v-on:click="confirmarEliminarMarca"
+                            :disabled="eliminando">
+                        <i class="fas fa-trash-alt me-1"></i>
+                        {{ eliminando ? 'Eliminando...' : 'Eliminar marca' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <!-- Búsqueda automática de marcas en el servidor -->
+    <!-- BÚSQUEDA AUTOMÁTICA -->
     <script>
         (() => {
             const formulario = document.getElementById('formBuscarMarcas');
@@ -337,7 +408,6 @@
                         new FormData(formulario)
                     );
 
-                    // Cada nueva búsqueda comienza en la página 1.
                     parametros.delete('pagina');
 
                     const url = formulario.action + '?' + parametros.toString();
@@ -375,7 +445,6 @@
                             );
                         }
 
-                        // Ignorar respuestas de búsquedas anteriores.
                         if (controlador !== controladorActual) {
                             return;
                         }
@@ -385,8 +454,7 @@
                         paginacion.innerHTML = nuevaPaginacion.innerHTML;
 
                         estado.textContent = 'Resultados actualizados.';
-                    }
-                    catch (error) {
+                    } catch (error) {
                         if (error.name !== 'AbortError') {
                             console.error(error);
                             estado.textContent =
@@ -396,29 +464,27 @@
                 }, 200);
             });
 
-            // Limpiar búsqueda sin recargar la página.
             limpiar.addEventListener('click', event => {
-                    event.preventDefault();
-                        buscador.value = '';
-                        clearTimeout(temporizador);
+                event.preventDefault();
+                buscador.value = '';
+                clearTimeout(temporizador);
 
-                        if (controladorActual) {
-                            controladorActual.abort();
-                        }
+                if (controladorActual) {
+                    controladorActual.abort();
+                }
 
-                        buscador.dispatchEvent(new Event('input'));
-                    });
+                buscador.dispatchEvent(new Event('input'));
+            });
 
-                    // Evitar que el formulario recargue la página.
-                    formulario.addEventListener('submit', event => {
-                        event.preventDefault();
-                        clearTimeout(temporizador);
-                        buscador.dispatchEvent(new Event('input'));
-                    });
-                })();
+            formulario.addEventListener('submit', event => {
+                event.preventDefault();
+                clearTimeout(temporizador);
+                buscador.dispatchEvent(new Event('input'));
+            });
+        })();
     </script>
 
-    <!-- Vue 3 -->
+    <!-- VUE 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
     <script>
@@ -426,19 +492,41 @@
             Vue.createApp({
                 data() {
                     return {
-                        mensaje: 'Gestión de marcas con Vue',
+                        mensaje: 'Gestión de marcas',
                         marcas: [],
                         cargando: true,
                         guardando: false,
                         error: '',
                         mensajeOperacion: '',
                         idMarcaEditando: null,
-                        nombreFormulario: ''
+                        nombreFormulario: '',
+                        marcaPendienteEliminar: null,
+                        modalEliminarAbierto: false,
+                        eliminando: false
                     };
                 },
 
                 async mounted() {
                     await this.cargarMarcas();
+
+                    this._manejarEscape = event => {
+                        if (event.key === 'Escape' &&
+                            this.modalEliminarAbierto &&
+                            !this.eliminando) {
+                            this.cerrarModalEliminarMarca();
+                        }
+                    };
+
+                    document.addEventListener('keydown', this._manejarEscape);
+                },
+
+                beforeUnmount() {
+                    if (this._manejarEscape) {
+                        document.removeEventListener(
+                            'keydown',
+                            this._manejarEscape
+                        );
+                    }
                 },
 
                 methods: {
@@ -468,6 +556,9 @@
                         this.nombreFormulario = marca.nombre;
                         this.error = '';
                         this.mensajeOperacion = '';
+
+                        document.getElementById('nombreMarcaVue')
+                            ?.focus();
                     },
 
                     cancelarEdicion() {
@@ -517,6 +608,7 @@
 
                                 try {
                                     const cuerpo = await respuesta.json();
+
                                     if (cuerpo.mensaje) {
                                         detalle = cuerpo.mensaje;
                                     }
@@ -540,15 +632,33 @@
                         }
                     },
 
-                    async eliminarMarca(marca) {
-                        const confirmar = confirm(
-                            `¿Querés eliminar la marca "${marca.nombre}"?`
-                        );
+                    eliminarMarca(marca) {
+                        this.marcaPendienteEliminar = marca;
+                        this.error = '';
+                        this.mensajeOperacion = '';
+                        this.modalEliminarAbierto = true;
+                    },
 
-                        if (!confirmar) return;
+                    cerrarModalEliminarMarca() {
+                        if (this.eliminando) {
+                            return;
+                        }
+
+                        this.modalEliminarAbierto = false;
+                        this.marcaPendienteEliminar = null;
+                        this.error = '';
+                    },
+
+                    async confirmarEliminarMarca() {
+                        const marca = this.marcaPendienteEliminar;
+
+                        if (!marca || this.eliminando) {
+                            return;
+                        }
 
                         this.error = '';
                         this.mensajeOperacion = '';
+                        this.eliminando = true;
 
                         try {
                             const respuesta = await fetch(
@@ -561,6 +671,7 @@
 
                                 try {
                                     const cuerpo = await respuesta.json();
+
                                     if (cuerpo.mensaje) {
                                         detalle = cuerpo.mensaje;
                                     }
@@ -570,8 +681,12 @@
                             }
 
                             if (this.idMarcaEditando === marca.idMarca) {
-                                this.cancelarEdicion();
+                                this.idMarcaEditando = null;
+                                this.nombreFormulario = '';
                             }
+
+                            this.modalEliminarAbierto = false;
+                            this.marcaPendienteEliminar = null;
 
                             await this.cargarMarcas();
 
@@ -579,6 +694,8 @@
                                 'Marca eliminada correctamente.';
                         } catch (error) {
                             this.error = error.message;
+                        } finally {
+                            this.eliminando = false;
                         }
                     }
                 }
@@ -594,5 +711,4 @@
         }
     </script>
 }
-
 
