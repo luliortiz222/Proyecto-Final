@@ -25,6 +25,34 @@ namespace ProyectoIntegradorFinal.ApiControllers
             
         }
 
+
+        // GET: api/categoria/buscar?termino=flor
+        [HttpGet("buscar")]
+        public async Task<IActionResult> BuscarCategorias([FromQuery] string termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino))
+            {
+                return Ok(Array.Empty<object>());
+            }
+
+            termino = termino.Trim();
+
+            var categorias = await _context.Categorias
+                .AsNoTracking()
+                .Where(c => c.Nombre.Contains(termino))
+                .OrderBy(c => c.Nombre)
+                .Take(10)
+                .Select(c => new
+                {
+                    idCategoria = c.IdCategoria,
+                    nombre = c.Nombre
+                })
+                .ToListAsync();
+
+            return Ok(categorias);
+        }
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Categoria>> GetCategoria(int id)
         {

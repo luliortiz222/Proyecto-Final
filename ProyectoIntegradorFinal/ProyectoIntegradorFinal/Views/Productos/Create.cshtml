@@ -10,34 +10,69 @@
 
     <div class="row">
         <div class="col-md-8 offset-md-2">
-            <form asp-action="Create" enctype="multipart/form-data" method="post">
+            <form asp-action="Create" enctype="multipart/form-data" method="post" id="formProducto">
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
                 <div class="row">
                     <!-- Columna Izquierda -->
                     <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label asp-for="Nombre" class="control-label fw-bold"></label>
-                            <input asp-for="Nombre" class="form-control" placeholder="Ej: Odyssey Mandarin Sky" required />
+                            <input asp-for="Nombre" class="form-control"
+                                   placeholder="Ej: Odyssey Mandarin Sky" required />
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+
+                        <!-- Buscador asíncrono de Marca -->
+                        <div class="form-group mb-3 position-relative">
+                            <label class="control-label fw-bold" for="buscarMarca">Marca</label>
+
+                            <input type="text" id="buscarMarca" class="form-control"
+                                   placeholder="Escribí el nombre de una marca..."
+                                   autocomplete="off" required />
+
+                            <input type="hidden" asp-for="IdMarca" id="IdMarca" />
+
+                            <div id="resultadosMarcas"
+                                 class="list-group position-absolute w-100"
+                                 style="z-index: 1000;"></div>
+
+                            <small id="mensajeMarca" class="text-muted"></small>
+
+                            <a asp-controller="Marcas" asp-action="Create"
+                               class="btn btn-outline-secondary mt-2" role="button">
+                                Agregar Marca
+                            </a>
+                        </div>
+
+                        <!-- Buscador asíncrono de Categoría -->
+                        <div class="form-group mb-3 position-relative">
+                            <label class="control-label fw-bold" for="buscarCategoria">
+                                Categoría
+                            </label>
+
+                            <input type="text" id="buscarCategoria" class="form-control"
+                                   placeholder="Escribí el nombre de una categoría..."
+                                   autocomplete="off" required />
+
+                            <input type="hidden" asp-for="IdCategoria" id="IdCategoria" />
+
+                            <div id="resultadosCategorias"
+                                 class="list-group position-absolute w-100"
+                                 style="z-index: 999;"></div>
+
+                            <small id="mensajeCategoria" class="text-muted"></small>
+
+                            <a asp-controller="Categorias" asp-action="Create"
+                               class="btn btn-outline-secondary mt-2" role="button">
+                                Agregar Categoría
+                            </a>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label asp-for="IdMarca" class="control-label fw-bold">Marca</label>
-                            <select asp-for="IdMarca" class="form-control" asp-items="ViewBag.IdMarca" required>
-                                <option value="">-- Seleccione una Marca --</option>
-                            </select>
-                            <a asp-controller="Marcas" asp-action="Create" class="btn btn-outline-secondary" role="button">Agregar Marca</a>
-
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label asp-for="IdCategoria" class="control-label fw-bold">Categoria</label>
-                            <select asp-for="IdCategoria" class="form-control" asp-items="ViewBag.IdCategoria" required>
-                                <option value="">-- Seleccione una Categoría --</option>
-                            </select>
-                            <a asp-controller="Categorias" asp-action="Create" class="btn btn-outline-secondary" role="button">Agregar Categoría</a>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label asp-for="Concentracion" class="control-label fw-bold">Concentración</label>
+                            <label asp-for="Concentracion" class="control-label fw-bold">
+                                Concentración
+                            </label>
                             <select asp-for="Concentracion" class="form-control">
                                 <option value="Eau de Parfum">Eau de Parfum</option>
                                 <option value="Eau de Toilette">Eau de Toilette</option>
@@ -51,37 +86,169 @@
                     <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label asp-for="Precio" class="control-label fw-bold"></label>
-                            <input asp-for="Precio" type="number" step="0.01" class="form-control" required />
+                            <input asp-for="Precio" type="number" step="0.01"
+                                   class="form-control" required />
+                            <span asp-validation-for="Precio" class="text-danger"></span>
                         </div>
 
                         <div class="form-group mb-3">
                             <label asp-for="Stock" class="control-label fw-bold"></label>
                             <input asp-for="Stock" type="number" class="form-control" required />
+                            <span asp-validation-for="Stock" class="text-danger"></span>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label asp-for="VolumenMl" class="control-label fw-bold">Volumen (ml)</label>
-                            <input asp-for="VolumenMl" type="number" class="form-control" value="100" required />
+                            <label asp-for="VolumenMl" class="control-label fw-bold">
+                                Volumen (ml)
+                            </label>
+                            <input asp-for="VolumenMl" type="number" class="form-control"
+                                   value="100" required />
+                            <span asp-validation-for="VolumenMl" class="text-danger"></span>
                         </div>
 
                         <div class="form-group mb-3">
                             <label class="control-label fw-bold">Imagen del Perfume</label>
-                            <input type="file" name="archivoImagen" class="form-control" accept="image/*" />
-                            <span class="text-muted small">Sube una imagen en formato JPG, PNG o WEBP.</span>
+                            <input type="file" name="archivoImagen" class="form-control"
+                                   accept="image/jpeg,image/png,image/webp" />
+                            <span class="text-muted small">
+                                Subí una imagen en formato JPG, PNG o WEBP.
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="Descripcion" class="control-label fw-bold">Descripción</label>
+                    <label asp-for="Descripcion" class="control-label fw-bold">
+                        Descripción
+                    </label>
                     <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mt-4 text-center">
-                    <input type="submit" value="Guardar Perfume" class="btn btn-success btn-lg px-5" />
-                    <a asp-action="Index" class="btn btn-secondary btn-lg px-4 ms-2">Volver</a>
+                    <input type="submit" value="Guardar Perfume"
+                           class="btn btn-success btn-lg px-5" />
+                    <a asp-action="Index" class="btn btn-secondary btn-lg px-4 ms-2">
+                        Volver
+                    </a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (() => {
+            const urlMarcas = '@Url.Action("BuscarMarcas", "Productos")';
+            const urlCategorias = '@Url.Action("BuscarCategorias", "Productos")';
+
+            configurarBuscador({
+                inputId: "buscarMarca",
+                hiddenId: "IdMarca",
+                resultadosId: "resultadosMarcas",
+                mensajeId: "mensajeMarca",
+                url: urlMarcas,
+                tipo: "marca"
+            });
+
+            configurarBuscador({
+                inputId: "buscarCategoria",
+                hiddenId: "IdCategoria",
+                resultadosId: "resultadosCategorias",
+                mensajeId: "mensajeCategoria",
+                url: urlCategorias,
+                tipo: "categoría"
+            });
+
+            function configurarBuscador(config) {
+                const input = document.getElementById(config.inputId);
+                const hidden = document.getElementById(config.hiddenId);
+                const resultados = document.getElementById(config.resultadosId);
+                const mensaje = document.getElementById(config.mensajeId);
+                let temporizador;
+
+                input.addEventListener("input", () => {
+                    // Si cambia el texto, debe volver a elegir una coincidencia.
+                    hidden.value = "";
+                    resultados.replaceChildren();
+                    clearTimeout(temporizador);
+
+                    const termino = input.value.trim();
+                    mensaje.textContent = "";
+
+                    if (termino.length < 1) return;
+
+                    mensaje.textContent = "Buscando...";
+
+                    temporizador = setTimeout(async () => {
+                        try {
+                            const respuesta = await fetch(
+                                `${config.url}?termino=${encodeURIComponent(termino)}`,
+                                {
+                                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                                }
+                            );
+
+                            if (!respuesta.ok) {
+                                throw new Error("No se pudo realizar la búsqueda.");
+                            }
+
+                            const datos = await respuesta.json();
+
+                            // Evita mostrar resultados de una búsqueda anterior.
+                            if (input.value.trim() !== termino) return;
+
+                            resultados.replaceChildren();
+
+                            if (datos.length === 0) {
+                                mensaje.textContent = "No se encontraron coincidencias.";
+                                return;
+                            }
+
+                            mensaje.textContent = "Seleccioná una opción:";
+
+                            datos.forEach(item => {
+                                const boton = document.createElement("button");
+                                boton.type = "button";
+                                boton.className = "list-group-item list-group-item-action";
+                                boton.textContent = item.nombre;
+
+                                boton.addEventListener("click", () => {
+                                    input.value = item.nombre;
+                                    hidden.value = item.id;
+                                    resultados.replaceChildren();
+                                    mensaje.textContent = "Seleccionado: " + item.nombre;
+                                });
+
+                                resultados.appendChild(boton);
+                            });
+                        } catch (error) {
+                            resultados.replaceChildren();
+                            mensaje.textContent = "Error al buscar. Intentá nuevamente.";
+                            console.error(error);
+                        }
+                    }, 300);
+                });
+
+                document.addEventListener("click", event => {
+                    if (!resultados.contains(event.target) && event.target !== input) {
+                        resultados.replaceChildren();
+                    }
+                });
+            }
+
+            document.getElementById("formProducto").addEventListener("submit", event => {
+                const idMarca = document.getElementById("IdMarca").value;
+                const idCategoria = document.getElementById("IdCategoria").value;
+
+                if (!idMarca || !idCategoria) {
+                    event.preventDefault();
+                    alert("Buscá y seleccioná una marca y una categoría de las sugerencias.");
+                }
+            });
+        })();
+    </script>
+}

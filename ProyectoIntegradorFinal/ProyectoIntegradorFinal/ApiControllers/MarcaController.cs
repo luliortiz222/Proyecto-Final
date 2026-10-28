@@ -24,6 +24,33 @@ namespace ProyectoIntegradorFinal.ApiControllers
             return await _context.Marcas.ToListAsync();
         }
 
+
+        // GET: api/marca/buscar?termino=cha
+        [HttpGet("buscar")]
+        public async Task<IActionResult> BuscarMarcas([FromQuery] string termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino))
+            {
+                return Ok(Array.Empty<object>());
+            }
+
+            termino = termino.Trim();
+
+            var marcas = await _context.Marcas
+                .AsNoTracking()
+                .Where(m => m.Nombre.Contains(termino))
+                .OrderBy(m => m.Nombre)
+                .Take(10)
+                .Select(m => new
+                {
+                    idMarca = m.IdMarca,
+                    nombre = m.Nombre
+                })
+                .ToListAsync();
+
+            return Ok(marcas);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Marca>> GetMarca(int id)
         {

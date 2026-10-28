@@ -6,7 +6,6 @@
     bool esCliente = User.IsInRole("Cliente");
     int paginaActual = ViewBag.PaginaActual;
     int totalPaginas = ViewBag.TotalPaginas;
-
 }
 
 <div class="container mt-4 mb-5 he-productos">
@@ -17,9 +16,7 @@
                   style="letter-spacing: .15em; color: #96713D;">
                 HOME ELIXIR
             </span>
-
             <h2 class="mt-2">Catálogo de perfumes</h2>
-
             <p class="text-muted mb-0">
                 Explorá las fragancias y encontrá tu próxima esencia.
             </p>
@@ -56,7 +53,7 @@
         </div>
     }
 
-    <!-- BÚSQUEDA Y FILTROS -->
+    <!-- BÚSQUEDA Y FILTROS DEL CATÁLOGO MVC -->
     <form id="buscarForm"
           asp-controller="Productos"
           asp-action="Index"
@@ -66,7 +63,6 @@
 
         <div class="row g-3 align-items-end">
 
-            <!-- BUSCADOR CON AUTOCOMPLETADO -->
             <div class="col-12 col-md-4">
                 <label for="buscar" class="form-label">
                     Buscar perfume o marca
@@ -85,21 +81,15 @@
 
                     <div id="sugerenciasBusqueda"
                          class="list-group position-absolute w-100 shadow"
-                         style="display: none; z-index: 1050; max-height: 320px; overflow-y: auto;">
+                         style="display:none;z-index:1050;max-height:320px;overflow-y:auto;">
                     </div>
                 </div>
             </div>
 
-            <!-- FILTRO POR CATEGORÍA -->
             <div class="col-12 col-md-3">
-                <label for="idCategoria" class="form-label">
-                    Categoría
-                </label>
+                <label for="idCategoria" class="form-label">Categoría</label>
 
-                <select id="idCategoria"
-                        name="idCategoria"
-                        class="form-select">
-
+                <select id="idCategoria" name="idCategoria" class="form-select">
                     <option value="">Todas las categorías</option>
 
                     @foreach (var categoria in
@@ -122,16 +112,10 @@
                 </select>
             </div>
 
-            <!-- FILTRO POR MARCA -->
             <div class="col-12 col-md-3">
-                <label for="idMarca" class="form-label">
-                    Marca
-                </label>
+                <label for="idMarca" class="form-label">Marca</label>
 
-                <select id="idMarca"
-                        name="idMarca"
-                        class="form-select">
-
+                <select id="idMarca" name="idMarca" class="form-select">
                     <option value="">Todas las marcas</option>
 
                     @foreach (var marca in
@@ -154,11 +138,9 @@
                 </select>
             </div>
 
-            <!-- BOTONES -->
             <div class="col-12 col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-dark flex-grow-1">
-                    <i class="fas fa-search me-1"></i>
-                    Buscar
+                    <i class="fas fa-search me-1"></i>Buscar
                 </button>
 
                 <a asp-action="Index"
@@ -177,17 +159,13 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0">Fragancias disponibles</h5>
-
-            <span class="text-muted small">
-                @Model.Count() resultados
-            </span>
+            <span class="text-muted small">@Model.Count() resultados</span>
         </div>
 
         @if (Model.Any())
         {
             <div class="table-responsive">
                 <table class="table table-striped table-hover align-middle">
-
                     <thead class="table-dark">
                         <tr>
                             <th>Imagen</th>
@@ -221,45 +199,32 @@
                                         <img src="@item.ImagenUrl"
                                              alt="@item.Nombre"
                                              loading="lazy"
-                                             style="width: 60px; height: 70px; object-fit: contain;" />
+                                             style="width:60px;height:70px;object-fit:contain;" />
                                     }
                                     else
                                     {
-                                        <span class="text-muted small">
-                                            Sin imagen
-                                        </span>
+                                        <span class="text-muted small">Sin imagen</span>
                                     }
                                 </td>
 
-                                <td class="fw-semibold">
-                                    @item.Nombre
-                                </td>
+                                <td class="fw-semibold">@item.Nombre</td>
+                                <td>@(item.Marca?.Nombre ?? "Sin marca")</td>
 
-                                <td>
-                                    @(item.Marca?.Nombre ?? "Sin marca")
-                                </td>
-
-                                <td style="min-width: 200px; white-space: normal;">
+                                <td style="min-width:200px;white-space:normal;">
                                     @(string.IsNullOrWhiteSpace(item.Descripcion)
                                         ? "Sin descripción"
                                         : item.Descripcion)
                                 </td>
 
-                                <td>
-                                    @(item.Categoria?.Nombre ?? "Sin categoría")
-                                </td>
+                                <td>@(item.Categoria?.Nombre ?? "Sin categoría")</td>
 
                                 <td>
                                     @item.VolumenMl ml
                                     <br />
-                                    <small class="text-muted">
-                                        @item.Concentracion
-                                    </small>
+                                    <small class="text-muted">@item.Concentracion</small>
                                 </td>
 
-                                <td class="fw-semibold">
-                                    @item.Precio.ToString("C")
-                                </td>
+                                <td class="fw-semibold">@item.Precio.ToString("C")</td>
 
                                 @if (esCliente)
                                 {
@@ -267,13 +232,11 @@
                                         <form asp-controller="Carrito"
                                               asp-action="Agregar"
                                               method="post">
-
                                             @Html.AntiForgeryToken()
 
                                             <input type="hidden"
                                                    name="IdProducto"
                                                    value="@item.IdProducto" />
-
                                             <input type="hidden"
                                                    name="cantidad"
                                                    value="1" />
@@ -291,67 +254,49 @@
 
                                 @if (esAdministrador)
                                 {
-                                    <td>
-                                        @item.Stock
-                                    </td>
-
+                                    <td>@item.Stock</td>
                                     <td>
                                         <div class="d-flex flex-wrap gap-2">
                                             <a asp-action="Edit"
                                                asp-route-id="@item.IdProducto"
-                                               class="btn btn-sm btn-warning">
-                                                Editar
-                                            </a>
+                                               class="btn btn-sm btn-warning">Editar</a>
 
                                             <a asp-action="Delete"
                                                asp-route-id="@item.IdProducto"
-                                               class="btn btn-sm btn-danger">
-                                                Eliminar
-                                            </a>
+                                               class="btn btn-sm btn-danger">Eliminar</a>
                                         </div>
                                     </td>
                                 }
                             </tr>
                         }
                     </tbody>
-
                 </table>
             </div>
         }
         else
         {
             <div class="text-center py-5"
-                 style="background: #F7F1E8; border: 1px solid #E5D8C5;">
-
-                <i class="fas fa-wind fa-2x mb-3"
-                   style="color: #B08D57;"></i>
-
+                 style="background:#F7F1E8;border:1px solid #E5D8C5;">
+                <i class="fas fa-wind fa-2x mb-3" style="color:#B08D57;"></i>
                 <h4>No encontramos fragancias</h4>
-
-                <p class="text-muted">
-                    Probá con otro nombre o cambiá los filtros.
-                </p>
-
+                <p class="text-muted">Probá con otro nombre o cambiá los filtros.</p>
                 <a asp-action="Index" class="btn btn-outline-dark">
                     Ver todo el catálogo
                 </a>
             </div>
         }
-        <!-- Botones de Paginación -->
+
         @if (totalPaginas > 1)
         {
             <nav aria-label="Paginación de productos" class="mt-4">
                 <ul class="pagination justify-content-center">
-
                     <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
                         <a class="page-link"
                            asp-action="Index"
                            asp-route-pagina="@(paginaActual - 1)"
                            asp-route-buscar="@ViewBag.Buscar"
                            asp-route-idCategoria="@ViewBag.IdCategoria"
-                           asp-route-idMarca="@ViewBag.IdMarca">
-                            Anterior
-                        </a>
+                           asp-route-idMarca="@ViewBag.IdMarca">Anterior</a>
                     </li>
 
                     @for (int i = 1; i <= totalPaginas; i++)
@@ -362,9 +307,7 @@
                                asp-route-pagina="@i"
                                asp-route-buscar="@ViewBag.Buscar"
                                asp-route-idCategoria="@ViewBag.IdCategoria"
-                               asp-route-idMarca="@ViewBag.IdMarca">
-                                @i
-                            </a>
+                               asp-route-idMarca="@ViewBag.IdMarca">@i</a>
                         </li>
                     }
 
@@ -374,32 +317,27 @@
                            asp-route-pagina="@(paginaActual + 1)"
                            asp-route-buscar="@ViewBag.Buscar"
                            asp-route-idCategoria="@ViewBag.IdCategoria"
-                           asp-route-idMarca="@ViewBag.IdMarca">
-                            Siguiente
-                        </a>
+                           asp-route-idMarca="@ViewBag.IdMarca">Siguiente</a>
                     </li>
-
                 </ul>
             </nav>
         }
     </div>
-</div> 
-
-
+</div>
 
 @if (esAdministrador)
 {
+    <!-- PANEL VUE: NO CARGA TODAS LAS MARCAS Y CATEGORÍAS -->
     <div id="appProductosVue"
          class="container mb-5"
-         v-cloak
-         data-marcas='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(((IEnumerable<ProyectoIntegradorFinal.Models.Marca>)ViewBag.Marcas).Select(m => new { idMarca = m.IdMarca, nombre = m.Nombre })))'
-         data-categorias='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(((IEnumerable<ProyectoIntegradorFinal.Models.Categoria>)ViewBag.Categorias).Select(c => new { idCategoria = c.IdCategoria, nombre = c.Nombre })))'>
+         v-cloak>
 
         <hr class="my-4" />
 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
             <div>
-                <span class="text-uppercase small" style="letter-spacing: .15em; color: #96713D;">
+                <span class="text-uppercase small"
+                      style="letter-spacing:.15em;color:#96713D;">
                     ADMINISTRACIÓN CON VUE
                 </span>
                 <h3 class="mt-2 mb-1">Gestión de perfumes</h3>
@@ -438,29 +376,32 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <tr v-for="producto in productos" :key="producto.idProducto">
                         <td>{{ producto.idProducto }}</td>
                         <td>{{ producto.nombre }}</td>
-                        <td>{{ nombreMarca(producto.idMarca) }}</td>
-                        <td>{{ nombreCategoria(producto.idCategoria) }}</td>
+                        <td>{{ producto.marca?.nombre || 'Sin marca' }}</td>
+                        <td>{{ producto.categoria?.nombre || 'Sin categoría' }}</td>
                         <td>{{ formatoPrecio(producto.precio) }}</td>
                         <td>{{ producto.stock }}</td>
                         <td>
                             <div class="d-flex flex-wrap gap-2">
                                 <button type="button"
                                         class="btn btn-sm btn-warning"
-                                        @@click="editarProducto(producto)">
+                                    @@click="editarProducto(producto)">
                                     Editar
                                 </button>
+
                                 <button type="button"
                                         class="btn btn-sm btn-danger"
-                                        @@click="eliminarProducto(producto)">
+                                    @@click="eliminarProducto(producto)">
                                     Eliminar
                                 </button>
                             </div>
                         </td>
                     </tr>
+
                     <tr v-if="productos.length === 0">
                         <td colspan="7" class="text-center py-4 text-muted">
                             No hay perfumes para mostrar.
@@ -480,6 +421,7 @@
 
             <form @@submit.prevent="guardarProducto">
                 <div class="row g-3">
+
                     <div class="col-12 col-md-6">
                         <label for="vueNombre" class="form-label">Nombre</label>
                         <input id="vueNombre"
@@ -509,34 +451,78 @@
                                   rows="3"></textarea>
                     </div>
 
+                    <!-- MARCA: BÚSQUEDA AJAX -->
                     <div class="col-12 col-md-6">
                         <label for="vueMarca" class="form-label">Marca</label>
-                        <select id="vueMarca"
-                                v-model.number="form.idMarca"
-                                class="form-select"
-                                required>
-                            <option :value="null" disabled>Elegí una marca</option>
-                            <option v-for="marca in marcas"
-                                    :key="marca.idMarca"
-                                    :value="marca.idMarca">
-                                {{ marca.nombre }}
-                            </option>
-                        </select>
+
+                        <div class="position-relative">
+                            <input id="vueMarca"
+                                   v-model="form.marcaBusqueda"
+                                   type="text"
+                                   class="form-control"
+                                   placeholder="Escribí una marca..."
+                                   autocomplete="off"
+                            @@input="buscarMarcas"
+                                   required />
+
+                            <div v-if="cargandoMarcas" class="form-text">
+                                Buscando marcas...
+                            </div>
+
+                            <div v-if="marcas.length > 0"
+                                 class="list-group position-absolute w-100 shadow"
+                                 style="z-index:1050;max-height:220px;overflow-y:auto;">
+                                <button v-for="marca in marcas"
+                                        :key="marca.idMarca"
+                                        type="button"
+                                        class="list-group-item list-group-item-action text-start"
+                                    @@click="seleccionarMarca(marca)">
+                                    {{ marca.nombre }}
+                                </button>
+                            </div>
+
+                            <div v-if="form.marcaBusqueda && !form.idMarca && !cargandoMarcas"
+                                 class="form-text">
+                                Elegí una marca de las sugerencias.
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- CATEGORÍA: BÚSQUEDA AJAX -->
                     <div class="col-12 col-md-6">
                         <label for="vueCategoria" class="form-label">Categoría</label>
-                        <select id="vueCategoria"
-                                v-model.number="form.idCategoria"
-                                class="form-select"
-                                required>
-                            <option :value="null" disabled>Elegí una categoría</option>
-                            <option v-for="categoria in categorias"
-                                    :key="categoria.idCategoria"
-                                    :value="categoria.idCategoria">
-                                {{ categoria.nombre }}
-                            </option>
-                        </select>
+
+                        <div class="position-relative">
+                            <input id="vueCategoria"
+                                   v-model="form.categoriaBusqueda"
+                                   type="text"
+                                   class="form-control"
+                                   placeholder="Escribí una categoría..."
+                                   autocomplete="off"
+                            @@input="buscarCategorias"
+                                   required />
+
+                            <div v-if="cargandoCategorias" class="form-text">
+                                Buscando categorías...
+                            </div>
+
+                            <div v-if="categorias.length > 0"
+                                 class="list-group position-absolute w-100 shadow"
+                                 style="z-index:1050;max-height:220px;overflow-y:auto;">
+                                <button v-for="categoria in categorias"
+                                        :key="categoria.idCategoria"
+                                        type="button"
+                                        class="list-group-item list-group-item-action text-start"
+                                    @@click="seleccionarCategoria(categoria)">
+                                    {{ categoria.nombre }}
+                                </button>
+                            </div>
+
+                            <div v-if="form.categoriaBusqueda && !form.idCategoria && !cargandoCategorias"
+                                 class="form-text">
+                                Elegí una categoría de las sugerencias.
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-12 col-md-4">
@@ -574,12 +560,14 @@
                     </div>
 
                     <div class="col-12">
-                        <label for="vueArchivoImagen" class="form-label">Imagen del perfume</label>
+                        <label for="vueArchivoImagen" class="form-label">
+                            Imagen del perfume
+                        </label>
                         <input id="vueArchivoImagen"
                                type="file"
                                class="form-control"
                                accept=".jpg,.jpeg,.png,.webp"
-                               @@change="seleccionarImagen" />
+                        @@change="seleccionarImagen" />
                         <small class="text-muted">
                             JPG, PNG o WEBP. Máximo 2 MB. Si editás sin elegir otra imagen,
                             se conserva la actual.
@@ -593,22 +581,26 @@
                         <img :src="form.vistaPrevia"
                              alt="Vista previa del perfume"
                              style="width:120px;height:145px;object-fit:contain;background:white;border:1px solid #E5D8C5;padding:6px;"
-                             @@error="$event.target.style.display = 'none'" />
+                        @@error="$event.target.style.display = 'none'" />
+
                         <button v-if="form.archivoImagen"
                                 type="button"
                                 class="btn btn-sm btn-outline-secondary d-block mt-2"
-                                @@click="quitarImagenSeleccionada">
+                            @@click="quitarImagenSeleccionada">
                             Quitar nueva imagen
                         </button>
                     </div>
 
                     <div class="col-12 d-flex flex-wrap gap-2 mt-4">
-                        <button type="submit" class="btn btn-dark" :disabled="guardando">
+                        <button type="submit"
+                                class="btn btn-dark"
+                                :disabled="guardando">
                             {{ guardando ? 'Guardando...' : (editando ? 'Guardar cambios' : 'Crear perfume') }}
                         </button>
+
                         <button type="button"
                                 class="btn btn-outline-secondary"
-                                @@click="cancelarFormulario"
+                            @@click="cancelarFormulario"
                                 :disabled="guardando">
                             Cancelar
                         </button>
@@ -620,26 +612,20 @@
 }
 
 @section Scripts {
-    <!-- BUSCADOR Y SUGERENCIAS DEL CATÁLOGO -->
+    <!-- BUSCADOR Y SUGERENCIAS DEL CATÁLOGO MVC -->
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const formulario = document.getElementById("buscarForm");
             const resultados = document.getElementById("resultadosCatalogo");
             const sugerencias = document.getElementById("sugerenciasBusqueda");
 
-            if (!formulario || !resultados || !sugerencias) {
-                console.error("No se encontraron los elementos del buscador.");
-                return;
-            }
+            if (!formulario || !resultados || !sugerencias) return;
 
             const campoBuscar = formulario.querySelector('[name="buscar"]');
             const campoCategoria = formulario.querySelector('[name="idCategoria"]');
             const campoMarca = formulario.querySelector('[name="idMarca"]');
 
-            if (!campoBuscar || !campoCategoria || !campoMarca) {
-                console.error("Faltan campos del formulario de búsqueda.");
-                return;
-            }
+            if (!campoBuscar || !campoCategoria || !campoMarca) return;
 
             let temporizador;
             let controladorActual;
@@ -667,7 +653,7 @@
                     return;
                 }
 
-                filas.slice(0, 8).forEach(function (fila) {
+                filas.slice(0, 8).forEach(function(fila) {
                     const celdas = fila.querySelectorAll("td");
                     if (celdas.length < 3) return;
 
@@ -706,7 +692,7 @@
                     informacion.appendChild(detalle);
                     opcion.appendChild(informacion);
 
-                    opcion.addEventListener("click", function () {
+                    opcion.addEventListener("click", function() {
                         campoBuscar.value = nombre;
                         ocultarSugerencias();
                         buscarEnServidor(false);
@@ -721,7 +707,7 @@
             async function buscarEnServidor(mostrarListado = false) {
                 clearTimeout(temporizador);
 
-                temporizador = setTimeout(async function () {
+                temporizador = setTimeout(async function() {
                     if (controladorActual) controladorActual.abort();
 
                     const controlador = new AbortController();
@@ -773,30 +759,30 @@
                 }, 150);
             }
 
-            campoBuscar.addEventListener("input", function () {
+            campoBuscar.addEventListener("input", function() {
                 buscarEnServidor(true);
             });
 
-            campoCategoria.addEventListener("change", function () {
+            campoCategoria.addEventListener("change", function() {
                 buscarEnServidor(false);
             });
 
-            campoMarca.addEventListener("change", function () {
+            campoMarca.addEventListener("change", function() {
                 buscarEnServidor(false);
             });
 
-            formulario.addEventListener("submit", function (evento) {
+            formulario.addEventListener("submit", function(evento) {
                 evento.preventDefault();
                 buscarEnServidor(false);
             });
 
-            document.addEventListener("click", function (evento) {
+            document.addEventListener("click", function(evento) {
                 if (!sugerencias.parentElement.contains(evento.target)) {
                     ocultarSugerencias();
                 }
             });
 
-            campoBuscar.addEventListener("keydown", function (evento) {
+            campoBuscar.addEventListener("keydown", function(evento) {
                 if (evento.key === "Escape") ocultarSugerencias();
             });
         });
@@ -814,7 +800,7 @@
 
         <!-- ABM REACTIVO DE PRODUCTOS -->
         <script>
-            document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener("DOMContentLoaded", function() {
                 const elemento = document.getElementById("appProductosVue");
 
                 if (!elemento) {
@@ -827,23 +813,16 @@
                     return;
                 }
 
-                let marcasIniciales = [];
-                let categoriasIniciales = [];
-
-                try {
-                    marcasIniciales = JSON.parse(elemento.dataset.marcas || "[]");
-                    categoriasIniciales = JSON.parse(elemento.dataset.categorias || "[]");
-                } catch (error) {
-                    console.error("Error al leer marcas o categorías.", error);
-                    return;
-                }
-
                 Vue.createApp({
                     data() {
                         return {
                             productos: [],
-                            marcas: marcasIniciales,
-                            categorias: categoriasIniciales,
+                            marcas: [],
+                            categorias: [],
+                            cargandoMarcas: false,
+                            cargandoCategorias: false,
+                            temporizadorMarca: null,
+                            temporizadorCategoria: null,
                             cargando: false,
                             guardando: false,
                             mostrarFormulario: false,
@@ -866,6 +845,8 @@
                                 concentracion: "",
                                 idMarca: null,
                                 idCategoria: null,
+                                marcaBusqueda: "",
+                                categoriaBusqueda: "",
                                 imagenUrl: "",
                                 archivoImagen: null,
                                 vistaPrevia: ""
@@ -887,6 +868,7 @@
                                 }
 
                                 const datos = await respuesta.json();
+
                                 this.productos = Array.isArray(datos)
                                     ? datos
                                     : (datos.$values || datos.items || []);
@@ -899,21 +881,118 @@
                             }
                         },
 
-                        nombreMarca(id) {
-                            const marca = this.marcas.find(
-                                m => Number(m.idMarca) === Number(id)
-                            );
-                            return marca ? marca.nombre : "Sin marca";
+                        buscarMarcas() {
+                            this.form.idMarca = null;
+                            this.marcas = [];
+                            clearTimeout(this.temporizadorMarca);
+
+                            const termino = this.form.marcaBusqueda.trim();
+
+                            if (!termino) {
+                                this.cargandoMarcas = false;
+                                return;
+                            }
+
+                            this.cargandoMarcas = true;
+
+                            this.temporizadorMarca = setTimeout(() => {
+                                this.consultarMarcas(termino);
+                            }, 300);
                         },
 
-                        nombreCategoria(id) {
-                            const categoria = this.categorias.find(
-                                c => Number(c.idCategoria) === Number(id)
-                            );
-                            return categoria ? categoria.nombre : "Sin categoría";
+                        async consultarMarcas(termino) {
+                            try {
+                                const respuesta = await fetch(
+                                    "/api/marca/buscar?termino=" +
+                                    encodeURIComponent(termino)
+                                );
+
+                                if (!respuesta.ok) {
+                                    throw new Error("No se pudieron buscar las marcas.");
+                                }
+
+                                const datos = await respuesta.json();
+
+                                if (this.form.marcaBusqueda.trim() !== termino) return;
+
+                                this.marcas = Array.isArray(datos) ? datos : [];
+                            } catch (error) {
+                                this.marcas = [];
+                                this.mensaje = error.message;
+                                this.esError = true;
+                                console.error(error);
+                            } finally {
+                                if (this.form.marcaBusqueda.trim() === termino) {
+                                    this.cargandoMarcas = false;
+                                }
+                            }
+                        },
+
+                        seleccionarMarca(marca) {
+                            this.form.idMarca = Number(marca.idMarca);
+                            this.form.marcaBusqueda = marca.nombre;
+                            this.marcas = [];
+                            this.cargandoMarcas = false;
+                            clearTimeout(this.temporizadorMarca);
+                        },
+
+                        buscarCategorias() {
+                            this.form.idCategoria = null;
+                            this.categorias = [];
+                            clearTimeout(this.temporizadorCategoria);
+
+                            const termino = this.form.categoriaBusqueda.trim();
+
+                            if (!termino) {
+                                this.cargandoCategorias = false;
+                                return;
+                            }
+
+                            this.cargandoCategorias = true;
+
+                            this.temporizadorCategoria = setTimeout(() => {
+                                this.consultarCategorias(termino);
+                            }, 300);
+                        },
+
+                        async consultarCategorias(termino) {
+                            try {
+                                const respuesta = await fetch(
+                                    "/api/categoria/buscar?termino=" +
+                                    encodeURIComponent(termino)
+                                );
+
+                                if (!respuesta.ok) {
+                                    throw new Error("No se pudieron buscar las categorías.");
+                                }
+
+                                const datos = await respuesta.json();
+
+                                if (this.form.categoriaBusqueda.trim() !== termino) return;
+
+                                this.categorias = Array.isArray(datos) ? datos : [];
+                            } catch (error) {
+                                this.categorias = [];
+                                this.mensaje = error.message;
+                                this.esError = true;
+                                console.error(error);
+                            } finally {
+                                if (this.form.categoriaBusqueda.trim() === termino) {
+                                    this.cargandoCategorias = false;
+                                }
+                            }
+                        },
+
+                        seleccionarCategoria(categoria) {
+                            this.form.idCategoria = Number(categoria.idCategoria);
+                            this.form.categoriaBusqueda = categoria.nombre;
+                            this.categorias = [];
+                            this.cargandoCategorias = false;
+                            clearTimeout(this.temporizadorCategoria);
                         },
 
                         nuevoProducto() {
+                            this.limpiarBusquedas();
                             this.form = this.formularioVacio();
                             this.editando = false;
                             this.mostrarFormulario = true;
@@ -925,6 +1004,8 @@
                         },
 
                         editarProducto(producto) {
+                            this.limpiarBusquedas();
+
                             this.form = {
                                 idProducto: producto.idProducto,
                                 nombre: producto.nombre || "",
@@ -933,13 +1014,19 @@
                                 stock: Number(producto.stock) || 0,
                                 volumenMl: Number(producto.volumenMl) || 100,
                                 concentracion: producto.concentracion || "",
-                                idMarca: producto.idMarca == null ? null : Number(producto.idMarca),
-                                idCategoria: producto.idCategoria == null ? null : Number(producto.idCategoria),
+                                idMarca: producto.idMarca == null
+                                    ? null : Number(producto.idMarca),
+                                idCategoria: producto.idCategoria == null
+                                    ? null : Number(producto.idCategoria),
+                                marcaBusqueda: producto.marca?.nombre || "",
+                                categoriaBusqueda: producto.categoria?.nombre || "",
                                 imagenUrl: producto.imagenUrl || "",
                                 archivoImagen: null,
                                 vistaPrevia: producto.imagenUrl || ""
                             };
 
+                            this.marcas = [];
+                            this.categorias = [];
                             this.editando = true;
                             this.mostrarFormulario = true;
                             this.mensaje = "";
@@ -949,7 +1036,17 @@
                             if (input) input.value = "";
                         },
 
+                        limpiarBusquedas() {
+                            clearTimeout(this.temporizadorMarca);
+                            clearTimeout(this.temporizadorCategoria);
+                            this.marcas = [];
+                            this.categorias = [];
+                            this.cargandoMarcas = false;
+                            this.cargandoCategorias = false;
+                        },
+
                         cancelarFormulario() {
+                            this.limpiarBusquedas();
                             this.mostrarFormulario = false;
                             this.form = this.formularioVacio();
 
@@ -957,42 +1054,47 @@
                             if (input) input.value = "";
                         },
 
-                        
-seleccionarImagen(evento) {
-    const archivo = evento.target.files[0];
-    if (!archivo) return;
+                        seleccionarImagen(evento) {
+                            const archivo = evento.target.files[0];
+                            if (!archivo) return;
 
-    const tiposPermitidos = [
-        "image/jpeg",
-        "image/png",
-        "image/webp"
-    ];
+                            const tiposPermitidos = [
+                                "image/jpeg",
+                                "image/png",
+                                "image/webp"
+                            ];
 
-    if (!tiposPermitidos.includes(archivo.type)) {
-        alert("Seleccioná una imagen JPG, PNG o WEBP.");
-        evento.target.value = "";
-        return;
-    }
+                            if (!tiposPermitidos.includes(archivo.type)) {
+                                alert("Seleccioná una imagen JPG, PNG o WEBP.");
+                                evento.target.value = "";
+                                return;
+                            }
 
-    if (archivo.size > 2 * 1024 * 1024) {
-        alert("La imagen no puede superar los 2 MB.");
-        evento.target.value = "";
-        return;
-    }
+                            if (archivo.size > 2 * 1024 * 1024) {
+                                alert("La imagen no puede superar los 2 MB.");
+                                evento.target.value = "";
+                                return;
+                            }
 
-    // Liberar la vista previa temporal anterior, si existía.
-    if (
-        this.form.vistaPrevia &&
-        this.form.vistaPrevia.startsWith("blob:")
-    ) {
-        URL.revokeObjectURL(this.form.vistaPrevia);
-    }
+                            if (
+                                this.form.vistaPrevia &&
+                                this.form.vistaPrevia.startsWith("blob:")
+                            ) {
+                                URL.revokeObjectURL(this.form.vistaPrevia);
+                            }
 
-    this.form.archivoImagen = archivo;
-    this.form.vistaPrevia = URL.createObjectURL(archivo);
-},
+                            this.form.archivoImagen = archivo;
+                            this.form.vistaPrevia = URL.createObjectURL(archivo);
+                        },
 
                         quitarImagenSeleccionada() {
+                            if (
+                                this.form.vistaPrevia &&
+                                this.form.vistaPrevia.startsWith("blob:")
+                            ) {
+                                URL.revokeObjectURL(this.form.vistaPrevia);
+                            }
+
                             this.form.archivoImagen = null;
                             this.form.vistaPrevia = this.form.imagenUrl || "";
 
@@ -1000,81 +1102,87 @@ seleccionarImagen(evento) {
                             if (input) input.value = "";
                         },
 
+                        async guardarProducto() {
+                            if (this.guardando) return;
 
-async guardarProducto() {
-    if (this.guardando) return;
+                            if (!this.form.idMarca || !this.form.idCategoria) {
+                                this.mensaje =
+                                    "Seleccioná una marca y una categoría de las sugerencias.";
+                                this.esError = true;
+                                return;
+                            }
 
-    this.guardando = true;
-    this.mensaje = "";
+                            this.guardando = true;
+                            this.mensaje = "";
 
-    const esEdicion = this.editando;
-    const url = esEdicion
-        ? "/api/productos/" + this.form.idProducto
-        : "/api/productos";
+                            const esEdicion = this.editando;
+                            const url = esEdicion
+                                ? "/api/productos/" + this.form.idProducto
+                                : "/api/productos";
 
-   const datos = new FormData();
+                            const datos = new FormData();
 
-if (esEdicion) {
-    datos.append("idProducto", String(this.form.idProducto));
-}
+                            if (esEdicion) {
+                                datos.append("idProducto", String(this.form.idProducto));
+                            }
 
-datos.append("nombre", this.form.nombre);
-datos.append("descripcion", this.form.descripcion || "");
-datos.append("precio", String(this.form.precio));
-datos.append("stock", String(this.form.stock));
-datos.append("volumenMl", String(this.form.volumenMl));
-datos.append("concentracion", this.form.concentracion);
-datos.append("idMarca", String(this.form.idMarca));
-datos.append("idCategoria", String(this.form.idCategoria));
+                            datos.append("nombre", this.form.nombre);
+                            datos.append("descripcion", this.form.descripcion || "");
+                            datos.append("precio", String(this.form.precio));
+                            datos.append("stock", String(this.form.stock));
+                            datos.append("volumenMl", String(this.form.volumenMl));
+                            datos.append("concentracion", this.form.concentracion);
+                            datos.append("idMarca", String(this.form.idMarca));
+                            datos.append("idCategoria", String(this.form.idCategoria));
 
-if (this.form.archivoImagen) {
-    datos.append("archivoImagen", this.form.archivoImagen);
-}
+                            if (this.form.archivoImagen) {
+                                datos.append("archivoImagen", this.form.archivoImagen);
+                            }
 
-    try {
-        const respuesta = await fetch(url, {
-            method: esEdicion ? "PUT" : "POST",
-            body: datos
-        });
+                            try {
+                                const respuesta = await fetch(url, {
+                                    method: esEdicion ? "PUT" : "POST",
+                                    body: datos
+                                });
 
-        if (!respuesta.ok) {
-            const texto = await respuesta.text();
-            let mensajeError = texto || "No se pudo guardar el perfume.";
+                                if (!respuesta.ok) {
+                                    const texto = await respuesta.text();
+                                    let mensajeError =
+                                        texto || "No se pudo guardar el perfume.";
 
-            try {
-                const detalle = JSON.parse(texto);
-                mensajeError = detalle.mensaje
-                    || detalle.title
-                    || mensajeError;
-            } catch {
-                // La respuesta no era JSON.
-            }
+                                    try {
+                                        const detalle = JSON.parse(texto);
+                                        mensajeError = detalle.mensaje
+                                            || detalle.title
+                                            || mensajeError;
+                                    } catch {
+                                        // La respuesta no era JSON.
+                                    }
 
-            throw new Error(mensajeError);
-        }
+                                    throw new Error(mensajeError);
+                                }
 
-        this.mensaje = esEdicion
-            ? "Perfume actualizado correctamente."
-            : "Perfume creado correctamente.";
+                                this.mensaje = esEdicion
+                                    ? "Perfume actualizado correctamente."
+                                    : "Perfume creado correctamente.";
 
-        this.esError = false;
-        this.mostrarFormulario = false;
-        this.form = this.formularioVacio();
+                                this.esError = false;
+                                this.mostrarFormulario = false;
+                                this.limpiarBusquedas();
+                                this.form = this.formularioVacio();
 
-        const input = document.getElementById("vueArchivoImagen");
-        if (input) input.value = "";
+                                const input = document.getElementById("vueArchivoImagen");
+                                if (input) input.value = "";
 
-        await this.cargarProductos();
-
-    } catch (error) {
-        this.mensaje = error.message;
-        this.esError = true;
-        console.error("Error al guardar el perfume:", error);
-    } finally {
-        this.guardando = false;
-    }
-},
-
+                                await this.cargarProductos();
+                            } catch (error) {
+                                this.mensaje = error.message;
+                                this.esError = true;
+                                console.error("Error al guardar el perfume:", error);
+                            } finally {
+                                this.guardando = false;
+                            }
+                        },
 
                         async eliminarProducto(producto) {
                             const confirmar = confirm(
@@ -1091,7 +1199,9 @@ if (this.form.archivoImagen) {
 
                                 if (!respuesta.ok) {
                                     const texto = await respuesta.text();
-                                    throw new Error(texto || "No se pudo eliminar el perfume.");
+                                    throw new Error(
+                                        texto || "No se pudo eliminar el perfume."
+                                    );
                                 }
 
                                 this.mensaje = "Perfume eliminado correctamente.";
