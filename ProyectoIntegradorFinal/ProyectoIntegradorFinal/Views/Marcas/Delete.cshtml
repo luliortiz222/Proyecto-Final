@@ -1,0 +1,62 @@
+﻿@model ProyectoIntegradorFinal.Models.Marca
+
+@{
+    ViewData["Title"] = "Eliminar marca";
+    int cantidadProductos = ViewBag.CantidadProductos ?? 0;
+}
+
+<div class="container mt-4 mb-5">
+    <div class="card shadow-sm mx-auto" style="max-width: 650px;">
+        <div class="card-header">
+            <h2 class="h4 mb-0">Eliminar marca</h2>
+        </div>
+
+        <div class="card-body">
+            <p>¿Querés eliminar esta marca?</p>
+
+            <dl class="row">
+                <dt class="col-sm-4">ID</dt>
+                <dd class="col-sm-8">@Model.IdMarca</dd>
+
+                <dt class="col-sm-4">Nombre</dt>
+                <dd class="col-sm-8">@Model.Nombre</dd>
+
+                <dt class="col-sm-4">Perfumes asociados</dt>
+                <dd class="col-sm-8">@cantidadProductos</dd>
+            </dl>
+
+            @if (cantidadProductos > 0)
+            {
+                <div class="alert alert-warning">
+                    No se puede eliminar esta marca porque tiene perfumes
+                    asociados. Primero deberás asignarlos a otra marca.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    Esta acción no se puede deshacer.
+                </div>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="IdMarca" />
+
+                    <button type="submit" class="btn btn-danger">
+                        Eliminar
+                    </button>
+
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+                </form>
+            }
+
+            @if (cantidadProductos > 0)
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Volver
+                </a>
+            }
+        </div>
+    </div>
+</div>

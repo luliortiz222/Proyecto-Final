@@ -126,5 +126,50 @@ namespace ProyectoIntegradorFinal.Controllers
                 throw;
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var categoria = await _context.Categorias
+                .Include(c => c.Productos)
+                .FirstOrDefaultAsync(c => c.IdCategoria == id);
+
+            if (categoria == null)
+                return NotFound();
+
+            ViewBag.CantidadProductos = categoria.Productos?.Count ?? 0;
+
+            return View(categoria);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var categoria = await _context.Categorias
+                .Include(c => c.Productos)
+                .FirstOrDefaultAsync(c => c.IdCategoria == id);
+
+            if (categoria == null)
+                return NotFound();
+
+            if (categoria.Productos != null && categoria.Productos.Any())
+            {
+                TempData["Mensaje"] =
+                    "No se puede eliminar la categoría porque tiene perfumes asociados.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Categorias.Remove(categoria);
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = "La categoría se eliminó correctamente.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

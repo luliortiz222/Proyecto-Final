@@ -140,5 +140,50 @@ namespace ProyectoIntegradorFinal.Controllers
 
             return Json(marcas);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var marca = await _context.Marcas
+                .Include(m => m.Productos)
+                .FirstOrDefaultAsync(m => m.IdMarca == id);
+
+            if (marca == null)
+                return NotFound();
+
+            ViewBag.CantidadProductos = marca.Productos?.Count ?? 0;
+
+            return View(marca);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var marca = await _context.Marcas
+                .Include(m => m.Productos)
+                .FirstOrDefaultAsync(m => m.IdMarca == id);
+
+            if (marca == null)
+                return NotFound();
+
+            if (marca.Productos != null && marca.Productos.Any())
+            {
+                TempData["Mensaje"] =
+                    "No se puede eliminar la marca porque tiene perfumes asociados.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Marcas.Remove(marca);
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = "La marca se eliminó correctamente.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
