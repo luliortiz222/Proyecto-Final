@@ -342,34 +342,287 @@
         {
             <nav aria-label="Paginación de productos" class="mt-4">
                 <ul class="pagination justify-content-center">
-            
-                    <!-- Botón Anterior -->
+
                     <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)">Anterior</a>
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-pagina="@(paginaActual - 1)"
+                           asp-route-buscar="@ViewBag.Buscar"
+                           asp-route-idCategoria="@ViewBag.IdCategoria"
+                           asp-route-idMarca="@ViewBag.IdMarca">
+                            Anterior
+                        </a>
                     </li>
 
-                    <!-- Números de páginas dinámicos -->
                     @for (int i = 1; i <= totalPaginas; i++)
                     {
                         <li class="page-item @(i == paginaActual ? "active" : "")">
-                            <a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-pagina="@i"
+                               asp-route-buscar="@ViewBag.Buscar"
+                               asp-route-idCategoria="@ViewBag.IdCategoria"
+                               asp-route-idMarca="@ViewBag.IdMarca">
+                                @i
+                            </a>
                         </li>
                     }
 
-                    <!-- Botón Siguiente -->
                     <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)">Siguiente</a>
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-pagina="@(paginaActual + 1)"
+                           asp-route-buscar="@ViewBag.Buscar"
+                           asp-route-idCategoria="@ViewBag.IdCategoria"
+                           asp-route-idMarca="@ViewBag.IdMarca">
+                            Siguiente
+                        </a>
                     </li>
 
                 </ul>
             </nav>
         }
     </div>
-</div>
+</div> 
+
+
+
+@if (esAdministrador)
+{
+    <div id="appProductosVue"
+         class="container mb-5"
+         v-cloak
+         data-marcas='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(((IEnumerable<ProyectoIntegradorFinal.Models.Marca>)ViewBag.Marcas).Select(m => new { idMarca = m.IdMarca, nombre = m.Nombre })))'
+         data-categorias='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(((IEnumerable<ProyectoIntegradorFinal.Models.Categoria>)ViewBag.Categorias).Select(c => new { idCategoria = c.IdCategoria, nombre = c.Nombre })))'>
+
+        <hr class="my-4" />
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+            <div>
+                <span class="text-uppercase small" style="letter-spacing: .15em; color: #96713D;">
+                    ADMINISTRACIÓN CON VUE
+                </span>
+                <h3 class="mt-2 mb-1">Gestión de perfumes</h3>
+                <p class="text-muted mb-0">Administrá el catálogo desde este panel.</p>
+            </div>
+
+            <button type="button" class="btn btn-dark" @@click="nuevoProducto">
+                <i class="fas fa-plus me-2"></i>Nuevo perfume
+            </button>
+        </div>
+
+        <div v-if="mensaje"
+             class="alert"
+             :class="esError ? 'alert-danger' : 'alert-success'"
+             role="alert">
+            {{ mensaje }}
+        </div>
+
+        <div v-if="cargando" class="text-center py-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="text-muted mt-2">Cargando perfumes...</p>
+        </div>
+
+        <div v-else class="table-responsive mb-4">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Marca</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="producto in productos" :key="producto.idProducto">
+                        <td>{{ producto.idProducto }}</td>
+                        <td>{{ producto.nombre }}</td>
+                        <td>{{ nombreMarca(producto.idMarca) }}</td>
+                        <td>{{ nombreCategoria(producto.idCategoria) }}</td>
+                        <td>{{ formatoPrecio(producto.precio) }}</td>
+                        <td>{{ producto.stock }}</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button"
+                                        class="btn btn-sm btn-warning"
+                                        @@click="editarProducto(producto)">
+                                    Editar
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-danger"
+                                        @@click="eliminarProducto(producto)">
+                                    Eliminar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="productos.length === 0">
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            No hay perfumes para mostrar.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div v-if="mostrarFormulario"
+             class="p-3 p-md-4"
+             style="background:#F7F1E8;border:1px solid #E5D8C5;">
+
+            <h4 class="mb-4">
+                {{ editando ? 'Editar perfume' : 'Nuevo perfume' }}
+            </h4>
+
+            <form @@submit.prevent="guardarProducto">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label for="vueNombre" class="form-label">Nombre</label>
+                        <input id="vueNombre"
+                               v-model.trim="form.nombre"
+                               type="text"
+                               class="form-control"
+                               maxlength="150"
+                               required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label for="vuePrecio" class="form-label">Precio</label>
+                        <input id="vuePrecio"
+                               v-model.number="form.precio"
+                               type="number"
+                               class="form-control"
+                               min="0.01"
+                               step="0.01"
+                               required />
+                    </div>
+
+                    <div class="col-12">
+                        <label for="vueDescripcion" class="form-label">Descripción</label>
+                        <textarea id="vueDescripcion"
+                                  v-model.trim="form.descripcion"
+                                  class="form-control"
+                                  rows="3"></textarea>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label for="vueMarca" class="form-label">Marca</label>
+                        <select id="vueMarca"
+                                v-model.number="form.idMarca"
+                                class="form-select"
+                                required>
+                            <option :value="null" disabled>Elegí una marca</option>
+                            <option v-for="marca in marcas"
+                                    :key="marca.idMarca"
+                                    :value="marca.idMarca">
+                                {{ marca.nombre }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label for="vueCategoria" class="form-label">Categoría</label>
+                        <select id="vueCategoria"
+                                v-model.number="form.idCategoria"
+                                class="form-select"
+                                required>
+                            <option :value="null" disabled>Elegí una categoría</option>
+                            <option v-for="categoria in categorias"
+                                    :key="categoria.idCategoria"
+                                    :value="categoria.idCategoria">
+                                {{ categoria.nombre }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label for="vueVolumen" class="form-label">Volumen (ml)</label>
+                        <input id="vueVolumen"
+                               v-model.number="form.volumenMl"
+                               type="number"
+                               class="form-control"
+                               min="1"
+                               required />
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label for="vueConcentracion" class="form-label">Concentración</label>
+                        <select id="vueConcentracion"
+                                v-model="form.concentracion"
+                                class="form-select"
+                                required>
+                            <option value="" disabled>Elegí una opción</option>
+                            <option value="Eau de Parfum">Eau de Parfum</option>
+                            <option value="Eau de Toilette">Eau de Toilette</option>
+                            <option value="Parfum">Parfum</option>
+                            <option value="Extrait">Extrait</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label for="vueStock" class="form-label">Stock</label>
+                        <input id="vueStock"
+                               v-model.number="form.stock"
+                               type="number"
+                               class="form-control"
+                               min="0"
+                               required />
+                    </div>
+
+                    <div class="col-12">
+                        <label for="vueArchivoImagen" class="form-label">Imagen del perfume</label>
+                        <input id="vueArchivoImagen"
+                               type="file"
+                               class="form-control"
+                               accept=".jpg,.jpeg,.png,.webp"
+                               @@change="seleccionarImagen" />
+                        <small class="text-muted">
+                            JPG, PNG o WEBP. Máximo 2 MB. Si editás sin elegir otra imagen,
+                            se conserva la actual.
+                        </small>
+                    </div>
+
+                    <div class="col-12" v-if="form.vistaPrevia">
+                        <p class="form-label mb-2">
+                            {{ editando ? 'Imagen actual o nueva imagen' : 'Vista previa' }}
+                        </p>
+                        <img :src="form.vistaPrevia"
+                             alt="Vista previa del perfume"
+                             style="width:120px;height:145px;object-fit:contain;background:white;border:1px solid #E5D8C5;padding:6px;"
+                             @@error="$event.target.style.display = 'none'" />
+                        <button v-if="form.archivoImagen"
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary d-block mt-2"
+                                @@click="quitarImagenSeleccionada">
+                            Quitar nueva imagen
+                        </button>
+                    </div>
+
+                    <div class="col-12 d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-dark" :disabled="guardando">
+                            {{ guardando ? 'Guardando...' : (editando ? 'Guardar cambios' : 'Crear perfume') }}
+                        </button>
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                @@click="cancelarFormulario"
+                                :disabled="guardando">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
 
 @section Scripts {
+    <!-- BUSCADOR Y SUGERENCIAS DEL CATÁLOGO -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const formulario = document.getElementById("buscarForm");
             const resultados = document.getElementById("resultadosCatalogo");
             const sugerencias = document.getElementById("sugerenciasBusqueda");
@@ -383,6 +636,11 @@
             const campoCategoria = formulario.querySelector('[name="idCategoria"]');
             const campoMarca = formulario.querySelector('[name="idMarca"]');
 
+            if (!campoBuscar || !campoCategoria || !campoMarca) {
+                console.error("Faltan campos del formulario de búsqueda.");
+                return;
+            }
+
             let temporizador;
             let controladorActual;
 
@@ -393,7 +651,6 @@
 
             function mostrarSugerencias(filas) {
                 sugerencias.innerHTML = "";
-
                 const termino = campoBuscar.value.trim();
 
                 if (!termino) {
@@ -410,12 +667,9 @@
                     return;
                 }
 
-                filas.slice(0, 8).forEach(function(fila) {
+                filas.slice(0, 8).forEach(function (fila) {
                     const celdas = fila.querySelectorAll("td");
-
-                    if (celdas.length < 3) {
-                        return;
-                    }
+                    if (celdas.length < 3) return;
 
                     const nombre = celdas[1].textContent.trim();
                     const marca = celdas[2].textContent.trim();
@@ -434,7 +688,6 @@
                         imagen.style.height = "48px";
                         imagen.style.objectFit = "contain";
                         imagen.loading = "lazy";
-
                         opcion.appendChild(imagen);
                     }
 
@@ -453,7 +706,7 @@
                     informacion.appendChild(detalle);
                     opcion.appendChild(informacion);
 
-                    opcion.addEventListener("click", function() {
+                    opcion.addEventListener("click", function () {
                         campoBuscar.value = nombre;
                         ocultarSugerencias();
                         buscarEnServidor(false);
@@ -468,63 +721,39 @@
             async function buscarEnServidor(mostrarListado = false) {
                 clearTimeout(temporizador);
 
-                temporizador = setTimeout(async function() {
-                    if (controladorActual) {
-                        controladorActual.abort();
-                    }
+                temporizador = setTimeout(async function () {
+                    if (controladorActual) controladorActual.abort();
 
                     const controlador = new AbortController();
                     controladorActual = controlador;
 
-                    const parametros = new URLSearchParams(
-                        new FormData(formulario)
-                    );
-
-                    const url =
-                        formulario.action + "?" + parametros.toString();
+                    const parametros = new URLSearchParams(new FormData(formulario));
+                    const url = formulario.action + "?" + parametros.toString();
 
                     try {
                         resultados.style.opacity = "0.5";
 
                         const respuesta = await fetch(url, {
                             method: "GET",
-                            headers: {
-                                "X-Requested-With": "XMLHttpRequest"
-                            },
+                            headers: { "X-Requested-With": "XMLHttpRequest" },
                             signal: controlador.signal
                         });
 
                         if (!respuesta.ok) {
-                            throw new Error(
-                                "Error al consultar los productos."
-                            );
+                            throw new Error("Error al consultar los productos.");
                         }
 
                         const html = await respuesta.text();
-
-                        const documento = new DOMParser().parseFromString(
-                            html,
-                            "text/html"
-                        );
-
-                        const nuevosResultados =
-                            documento.getElementById("resultadosCatalogo");
+                        const documento = new DOMParser().parseFromString(html, "text/html");
+                        const nuevosResultados = documento.getElementById("resultadosCatalogo");
 
                         if (!nuevosResultados) {
-                            throw new Error(
-                                "La respuesta no contiene los resultados del catálogo."
-                            );
+                            throw new Error("La respuesta no contiene los resultados del catálogo.");
                         }
 
-                        // Ignorar respuestas de búsquedas anteriores.
-                        if (controlador !== controladorActual) {
-                            return;
-                        }
+                        if (controlador !== controladorActual) return;
 
-                        const filas = Array.from(
-                            nuevosResultados.querySelectorAll("tbody tr")
-                        );
-
+                        const filas = Array.from(nuevosResultados.querySelectorAll("tbody tr"));
                         resultados.innerHTML = nuevosResultados.innerHTML;
 
                         if (mostrarListado) {
@@ -532,7 +761,6 @@
                         } else {
                             ocultarSugerencias();
                         }
-
                     } catch (error) {
                         if (error.name !== "AbortError") {
                             console.error("Error en la búsqueda:", error);
@@ -545,39 +773,350 @@
                 }, 150);
             }
 
-            // Buscar al escribir y desplegar sugerencias.
-            campoBuscar.addEventListener("input", function() {
+            campoBuscar.addEventListener("input", function () {
                 buscarEnServidor(true);
             });
 
-            // Mantener los filtros existentes.
-            campoCategoria.addEventListener("change", function() {
+            campoCategoria.addEventListener("change", function () {
                 buscarEnServidor(false);
             });
 
-            campoMarca.addEventListener("change", function() {
+            campoMarca.addEventListener("change", function () {
                 buscarEnServidor(false);
             });
 
-            // El botón Buscar actualiza el catálogo sin desplegar sugerencias.
-            formulario.addEventListener("submit", function(evento) {
+            formulario.addEventListener("submit", function (evento) {
                 evento.preventDefault();
                 buscarEnServidor(false);
             });
 
-            // Cerrar al hacer clic fuera del campo y el desplegable.
-            document.addEventListener("click", function(evento) {
+            document.addEventListener("click", function (evento) {
                 if (!sugerencias.parentElement.contains(evento.target)) {
                     ocultarSugerencias();
                 }
             });
 
-            // Cerrar con Escape.
-            campoBuscar.addEventListener("keydown", function(evento) {
-                if (evento.key === "Escape") {
-                    ocultarSugerencias();
-                }
+            campoBuscar.addEventListener("keydown", function (evento) {
+                if (evento.key === "Escape") ocultarSugerencias();
             });
         });
     </script>
+
+    @if (esAdministrador)
+    {
+        <style>
+            [v-cloak] {
+                display: none !important;
+            }
+        </style>
+
+        <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+        <!-- ABM REACTIVO DE PRODUCTOS -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const elemento = document.getElementById("appProductosVue");
+
+                if (!elemento) {
+                    console.error("No se encontró el elemento #appProductosVue.");
+                    return;
+                }
+
+                if (!window.Vue) {
+                    console.error("No se pudo cargar Vue 3.");
+                    return;
+                }
+
+                let marcasIniciales = [];
+                let categoriasIniciales = [];
+
+                try {
+                    marcasIniciales = JSON.parse(elemento.dataset.marcas || "[]");
+                    categoriasIniciales = JSON.parse(elemento.dataset.categorias || "[]");
+                } catch (error) {
+                    console.error("Error al leer marcas o categorías.", error);
+                    return;
+                }
+
+                Vue.createApp({
+                    data() {
+                        return {
+                            productos: [],
+                            marcas: marcasIniciales,
+                            categorias: categoriasIniciales,
+                            cargando: false,
+                            guardando: false,
+                            mostrarFormulario: false,
+                            editando: false,
+                            mensaje: "",
+                            esError: false,
+                            form: this.formularioInicial()
+                        };
+                    },
+
+                    methods: {
+                        formularioInicial() {
+                            return {
+                                idProducto: 0,
+                                nombre: "",
+                                descripcion: "",
+                                precio: 0,
+                                stock: 0,
+                                volumenMl: 100,
+                                concentracion: "",
+                                idMarca: null,
+                                idCategoria: null,
+                                imagenUrl: "",
+                                archivoImagen: null,
+                                vistaPrevia: ""
+                            };
+                        },
+
+                        formularioVacio() {
+                            return this.formularioInicial();
+                        },
+
+                        async cargarProductos() {
+                            this.cargando = true;
+
+                            try {
+                                const respuesta = await fetch("/api/productos");
+
+                                if (!respuesta.ok) {
+                                    throw new Error("No se pudieron cargar los productos.");
+                                }
+
+                                const datos = await respuesta.json();
+                                this.productos = Array.isArray(datos)
+                                    ? datos
+                                    : (datos.$values || datos.items || []);
+                            } catch (error) {
+                                this.mensaje = error.message;
+                                this.esError = true;
+                                console.error(error);
+                            } finally {
+                                this.cargando = false;
+                            }
+                        },
+
+                        nombreMarca(id) {
+                            const marca = this.marcas.find(
+                                m => Number(m.idMarca) === Number(id)
+                            );
+                            return marca ? marca.nombre : "Sin marca";
+                        },
+
+                        nombreCategoria(id) {
+                            const categoria = this.categorias.find(
+                                c => Number(c.idCategoria) === Number(id)
+                            );
+                            return categoria ? categoria.nombre : "Sin categoría";
+                        },
+
+                        nuevoProducto() {
+                            this.form = this.formularioVacio();
+                            this.editando = false;
+                            this.mostrarFormulario = true;
+                            this.mensaje = "";
+                            this.esError = false;
+
+                            const input = document.getElementById("vueArchivoImagen");
+                            if (input) input.value = "";
+                        },
+
+                        editarProducto(producto) {
+                            this.form = {
+                                idProducto: producto.idProducto,
+                                nombre: producto.nombre || "",
+                                descripcion: producto.descripcion || "",
+                                precio: Number(producto.precio) || 0,
+                                stock: Number(producto.stock) || 0,
+                                volumenMl: Number(producto.volumenMl) || 100,
+                                concentracion: producto.concentracion || "",
+                                idMarca: producto.idMarca == null ? null : Number(producto.idMarca),
+                                idCategoria: producto.idCategoria == null ? null : Number(producto.idCategoria),
+                                imagenUrl: producto.imagenUrl || "",
+                                archivoImagen: null,
+                                vistaPrevia: producto.imagenUrl || ""
+                            };
+
+                            this.editando = true;
+                            this.mostrarFormulario = true;
+                            this.mensaje = "";
+                            this.esError = false;
+
+                            const input = document.getElementById("vueArchivoImagen");
+                            if (input) input.value = "";
+                        },
+
+                        cancelarFormulario() {
+                            this.mostrarFormulario = false;
+                            this.form = this.formularioVacio();
+
+                            const input = document.getElementById("vueArchivoImagen");
+                            if (input) input.value = "";
+                        },
+
+                        
+seleccionarImagen(evento) {
+    const archivo = evento.target.files[0];
+    if (!archivo) return;
+
+    const tiposPermitidos = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    if (!tiposPermitidos.includes(archivo.type)) {
+        alert("Seleccioná una imagen JPG, PNG o WEBP.");
+        evento.target.value = "";
+        return;
+    }
+
+    if (archivo.size > 2 * 1024 * 1024) {
+        alert("La imagen no puede superar los 2 MB.");
+        evento.target.value = "";
+        return;
+    }
+
+    // Liberar la vista previa temporal anterior, si existía.
+    if (
+        this.form.vistaPrevia &&
+        this.form.vistaPrevia.startsWith("blob:")
+    ) {
+        URL.revokeObjectURL(this.form.vistaPrevia);
+    }
+
+    this.form.archivoImagen = archivo;
+    this.form.vistaPrevia = URL.createObjectURL(archivo);
+},
+
+                        quitarImagenSeleccionada() {
+                            this.form.archivoImagen = null;
+                            this.form.vistaPrevia = this.form.imagenUrl || "";
+
+                            const input = document.getElementById("vueArchivoImagen");
+                            if (input) input.value = "";
+                        },
+
+
+async guardarProducto() {
+    if (this.guardando) return;
+
+    this.guardando = true;
+    this.mensaje = "";
+
+    const esEdicion = this.editando;
+    const url = esEdicion
+        ? "/api/productos/" + this.form.idProducto
+        : "/api/productos";
+
+   const datos = new FormData();
+
+if (esEdicion) {
+    datos.append("idProducto", String(this.form.idProducto));
+}
+
+datos.append("nombre", this.form.nombre);
+datos.append("descripcion", this.form.descripcion || "");
+datos.append("precio", String(this.form.precio));
+datos.append("stock", String(this.form.stock));
+datos.append("volumenMl", String(this.form.volumenMl));
+datos.append("concentracion", this.form.concentracion);
+datos.append("idMarca", String(this.form.idMarca));
+datos.append("idCategoria", String(this.form.idCategoria));
+
+if (this.form.archivoImagen) {
+    datos.append("archivoImagen", this.form.archivoImagen);
+}
+
+    try {
+        const respuesta = await fetch(url, {
+            method: esEdicion ? "PUT" : "POST",
+            body: datos
+        });
+
+        if (!respuesta.ok) {
+            const texto = await respuesta.text();
+            let mensajeError = texto || "No se pudo guardar el perfume.";
+
+            try {
+                const detalle = JSON.parse(texto);
+                mensajeError = detalle.mensaje
+                    || detalle.title
+                    || mensajeError;
+            } catch {
+                // La respuesta no era JSON.
+            }
+
+            throw new Error(mensajeError);
+        }
+
+        this.mensaje = esEdicion
+            ? "Perfume actualizado correctamente."
+            : "Perfume creado correctamente.";
+
+        this.esError = false;
+        this.mostrarFormulario = false;
+        this.form = this.formularioVacio();
+
+        const input = document.getElementById("vueArchivoImagen");
+        if (input) input.value = "";
+
+        await this.cargarProductos();
+
+    } catch (error) {
+        this.mensaje = error.message;
+        this.esError = true;
+        console.error("Error al guardar el perfume:", error);
+    } finally {
+        this.guardando = false;
+    }
+},
+
+
+                        async eliminarProducto(producto) {
+                            const confirmar = confirm(
+                                "¿Querés eliminar el perfume " + producto.nombre + "?"
+                            );
+
+                            if (!confirmar) return;
+
+                            try {
+                                const respuesta = await fetch(
+                                    "/api/productos/" + producto.idProducto,
+                                    { method: "DELETE" }
+                                );
+
+                                if (!respuesta.ok) {
+                                    const texto = await respuesta.text();
+                                    throw new Error(texto || "No se pudo eliminar el perfume.");
+                                }
+
+                                this.mensaje = "Perfume eliminado correctamente.";
+                                this.esError = false;
+                                await this.cargarProductos();
+                            } catch (error) {
+                                this.mensaje = error.message;
+                                this.esError = true;
+                                console.error(error);
+                            }
+                        },
+
+                        formatoPrecio(precio) {
+                            return new Intl.NumberFormat("es-AR", {
+                                style: "currency",
+                                currency: "ARS"
+                            }).format(Number(precio) || 0);
+                        }
+                    },
+
+                    mounted() {
+                        this.cargarProductos();
+                    }
+                }).mount("#appProductosVue");
+            });
+        </script>
+    }
 }

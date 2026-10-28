@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ProyectoIntegradorFinal.Models
 {
@@ -10,6 +11,7 @@ namespace ProyectoIntegradorFinal.Models
         [Required]
         public string Nombre { get; set;}
 
+        [JsonIgnore]
         public virtual ICollection<Producto>? Productos { get; set; }
     }
 }

@@ -272,26 +272,45 @@ namespace ProyectoIntegradorFinal.Controllers
         }
 
         //POST : Productos/Delete/5
+
         [Authorize(Roles = "Administrador")]
         [HttpPost, ActionName("Delete")]
-        public async Task<IActionResult> DeleteConfirmed(int id) 
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var producto = await _context.Productos.FindAsync(id);
-            if (producto != null) 
+
+            if (producto == null)
             {
-                if (!string.IsNullOrEmpty(producto.ImagenUrl) && producto.ImagenUrl.StartsWith("/images/perfumes/"));
-                {
-                    string rutaFisica = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", producto.ImagenUrl.TrimStart('/'));
-                    if (System.IO.File.Exists(rutaFisica))
-                    {
-                        System.IO.File.Delete(rutaFisica);
-                    }
-                }
-                _context.Productos.Remove(producto);
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
+
+            // Eliminar la imagen solamente si pertenece a la carpeta de perfumes.
+            if (!string.IsNullOrWhiteSpace(producto.ImagenUrl) &&
+                producto.ImagenUrl.StartsWith(
+                    "/images/perfumes/",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                string rutaRelativa = producto.ImagenUrl.TrimStart('/')
+                    .Replace('/', Path.DirectorySeparatorChar);
+
+                string rutaFisica = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    rutaRelativa);
+
+                if (System.IO.File.Exists(rutaFisica))
+                {
+                    System.IO.File.Delete(rutaFisica);
+                }
+            }
+
+            _context.Productos.Remove(producto);
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
+
 
     }
 }
