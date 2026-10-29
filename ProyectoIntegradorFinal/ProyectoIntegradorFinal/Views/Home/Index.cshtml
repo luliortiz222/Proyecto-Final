@@ -229,20 +229,20 @@
 
                         <!-- Botón Anterior -->
                         <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
-                            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)">Anterior</a>
+                            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)" asp-fragment="coleccion">Anterior</a>
                         </li>
 
                         <!-- Números de Página Dinámicos -->
                         @for (int i = 1; i <= totalPaginas; i++)
                         {
                             <li class="page-item @(i == paginaActual ? "active" : "")">
-                                <a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
+                                <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-fragment="coleccion">@i</a>
                             </li>
                         }
 
                         <!-- Botón Siguiente -->
                         <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
-                            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)">Siguiente</a>
+                            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)" asp-fragment="coleccion">Siguiente</a>
                         </li>
 
                     </ul>
