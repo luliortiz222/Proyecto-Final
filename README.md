@@ -139,17 +139,16 @@ Los nombres de la cadena de conexión y del proveedor deben coincidir con la con
 La siguiente matriz identifica el estado de cada requisito y la evidencia que debe incluirse para su evaluación. Los estados deberán actualizarse cuando cada funcionalidad esté terminada y verificada.
 
 | Requerimiento | Estado | Enlace al código |
-|---|---|---|---|
-| Modelo de datos: al menos 6 entidades relacionadas, relación 1:N y relación N:M o entidad intermedia | 🟢 Implementado | `Models/` | 
-| Login y Logout | 🟢 Implementado | `Controllers/UsuariosController.cs` y configuración de autenticación | 
-| Roles y autorización en backend | 🟢Implementados| Controladores con `[Authorize]` |
-| Avatar personalizado | 🟢Implementado | `Controllers/UsuariosController.cs`, vistas de perfil y `wwwroot/images/avatares/` |
-| Manejo de archivos adicional al avatar | 🟢 Carga de imágenes de productos implementada; verificar validaciones y almacenamiento | `Controllers/ProductosController.cs`, `wwwroot/images/` |
-| ABM completo con Vue.js u otro framework reactivo mediante AJAX/JSON, sin recarga | 🔴 Pendiente de verificar e implementar | Incorporar rutas y componentes del ABM cuando estén desarrollados |
-| Paginación del lado del servidor en los listados principales | 🟢 Implementada en varios listados principales |`Controllers/ProductosController.cs`,  `Views/Productos/Index.cshtml`;  `Controllers/MarcasController.cs`,  `Views/Marcas/Index.cshtml`,  `Controllers/CategoriasController.cs`,  `Views/Categorias/Index.cshtml`,  `Controllers/OrdenesController.cs`,  `Views/Ordenes/Index.cshtml;`  `Controllers/PagosController.cs`,  `Views/Pagos/Index.cshtml;`  `Controllers/HomeController.cs`,  `Views/Home/Index.cshtml`. | 
-| Búsqueda asíncrona de entidades relacionadas mediante AJAX en el servidor | 🟢Implementado | `Controllers/ProductosController.cs` |
-| Web API REST  | 🟢 Implementado | Controladores API REST de Productos, Categorías y Marcas |
-
+|---|---|---|
+| Modelo de datos: al menos 6 entidades relacionadas, relación 1:N y relación N:M o entidad intermedia | 🟢 Implementado | `Models/`, `Data/AppDbContext.cs` |
+| Login y Logout | 🟢 Implementado | `Controllers/UsuariosController.cs` y configuración de autenticación |
+| Roles y autorización en backend | 🟢 Implementado | Controladores con atributos `[Authorize]` y restricciones por rol |
+| Avatar personalizado | 🟢 Implementado | `Controllers/UsuariosController.cs`, vistas de perfil y `wwwroot/images/avatares/` |
+| Manejo de archivos adicional al avatar | 🟢 Implementado | `Controllers/ProductosController.cs` y `wwwroot/images/` |
+| ABM completo con Vue.js u otro framework reactivo mediante AJAX/JSON, sin recarga | 🟡 Parcialmente implementado | Vistas con Vue y controladores API de Productos, Marcas y Categorías |
+| Paginación del lado del servidor en los listados principales | 🟢 Implementado | `Controllers/ProductosController.cs`, `Views/Productos/Index.cshtml`; `Controllers/MarcasController.cs`, `Views/Marcas/Index.cshtml`; `Controllers/CategoriasController.cs`, `Views/Categorias/Index.cshtml`; `Controllers/OrdenesController.cs`, `Views/Ordenes/Index.cshtml`; `Controllers/PagosController.cs`, `Views/Pagos/Index.cshtml`; `Controllers/HomeController.cs`, `Views/Home/Index.cshtml` |
+| Búsqueda asíncrona de entidades relacionadas mediante AJAX en el servidor | 🟢 Implementado | `Controllers/ProductosController.cs`, `Views/Productos/Create.cshtml` y `Views/Productos/Edit.cshtml` |
+| Web API REST | 🟢 Implementado | Controladores API REST de Productos, Categorías y Marcas |
 
 
 ## Datos y cuentas de prueba
