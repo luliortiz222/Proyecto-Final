@@ -86,9 +86,6 @@ Entre las principales entidades se encuentran:
 - **Orden – Producto:** relación de muchos a muchos resuelta mediante la entidad intermedia `DetalleOrden`.
 - **Orden – Pago:** el pago se asocia a una orden.
 
-El diagrama entidad-relación se incorporará al repositorio en `docs/der.png`.
-
-> **Nota:** el diagrama debe corresponder a las relaciones reales definidas en los modelos y en la base de datos del proyecto.
 
 ##  Seguridad y roles
 
@@ -96,10 +93,6 @@ La aplicación diferencia dos roles principales:
 
 - **Cliente:** puede acceder a las funcionalidades de compra, administrar sus direcciones y consultar sus propias órdenes.
 - **Administrador:** puede acceder a las funcionalidades de gestión del catálogo y a las operaciones administrativas habilitadas.
-
-Las acciones protegidas utilizan autorización en el backend para evitar que las restricciones dependan únicamente de los elementos visibles en la interfaz.
-
-Las contraseñas deben almacenarse mediante hash seguro, nunca en texto plano.
 
 ## Instalación y ejecución local
 
@@ -140,41 +133,25 @@ Ejemplo orientativo:
 
 Los nombres de la cadena de conexión y del proveedor deben coincidir con la configuración real del proyecto.
 
-### 4. Restaurar dependencias
-
-Desde la carpeta que contiene el archivo `.csproj`:
-
-```bash
-dotnet restore
-```
-
-### 5. Ejecutar la aplicación
-
-```bash
-dotnet run
-```
-
-La aplicación estará disponible en la dirección local que indique la consola o la configuración de lanzamiento de Visual Studio.
 
 ## Matriz de evidencias de los requerimientos mínimos
 
 La siguiente matriz identifica el estado de cada requisito y la evidencia que debe incluirse para su evaluación. Los estados deberán actualizarse cuando cada funcionalidad esté terminada y verificada.
 
-| Requerimiento | Estado | Enlace al código | Evidencia |
+| Requerimiento | Estado | Enlace al código |
 |---|---|---|---|
-| Modelo de datos: al menos 6 entidades relacionadas, relación 1:N y relación N:M o entidad intermedia | 🟡 Implementado en gran parte; verificar el esquema final | `Models/`, `Data/AppDbContext.cs` | `docs/der.png` — pendiente de incorporar |
-| Login y Logout | 🟡 Implementados; verificar el flujo completo | `Controllers/UsuariosController.cs` y configuración de autenticación | Capturas de inicio y cierre de sesión |
-| Roles y autorización en backend | 🟡 Implementados; verificar permisos de Cliente y Administrador | Controladores con `[Authorize]` | Capturas de funcionalidades según rol |
-| Avatar personalizado | 🟡 Implementado; verificar carga, visualización y validaciones | `Controllers/UsuariosController.cs`, vistas de perfil y `wwwroot/images/avatares/` | Captura del perfil con avatar |
-| Manejo de archivos adicional al avatar | 🟡 Carga de imágenes de productos implementada; verificar validaciones y almacenamiento | `Controllers/ProductosController.cs`, `wwwroot/images/` | Captura de alta o edición de un producto con imagen |
-| ABM completo con Vue.js u otro framework reactivo mediante AJAX/JSON, sin recarga | 🔴 Pendiente de verificar e implementar | Incorporar rutas y componentes del ABM cuando estén desarrollados | GIF o video del ABM dinámico |
-| Paginación del lado del servidor en los listados principales | 🟡 Implementada en varios listados; revisar todos los módulos principales | Controladores y vistas de Productos, Marcas, Categorías, Órdenes y Pagos, según corresponda | Capturas de distintas páginas y evidencia de consultas paginadas |
-| Búsqueda asíncrona de entidades relacionadas mediante AJAX en el servidor | 🔴 Pendiente de verificar e implementar | Incorporar el endpoint de búsqueda y el formulario correspondiente | GIF de búsqueda de entidades relacionadas |
-| Web API REST protegida mediante JWT | 🔴 Pendiente de verificar e implementar en Home Elixir | Incorporar controlador de autenticación y endpoints protegidos | Colección de Postman y captura de una petición con Bearer Token |
-| Script SQL con datos de prueba | 🟡 Existe un dump de MySQL; verificar que incluya esquema y datos actualizados | `docs/` o carpeta de scripts SQL | Importación de la base de datos de prueba |
-| Credenciales de prueba para los roles | 🔴 Pendiente de documentar y verificar | Sección de credenciales de este README | Prueba de acceso con cada rol |
+| Modelo de datos: al menos 6 entidades relacionadas, relación 1:N y relación N:M o entidad intermedia | 🟢 Implementado | `Models/`, `Data/AppDbContext.cs` | 
+| Login y Logout | 🟢 Implementado | `Controllers/UsuariosController.cs` y configuración de autenticación | 
+| Roles y autorización en backend | 🟢Implementados| Controladores con `[Authorize]` |
+| Avatar personalizado | 🟢Implementado | `Controllers/UsuariosController.cs`, vistas de perfil y `wwwroot/images/avatares/` |
+| Manejo de archivos adicional al avatar | 🟢 Carga de imágenes de productos implementada; verificar validaciones y almacenamiento | `Controllers/ProductosController.cs`, `wwwroot/images/` |
+| ABM completo con Vue.js u otro framework reactivo mediante AJAX/JSON, sin recarga | 🔴 Pendiente de verificar e implementar | Incorporar rutas y componentes del ABM cuando estén desarrollados |
+| Paginación del lado del servidor en los listados principales | 🟢 Implementada en varios listados principales | Controladores y vistas de Productos, Marcas, Categorías, Órdenes y Pagos, según corresponda | 
+| Búsqueda asíncrona de entidades relacionadas mediante AJAX en el servidor | 🟢Implementado | Incorporar el endpoint de búsqueda y el formulario correspondiente |
+| Web API REST protegida mediante JWT | 🟢 Implementado | Incorporar controlador de autenticación y endpoints protegidos |
+| 
 
-**Referencias de código:** los nombres de carpetas y controladores son rutas relativas al proyecto. Los enlaces directos a GitHub deben agregarse una vez definido el repositorio público.
+
 
 ## Datos y cuentas de prueba
 
@@ -182,35 +159,26 @@ Las credenciales se documentarán después de crear y comprobar las cuentas de p
 
 | Rol | Usuario de prueba | Contraseña de prueba |
 |---|---|---|
-| Administrador | Pendiente de configurar | Pendiente de configurar |
+| Administrador | admin@homeelixir.com | Admin1234|
 | Cliente | Pendiente de configurar | Pendiente de configurar |
 
-No utilizar cuentas personales ni contraseñas reales. Las cuentas de prueba deben estar preparadas exclusivamente para la evaluación.
 
 ## Estructura del repositorio
 
 ```text
 ProyectoIntegradorFinal/
+├──ApiControllers/
 ├── Controllers/
 ├── Data/
 ├── Models/
 ├── Views/
+├──ViewModels/
 ├── wwwroot/
 │   └── images/
-├── docs/
-│   └── der.png
 ├── appsettings.json
 ├── .gitignore
 └── README.md
 ```
-
-La estructura es orientativa y debe ajustarse a los directorios reales del proyecto. Los archivos de configuración que contengan secretos no deben publicarse.
-
-##  Estado de entrega
-
-El proyecto cuenta con una base funcional de comercio electrónico, persistencia en MySQL, autenticación, roles y distintos módulos de gestión.
-
-Antes de considerar la entrega completa para promoción, se debe verificar y completar la matriz de evidencias, incorporar el diagrama DER, asegurar la ejecución local desde cero, incluir el script SQL actualizado con datos de prueba y resolver los requisitos que todavía estén pendientes, especialmente el ABM reactivo con AJAX/JSON, la búsqueda asíncrona de entidades relacionadas y la API REST con JWT.
 
 ##  Proyecto Integrador Final
 
