@@ -126,7 +126,7 @@ Ejemplo orientativo:
 ```json
 {
   "ConnectionStrings": {
-     "DefaultConnection": "Server=localhost;Port=3306;Database=PerfumeriaDb;Uid=root;Pwd=CONTRASENA_LOCAL;"
+     "DefaultConnection": "Server=localhost;Port=3306;Database=PerfumeriaDb;Uid=root;Pwd=admin;"
   }
 }
 ```
@@ -140,16 +140,15 @@ La siguiente matriz identifica el estado de cada requisito y la evidencia que de
 
 | Requerimiento | Estado | Enlace al código |
 |---|---|---|---|
-| Modelo de datos: al menos 6 entidades relacionadas, relación 1:N y relación N:M o entidad intermedia | 🟢 Implementado | `Models/`, `Data/AppDbContext.cs` | 
+| Modelo de datos: al menos 6 entidades relacionadas, relación 1:N y relación N:M o entidad intermedia | 🟢 Implementado | `Models/` | 
 | Login y Logout | 🟢 Implementado | `Controllers/UsuariosController.cs` y configuración de autenticación | 
 | Roles y autorización en backend | 🟢Implementados| Controladores con `[Authorize]` |
 | Avatar personalizado | 🟢Implementado | `Controllers/UsuariosController.cs`, vistas de perfil y `wwwroot/images/avatares/` |
 | Manejo de archivos adicional al avatar | 🟢 Carga de imágenes de productos implementada; verificar validaciones y almacenamiento | `Controllers/ProductosController.cs`, `wwwroot/images/` |
 | ABM completo con Vue.js u otro framework reactivo mediante AJAX/JSON, sin recarga | 🔴 Pendiente de verificar e implementar | Incorporar rutas y componentes del ABM cuando estén desarrollados |
-| Paginación del lado del servidor en los listados principales | 🟢 Implementada en varios listados principales | Controladores y vistas de Productos, Marcas, Categorías, Órdenes y Pagos, según corresponda | 
-| Búsqueda asíncrona de entidades relacionadas mediante AJAX en el servidor | 🟢Implementado | Incorporar el endpoint de búsqueda y el formulario correspondiente |
-| Web API REST protegida mediante JWT | 🟢 Implementado | Incorporar controlador de autenticación y endpoints protegidos |
-| 
+| Paginación del lado del servidor en los listados principales | 🟢 Implementada en varios listados principales |`Controllers/ProductosController.cs`,  `Views/Productos/Index.cshtml`;  `Controllers/MarcasController.cs`,  `Views/Marcas/Index.cshtml`,  `Controllers/CategoriasController.cs`,  `Views/Categorias/Index.cshtml`,  `Controllers/OrdenesController.cs`,  `Views/Ordenes/Index.cshtml;`  `Controllers/PagosController.cs`,  `Views/Pagos/Index.cshtml;`  `Controllers/HomeController.cs`,  `Views/Home/Index.cshtml`. | 
+| Búsqueda asíncrona de entidades relacionadas mediante AJAX en el servidor | 🟢Implementado | `Controllers/ProductosController.cs` |
+| Web API REST  | 🟢 Implementado | Controladores API REST de Productos, Categorías y Marcas |
 
 
 
